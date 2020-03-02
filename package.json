@@ -7,7 +7,7 @@
     "boardgame.io": "0.37.2",
     "esm": "^3.2.25",
     "react": "16.3.2",
-    "react-dom": "16.3.2",
+    "react-dom": ">=16.3.2",
     "react-scripts": "2.1.1"
   },
   "scripts": {
