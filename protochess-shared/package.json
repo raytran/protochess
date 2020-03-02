@@ -1,0 +1,11 @@
+{
+  "name": "protochess-shared",
+  "version": "1.0.0",
+  "description": "Shared dependencies",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Raymond Tran",
+  "license": "ISC"
+}

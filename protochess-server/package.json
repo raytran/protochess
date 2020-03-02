@@ -1,0 +1,11 @@
+{
+  "name": "protochess-server",
+  "version": "1.0.0",
+  "description": "Server side",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Raymond Tran",
+  "license": "ISC"
+}
