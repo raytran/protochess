@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {HashRouter as Router, NavLink, Route, Switch} from "react-router-dom";
+import {BrowserRouter as Router, NavLink, Route, Switch} from "react-router-dom";
 import Home from "./pages/Home";
 import Stuff from "./pages/Stuff";
 import Contact from "./pages/Contact";
