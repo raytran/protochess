@@ -8,10 +8,10 @@ import { monitor } from "@colyseus/monitor";
 import { MyRoom } from "./MyRoom";
 
 const port = Number(process.env.PORT || 2567);
-const app = express()
+const app = express();
 
 app.use(cors());
-app.use(express.json())
+app.use(express.json());
 
 const server = http.createServer(app);
 const gameServer = new Server({
@@ -33,4 +33,4 @@ gameServer.define('my_room', MyRoom);
 app.use("/colyseus", monitor());
 
 gameServer.listen(port);
-console.log(`Listening on ws://localhost:${ port }`)
+console.log(`Listening on ws://localhost:${ port }`);
