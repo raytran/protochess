@@ -3,7 +3,8 @@ import express from "express";
 import cors from "cors";
 import {Server} from "colyseus";
 import {monitor} from "@colyseus/monitor";
-import {MyRoom} from "./MyRoom";
+//import {MyRoom} from "./MyRoom";
+import {StateHandlerRoom} from "./StateHandlerRoom";
 // import socialRoutes from "@colyseus/social/express"
 
 const port = Number(process.env.PORT || 2567);
@@ -18,7 +19,8 @@ const gameServer = new Server({
 });
 
 // register your room handlers
-gameServer.define('my_room', MyRoom);
+//gameServer.define('my_room', MyRoom);
+gameServer.define('my_room', StateHandlerRoom);
 
 /**
  * Register @colyseus/social routes
