@@ -5,7 +5,7 @@ import {BrowserRouter as Router, NavLink, Route, Switch} from "react-router-dom"
 import Home from "./pages/Home";
 import Stuff from "./pages/Stuff";
 import Contact from "./pages/Contact";
-import OpponentConnector from "./pages/OpponentConnector";
+import Lobby from "./pages/Lobby";
 
 class App extends Component {
     render() {
@@ -23,7 +23,7 @@ class App extends Component {
                             <Route exact path="/" component={Home}/>
                             <Route path="/stuff" component={Stuff}/>
                             <Route path="/contact" component={Contact}/>
-                            <Route path="/roomId/" component={OpponentConnector}/>
+                            <Route path="/roomId/" component={Lobby}/>
                         </Switch>
                     </div>
                 </div>

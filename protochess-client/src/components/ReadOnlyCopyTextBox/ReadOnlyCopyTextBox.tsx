@@ -1,6 +1,7 @@
 import React, {Component} from "react";
-import {FormControl, InputGroup} from 'react-bootstrap';
+import {Button, FormControl, InputGroup} from 'react-bootstrap';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import './ReadOnlyCopyTextBox.css'
 
 interface MyProps {
     value: string;
@@ -17,13 +18,14 @@ class ReadOnlyCopyTextBox extends Component<MyProps> {
                 <InputGroup className="mb-3">
                     <FormControl
                         readOnly
+                        className="input-disabled"
                         value={this.props.value}
                         aria-describedby="basic-addon2"
                     />
                 </InputGroup>
                 <CopyToClipboard text={this.props.value}
                                  onCopy={() => this.setState({})}>
-                    <button>Copy to clipboard</button>
+                    <Button variant="secondary">Copy to clipboard</Button>
                 </CopyToClipboard>
             </div>
         )

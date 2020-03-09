@@ -9,6 +9,9 @@ h1, h2, p, ul, li {
     font-family: sans-serif;
 }
 
+ul{
+    list-style-type: none;
+}
 ul.header li {
     display: inline;
     list-style-type: none;

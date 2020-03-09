@@ -1,0 +1,13 @@
+.chat{
+    display:inline-block;
+    vertical-align: top;
+    padding-top: 5px;
+    text-align:left;
+    width:100%;
+}
+.playerList{
+    display:inline-block;
+    vertical-align: top;
+    text-align:left;
+    background-color: white;
+}

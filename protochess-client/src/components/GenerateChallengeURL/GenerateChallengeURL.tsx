@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import Button from 'react-bootstrap/Button';
-import ReadOnlyCopyTextBox from '../../components/ReadOnlyCopyTextBox';
+import ReadOnlyCopyTextBox from '../ReadOnlyCopyTextBox/ReadOnlyCopyTextBox';
 import './GenerateChallengeURL.css'
 
 interface Props {
@@ -21,11 +21,6 @@ class GenerateChallengeURL extends Component<Props, {}> {
                 </div>
             </div>
         );
-    }
-
-    temp() {
-        return 'lol';
-
     }
 }
 
