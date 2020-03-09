@@ -23,7 +23,7 @@ class Lobby extends Component<{},myState> {
         }
         this.onPlayerChange = this.onPlayerChange.bind(this);
     }
-    
+
     private onPlayerChange():void{
         this.setState({name:ClientHandler.getName()});
     }
