@@ -4,7 +4,7 @@ import cors from "cors";
 import {Server} from "colyseus";
 import {monitor} from "@colyseus/monitor";
 //import {MyRoom} from "./MyRoom";
-import {StateHandlerRoom} from "./StateHandlerRoom";
+import {StateHandlerRoom} from "./src/StateHandlerRoom";
 // import socialRoutes from "@colyseus/social/express"
 
 const port = Number(process.env.PORT || 2567);

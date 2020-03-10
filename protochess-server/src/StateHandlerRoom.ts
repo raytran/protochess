@@ -33,8 +33,8 @@ export class StateHandlerRoom extends Room<State> {
         }else{
             this.state.createPlayer(client.sessionId,false,"");
         }
-        if (this.clients.length > 1) {
-            this.broadcast("startGame");
+        if (this.clients.length == 2) {
+            this.broadcast("redirectChallenger");
         }
     }
 

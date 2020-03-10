@@ -13,7 +13,7 @@ class ClientHandler {
     private name:string;
 
     constructor() {
-        this.client = new Colyseus.Client('ws://localhost:2567');
+        this.client = new Colyseus.Client('ws://'+window.location.hostname+':2567');
         this.room = null;
         this.gameReadyListeners = [];
         this.chatListeners = [];
@@ -133,7 +133,7 @@ class ClientHandler {
                 message['senderName'] = this.players[message['sender']].name;
                 this.updateChatListeners(message);
             }
-            if (message == "startGame") {
+            if (message == "redirectChallenger") {
                 for (let i = 0; i < this.gameReadyListeners.length; i++) {
                     this.gameReadyListeners[i]();
                 }

@@ -1,3 +1,3 @@
-import {Player, State} from "./State";
+import {Player, State, PieceType,Board, TileType} from "./State";
 
-export {State, Player};
+export {State, Player, Board, PieceType, TileType};

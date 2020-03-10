@@ -22,7 +22,8 @@ export default class PlayerEntry extends Component<MyProps> {
     render() {
         return(
             <ListGroupItem>
-                {this.props.showMakeLeaderButton ? <Button onClick={this.onClick} variant="secondary" size="sm">Make Leader</Button>:""}
+                {!this.props.isLeader && this.props.showMakeLeaderButton ?
+                    <Button className="h-100" onClick={this.onClick} variant="secondary" size="sm">Make Leader</Button>:""}
                 {this.props.isLeader ? <b> Leader: </b> : " "}
                 {this.props.playerName}
             </ListGroupItem>
