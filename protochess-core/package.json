@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "protochess-shared": "file:../protochess-shared",
     "typescript": "^3.8.3"
   },
   "devDependencies": {

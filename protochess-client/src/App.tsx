@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Stuff from "./pages/Stuff";
 import Contact from "./pages/Contact";
 import Lobby from "./pages/Lobby";
+import ChessTest from "./pages/ChessTest";
 
 class App extends Component {
     render() {
@@ -24,6 +25,7 @@ class App extends Component {
                             <Route path="/stuff" component={Stuff}/>
                             <Route path="/contact" component={Contact}/>
                             <Route path="/roomId/" component={Lobby}/>
+                            <Route path="/chesstest/" component={ChessTest}/>
                         </Switch>
                     </div>
                 </div>

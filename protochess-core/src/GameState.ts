@@ -2,6 +2,7 @@ import {Piece} from "./Piece";
 import {Movement} from "./Movement";
 import {Board} from "./Board";
 import {BoardLocation} from "./BoardLocation";
+import {State,Player} from "protochess-shared";
 import {PieceType} from "./PieceType";
 
 export class GameState{
@@ -189,5 +190,10 @@ export class GameState{
             }
         }
         return null;
+    }
+
+    //Returns a protochess-shared schema representation of the board
+    toSchema(){
+
     }
 }
