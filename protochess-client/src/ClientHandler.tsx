@@ -6,7 +6,7 @@ class ClientHandler {
     private client: Colyseus.Client;
     private room: Colyseus.Room | null;
     private chatListeners: Function[];
-    private gameReadyListeners: Function[];
+    private redirectListeners: Function[];
     private playerChangeListeners: Function[];
     private players: any;
     private isLeader:boolean;
@@ -15,12 +15,17 @@ class ClientHandler {
     constructor() {
         this.client = new Colyseus.Client('ws://'+window.location.hostname+':2567');
         this.room = null;
-        this.gameReadyListeners = [];
+        this.redirectListeners = [];
         this.chatListeners = [];
         this.playerChangeListeners = [];
         this.players = {};
         this.isLeader=false;
         this.name = "";
+    }
+
+    getRoom(){
+        if (this.room)
+            return this.room;
     }
 
     joinById(roomId: string) {
@@ -65,14 +70,14 @@ class ClientHandler {
         return this.room != null;
     }
 
-    addGameReadyListener(func: Function) {
-        this.gameReadyListeners.push(func);
+    addRedirectListener(func: Function) {
+        this.redirectListeners.push(func);
     }
 
-    removeGameReadyListener(func: Function) {
-        let index = this.gameReadyListeners.indexOf(func);
+    removeRedirectListener(func: Function) {
+        let index = this.redirectListeners.indexOf(func);
         if (index > -1) {
-            this.gameReadyListeners.splice(index, 1);
+            this.redirectListeners.splice(index, 1);
         }
     }
 
@@ -120,6 +125,7 @@ class ClientHandler {
 
         this.room.onMessage(message => {
             console.log(message);
+            console.log(this.room!.state);
             if (message['leaderChange']){
                 this.isLeader = false;
                 if (this.room?.sessionId==message['leaderChange']){
@@ -133,9 +139,15 @@ class ClientHandler {
                 message['senderName'] = this.players[message['sender']].name;
                 this.updateChatListeners(message);
             }
-            if (message == "redirectChallenger") {
-                for (let i = 0; i < this.gameReadyListeners.length; i++) {
-                    this.gameReadyListeners[i]();
+            if (message["redirectChallenger"]) {
+                for (let i = 0; i < this.redirectListeners.length; i++) {
+                    this.redirectListeners[i]("redirectChallenger");
+                }
+            }
+
+            if (message['startGame']){
+                for (let i = 0; i < this.redirectListeners.length; i++) {
+                    this.redirectListeners[i]("startGame");
                 }
             }
         });
@@ -171,6 +183,14 @@ class ClientHandler {
         for (let i = 0; i < this.chatListeners.length; i++) {
             this.chatListeners[i](data);
         }
+    }
+
+    switchLeader(newLeaderId: string) {
+        this.sendMessage({switchLeader:newLeaderId});
+    }
+
+    startGame() {
+        this.sendMessage({startGame:true});
     }
 }
 

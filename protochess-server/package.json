@@ -29,7 +29,6 @@
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1",
-    "protochess-core": "file:../protochess-core",
     "protochess-shared": "file:../protochess-shared"
   }
 }

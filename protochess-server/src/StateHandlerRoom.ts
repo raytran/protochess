@@ -4,6 +4,7 @@ import {State,Player} from "protochess-shared"
 export class StateHandlerRoom extends Room<State> {
     maxClients = 4;
     leaderSessionId: string | null = null;
+    didRedirect = false;
 
     private switchLeader(newId:string):void{
         //Make sure this is a valid request
@@ -33,8 +34,9 @@ export class StateHandlerRoom extends Room<State> {
         }else{
             this.state.createPlayer(client.sessionId,false,"");
         }
-        if (this.clients.length == 2) {
-            this.broadcast("redirectChallenger");
+        if (this.clients.length == 2 && !this.didRedirect) {
+            this.broadcast({redirectChallenger:true});
+            this.didRedirect = true;
         }
     }
 
@@ -59,6 +61,12 @@ export class StateHandlerRoom extends Room<State> {
             && data['switchLeader'] !== this.leaderSessionId){
                 console.log("Leader wants to switch leaders");
                 this.switchLeader(data['switchLeader']);
+            }
+        }
+
+        if (data['startGame']){
+            if (client.sessionId === this.leaderSessionId){
+                this.broadcast({startGame:true})
             }
         }
         console.log("StateHandlerRoom received message from", client.sessionId, ":", data);

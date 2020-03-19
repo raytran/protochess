@@ -1,3 +1,5 @@
-import {Player, State, PieceType,Board, TileType} from "./State";
+import {State} from "./State";
+import {Player} from './Player';
+import {GameState} from "./chess";
 
-export {State, Player, Board, PieceType, TileType};
+export {State ,Player, GameState};

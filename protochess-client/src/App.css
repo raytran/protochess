@@ -1,3 +1,6 @@
+#headerWrap{
+    display: inline;
+}
 body {
     background-color: #FFFFFF;
     padding-left: 40px;
@@ -29,6 +32,15 @@ ul.header li a {
     text-decoration: none;
     padding: 20px;
     display: inline-block;
+}
+
+#title{
+    color:black;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 20px;
+    display: inline-block;
+    background-color: #999999;
 }
 
 .content {

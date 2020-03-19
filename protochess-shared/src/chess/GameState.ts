@@ -1,37 +1,41 @@
+import {ArraySchema, MapSchema, Schema, type} from "@colyseus/schema";
 import {Piece} from "./Piece";
 import {Movement} from "./Movement";
 import {Board} from "./Board";
 import {BoardLocation} from "./BoardLocation";
-import {State,Player} from "protochess-shared";
 import {PieceType} from "./PieceType";
 
-export class GameState{
-    board:Board;
-    pieces:Set<Piece>;
-    pieceMap:Map<number,Set<Piece>>; //owner, pieceSet
-    kingMap:Map<number,Piece>;
+export class GameState extends Schema{
+    @type("number")
     whosTurn:number; //who's turn is it? --0 for white 1 for black 2.3..etc
+    @type("number")
     numPlayers:number;
+    @type("boolean")
     useChecks:boolean;
+    @type("boolean")
     useCheckmates:boolean;
+    @type(Board)
+    board:Board;
+    @type([Piece])
+    pieces: ArraySchema<Piece>;
+
+    private piecesInternal:Set<Piece>; //copy of pieces used for temporary modifications
+    private kingMap:Map<number,Piece>;
     constructor(pieces:Set<Piece>,b:Board) {
+        super();
         this.useChecks = true;
         this.useCheckmates = true;
         this.kingMap = new Map<number, Piece>();
-        this.pieceMap = new Map<number,Set<Piece>>();
+        this.pieces = new ArraySchema<Piece>();
         for (let piece of pieces){
-            if (this.pieceMap.has(piece.owner)){
-                this.pieceMap.get(piece.owner)!.add(piece);
-            }else{
-                this.pieceMap.set(piece.owner,new Set<Piece>());
-                this.pieceMap.get(piece.owner)!.add(piece);
-            }
+            this.pieces.push(piece);
+
             if (piece.pieceType == PieceType.King){
                 this.kingMap.set(piece.owner,piece);
             }
         }
 
-        this.pieces = pieces;
+        this.piecesInternal = pieces;
         this.board = b;
         this.whosTurn = 0;
         this.numPlayers = 2;
@@ -45,7 +49,7 @@ export class GameState{
 
         //Look for target piece
         let targetPiece = null;
-        for (let piece of this.pieceMap.get(this.whosTurn)!){
+        for (let piece of this.getPiecesOfPlayer(this.whosTurn)){
             if (piece.location.x == movement.start.x && piece.location.y == movement.start.y){
                 targetPiece = piece;
                 break;
@@ -58,9 +62,6 @@ export class GameState{
 
 
 
-        //console.log(targetPiece.pieceType);
-        //console.log(targetPiece.toAscii());
-        //console.log(targetPiece.getPossibleMoves(this));
         //Check if this moves is in the player's possible moves
         let isValid = false;
         for (let move of this.getValidMoves(this.whosTurn).get(targetPiece)!){
@@ -77,7 +78,9 @@ export class GameState{
             //Make the move
             if(movement.capturedPiece){
                 console.log("Piece captured");
-                this.pieces.delete(movement.capturedPiece);
+                this.piecesInternal.delete(movement.capturedPiece);
+                let deleteIndex = this.pieces.indexOf(movement.capturedPiece);
+                delete this.pieces[deleteIndex];
             }
 
             targetPiece.location = movement.end;
@@ -101,7 +104,7 @@ export class GameState{
         if (this.getChecks().has(playerNumber)){
             inCheck = true;
         }
-        for (let piece of this.pieceMap.get(playerNumber)!){
+        for (let piece of this.getPiecesOfPlayer(playerNumber)){
             if (!inCheck){
                 possibleMoves.set(piece,piece.getPossibleMoves(this));
             }else{
@@ -112,7 +115,7 @@ export class GameState{
                     piece.location = possibleMove.end;
 
                     if(possibleMove.capturedPiece){
-                        this.pieces.delete(possibleMove.capturedPiece);
+                        this.piecesInternal.delete(possibleMove.capturedPiece);
                     }
 
                     if (!this.getChecks().has(playerNumber)){
@@ -127,7 +130,7 @@ export class GameState{
                     }
                     //Undo move
                     if(possibleMove.capturedPiece){
-                        this.pieces.add(possibleMove.capturedPiece);
+                        this.piecesInternal.add(possibleMove.capturedPiece);
                     }
 
                     piece.location = oldLocation;
@@ -138,15 +141,23 @@ export class GameState{
 
     }
 
+    getPiecesOfPlayer(playerNum:number):Set<Piece>{
+        let returnSet = new Set<Piece>();
+        for (let piece of this.pieces) {
+            if (piece.owner == playerNum){
+                returnSet.add(piece);
+            }
+        }
+        return returnSet;
+    }
+
     //Returns a set of players in check
     getChecks(){
         let playersInCheck = [];
-        for (let i=0;i<this.pieceMap.size;i++){
-            for (let piece of this.pieceMap.get(i)!){
-                for (let move of piece.getPossibleMoves(this)){
-                    if(move.capturedPiece?.pieceType == PieceType.King){
-                        playersInCheck.push(move.capturedPiece.owner);
-                    }
+        for (let piece of this.piecesInternal){
+            for (let move of piece.getPossibleMoves(this)){
+                if(move.capturedPiece?.pieceType == PieceType.King){
+                    playersInCheck.push(move.capturedPiece.owner);
                 }
             }
         }
@@ -161,7 +172,7 @@ export class GameState{
             for (let i = this.board.height - 1; i >= 0; i--) {
                 for (let j = 0; j < this.board.width; j++) {
                     let pieceHere = null;
-                    for (let piece of this.pieces){
+                    for (let piece of this.piecesInternal){
                         if (piece.location!.x == j && piece.location!.y == i ){
                             pieceHere = piece;
                             break;
@@ -184,16 +195,11 @@ export class GameState{
 
     //Returns the piece at this board location
     pieceAt(newLoc: BoardLocation) {
-        for (let piece of this.pieces){
+        for (let piece of this.piecesInternal){
             if (newLoc.x == piece.location.x && newLoc.y == piece.location.y){
                 return piece;
             }
         }
         return null;
-    }
-
-    //Returns a protochess-shared schema representation of the board
-    toSchema(){
-
     }
 }

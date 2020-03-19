@@ -15,17 +15,19 @@ class Home extends Component<{}, OwnState> {
         super(props);
         let this_ = this;
 
-        function onGameReady() {
-            this_.setState({'redirect': "/roomId/" + ClientHandler.getRoomId()});
-            ClientHandler.removeGameReadyListener(onGameReady);
+        function onGameReady(type:string) {
+            if (type === "redirectChallenger") {
+                this_.setState({'redirect': "/roomId/" + ClientHandler.getRoomId()});
+            }
+            ClientHandler.removeRedirectListener(onGameReady);
         }
 
         this.state = {'redirect': null, onGameReady: onGameReady};
-        ClientHandler.addGameReadyListener(onGameReady);
+        ClientHandler.addRedirectListener(onGameReady);
     }
 
     componentWillUnmount(): void {
-        ClientHandler.removeGameReadyListener(this.state.onGameReady);
+        ClientHandler.removeRedirectListener(this.state.onGameReady);
     }
 
 

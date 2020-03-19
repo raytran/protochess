@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import ClientHandler from '../ClientHandler';
 import {PlayerList} from '../components/PlayerList/PlayerList';
 import {Player} from 'protochess-shared';
+import {Client} from "colyseus.js";
 
 interface myState{
     connectedUsers: Player[] | null;
@@ -22,7 +23,7 @@ class PlayerListContainer extends Component<{},myState> {
     }
     private handleClick(newLeaderId:string):void{
         console.log(newLeaderId);
-        ClientHandler.sendMessage({"switchLeader":newLeaderId})
+        ClientHandler.switchLeader(newLeaderId);
     }
 
     componentDidMount(): void {

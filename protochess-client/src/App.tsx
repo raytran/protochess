@@ -13,12 +13,14 @@ class App extends Component {
         return (
             <Router>
                 <div>
-                    <h1>Protochess</h1>
-                    <ul className="header">
-                        <li><NavLink exact to="/">Home</NavLink></li>
-                        <li><NavLink to="/stuff">Stuff</NavLink></li>
-                        <li><NavLink to="/contact">Contact</NavLink></li>
-                    </ul>
+                    <div id="headerWrap">
+                        <ul className="header">
+                            <li id="title">Protochess</li>
+                            <li><NavLink exact to="/">Home</NavLink></li>
+                            <li><NavLink to="/stuff">Stuff</NavLink></li>
+                            <li><NavLink to="/contact">Contact</NavLink></li>
+                        </ul>
+                    </div>
                     <div className="content">
                         <Switch>
                             <Route exact path="/" component={Home}/>

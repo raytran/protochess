@@ -2,6 +2,7 @@ import {Movement} from "./Movement";
 import {BoardLocation} from "./BoardLocation";
 import {GameState} from "./GameState";
 
+//Defines how a piece can move (not capture)
 export class MovementPattern {
     owner:number;
     blockable: boolean;
@@ -31,11 +32,6 @@ export class MovementPattern {
             if(gameState.onBoard(newLoc)){
                 let pieceHere = gameState.pieceAt(newLoc);
                 if (pieceHere){
-                    //There's a piece here!
-                    if (pieceHere.owner != this.owner){
-                        newMove.capturedPiece = pieceHere;
-                        possibleMoves.add(newMove);
-                    }
                     if (this.blockable) break;
                 }else{
                     possibleMoves.add(newMove);
