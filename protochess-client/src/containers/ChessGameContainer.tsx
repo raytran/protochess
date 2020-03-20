@@ -41,6 +41,14 @@ export default class ChessGameContainer extends Component<{},IState> {
                     this.chessGame.current.unlockPieces(change.value);
                 }
             }
+            //@ts-ignore
+            else if (change.field == 'winner'){
+                let winner = change.value;
+                //@ts-ignore
+                this.chessGame.current.displayWinner(winner);
+
+
+            }
         });
 
     }

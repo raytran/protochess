@@ -201,7 +201,7 @@ const PieceHandler = {
         if (this.playerNumPieceMap.has(playerNum)){
             for (let piece of this.playerNumPieceMap.get(playerNum)!){
                 let group = this.pieceMap.get(piece.id);
-                group!.evented = true;
+                if (group) group!.evented = true;
             }
         }
     },

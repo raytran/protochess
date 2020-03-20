@@ -72,6 +72,19 @@ export default class ChessGame extends Component<IProps> {
         PieceHandler.unlockPieces(playerNum);
     }
 
+    displayWinner(playerNum:number){
+        if (this.canvas){
+            var text = new fabric.Text(playerNum +' wins!', {
+                left: 0,
+                top: 0,
+                fill: 'black'
+            });
+            this.canvas.add(text);
+            text.center();
+            this.canvas.renderAll();
+        }
+    }
+
     render() {
         return (
             <div>

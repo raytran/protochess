@@ -10,6 +10,8 @@ export class GameState extends Schema{
     @type("number")
     whosTurn:number; //who's turn is it? --0 for white 1 for black 2.3..etc
     @type("number")
+    winner:number = -1;
+    @type("number")
     numPlayers:number;
     @type("boolean")
     useChecks:boolean;
@@ -101,6 +103,7 @@ export class GameState extends Schema{
             //Check if the other player is in checkmate
             if (this.getValidMoves(this.whosTurn).size == 0 ){
                 console.log("OTHER PLAYER CHECKMATE")
+                this.winner = targetPiece.owner;
             }
             return true;
         }else{
