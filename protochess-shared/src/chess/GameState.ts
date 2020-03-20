@@ -4,6 +4,7 @@ import {Movement} from "./Movement";
 import {Board} from "./Board";
 import {BoardLocation} from "./BoardLocation";
 import {PieceType} from "./PieceType";
+import {Player} from "../Player";
 
 export class GameState extends Schema{
     @type("number")
@@ -16,8 +17,8 @@ export class GameState extends Schema{
     useCheckmates:boolean;
     @type(Board)
     board:Board;
-    @type([Piece])
-    pieces: ArraySchema<Piece>;
+    @type({map:Piece})
+    pieces: MapSchema<Piece>;
 
     private piecesInternal:Set<Piece>; //copy of pieces used for temporary modifications
     private kingMap:Map<number,Piece>;
@@ -26,9 +27,9 @@ export class GameState extends Schema{
         this.useChecks = true;
         this.useCheckmates = true;
         this.kingMap = new Map<number, Piece>();
-        this.pieces = new ArraySchema<Piece>();
+        this.pieces = new MapSchema<Piece>();
         for (let piece of pieces){
-            this.pieces.push(piece);
+            this.pieces[piece.id] = piece;
 
             if (piece.pieceType == PieceType.King){
                 this.kingMap.set(piece.owner,piece);
@@ -39,6 +40,16 @@ export class GameState extends Schema{
         this.board = b;
         this.whosTurn = 0;
         this.numPlayers = 2;
+    }
+
+    assignPlayerNumbers(players:MapSchema<Player>){
+        let playerCounter = 0;
+        for (let id in players) {
+            const player: Player = players[id];
+            player.playerNum = playerCounter;
+            playerCounter++;
+            if (playerCounter >= this.numPlayers) break;
+        }
     }
 
     //Takes a turn, returning true if valid; false otherwise
@@ -63,27 +74,27 @@ export class GameState extends Schema{
 
 
         //Check if this moves is in the player's possible moves
-        let isValid = false;
+        let validMove = null;
         for (let move of this.getValidMoves(this.whosTurn).get(targetPiece)!){
             if (move.end.x == movement.end.x
             && move.end.y == movement.end.y
             && move.start.x == movement.start.x
             && move.start.y == movement.start.y){
-                isValid = true;
+                validMove = move;
+                break;
             }
         }
 
-        if (isValid){
+        if (validMove){
 
             //Make the move
-            if(movement.capturedPiece){
+            if(validMove.capturedPiece){
                 console.log("Piece captured");
-                this.piecesInternal.delete(movement.capturedPiece);
-                let deleteIndex = this.pieces.indexOf(movement.capturedPiece);
-                delete this.pieces[deleteIndex];
+                this.piecesInternal.delete(validMove.capturedPiece);
+                delete this.pieces[validMove.capturedPiece.id];
             }
 
-            targetPiece.location = movement.end;
+            targetPiece.location = validMove.end;
 
             //Next player's turn
             this.whosTurn = (this.whosTurn + 1) % this.numPlayers;
@@ -100,15 +111,12 @@ export class GameState extends Schema{
     //Returns a map of valid moves for this player
     getValidMoves(playerNumber:number){
         let possibleMoves = new Map<Piece,Set<Movement>>();
-        let inCheck = false;
-        if (this.getChecks().has(playerNumber)){
-            inCheck = true;
-        }
         for (let piece of this.getPiecesOfPlayer(playerNumber)){
-            if (!inCheck){
+            if (!this.useChecks){
                 possibleMoves.set(piece,piece.getPossibleMoves(this));
             }else{
                 //Check if this move would bring this player out of check
+                //Or bring the player into check
                 //Simulate move
                 let oldLocation = piece.location;
                 for (let possibleMove of piece.getPossibleMoves(this)){
@@ -143,7 +151,8 @@ export class GameState extends Schema{
 
     getPiecesOfPlayer(playerNum:number):Set<Piece>{
         let returnSet = new Set<Piece>();
-        for (let piece of this.pieces) {
+        for (let pieceId in this.pieces) {
+            let piece = this.pieces[pieceId];
             if (piece.owner == playerNum){
                 returnSet.add(piece);
             }

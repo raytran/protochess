@@ -1,21 +1,33 @@
 import * as Colyseus from "colyseus.js";
 // @ts-ignore
 import {Player} from "protochess-shared";
+import {ChangeEvent} from "react";
+import {Simulate} from "react-dom/test-utils";
 
 class ClientHandler {
     private client: Colyseus.Client;
     private room: Colyseus.Room | null;
     private chatListeners: Function[];
     private redirectListeners: Function[];
+    private pieceChangeListeners: Function[];
+    private playerNumListeners: Function[];
+    private pieceDeleteListeners: Function[];
+    private gameStateListeners: Function[];
     private playerChangeListeners: Function[];
     private players: any;
     private isLeader:boolean;
     private name:string;
+    private playerNum:number | null;
 
     constructor() {
         this.client = new Colyseus.Client('ws://'+window.location.hostname+':2567');
         this.room = null;
+        this.playerNum = null;
+        this.playerNumListeners = [];
+        this.pieceChangeListeners = [];
+        this.pieceDeleteListeners = [];
         this.redirectListeners = [];
+        this.gameStateListeners = [];
         this.chatListeners = [];
         this.playerChangeListeners = [];
         this.players = {};
@@ -66,10 +78,36 @@ class ClientHandler {
         return this.name;
     }
 
+    getPlayerNum(){
+
+        return this.playerNum;
+    }
+
     isConnected() {
         return this.room != null;
     }
 
+    addPlayerNumListener(func: Function) {
+        this.playerNumListeners.push(func);
+    }
+
+    removePlayerNumListener(func: Function) {
+        let index = this.playerNumListeners.indexOf(func);
+        if (index > -1) {
+            this.playerNumListeners.splice(index, 1);
+        }
+    }
+
+    addGameStateListener(func: Function) {
+        this.gameStateListeners.push(func);
+    }
+
+    removeGameStateListener(func: Function) {
+        let index = this.gameStateListeners.indexOf(func);
+        if (index > -1) {
+            this.gameStateListeners.splice(index, 1);
+        }
+    }
     addRedirectListener(func: Function) {
         this.redirectListeners.push(func);
     }
@@ -85,6 +123,35 @@ class ClientHandler {
         this.playerChangeListeners.push(func);
         if (this.room != null) {
             this.room.state.players.triggerAll();
+        }
+    }
+
+    addPieceChangeListener(func: Function) {
+        this.pieceChangeListeners.push(func);
+        if (this.room != null) {
+            this.room.state.gameState.pieces.triggerAll();
+        }
+    }
+
+    removePieceChangeListener(func: Function) {
+        let index = this.pieceChangeListeners.indexOf(func);
+        if (index > -1) {
+            this.pieceChangeListeners.splice(index, 1);
+        }
+    }
+
+
+    addPieceDeleteListener(func: Function) {
+        this.pieceDeleteListeners.push(func);
+        if (this.room != null) {
+            this.room.state.gameState.pieces.triggerAll();
+        }
+    }
+
+    removePieceDeleteListener(func: Function) {
+        let index = this.pieceDeleteListeners.indexOf(func);
+        if (index > -1) {
+            this.pieceDeleteListeners.splice(index, 1);
         }
     }
 
@@ -123,6 +190,7 @@ class ClientHandler {
         this.players = {};
 
 
+
         this.room.onMessage(message => {
             console.log(message);
             console.log(this.room!.state);
@@ -149,19 +217,43 @@ class ClientHandler {
                 for (let i = 0; i < this.redirectListeners.length; i++) {
                     this.redirectListeners[i]("startGame");
                 }
+
+
             }
         });
 
+        this.room.state.gameState.onChange = (changes:Colyseus.DataChange[])=>{
+            for (let i=0;i<this.gameStateListeners.length;i++){
+                this.gameStateListeners[i](changes);
+            }
+        };
+
         this.room.state.players.onChange = () => {
-            console.log(this.room!.state.players);
             this.updatePlayerChangeListeners();
         };
+
+
+        let this_ = this;
 
         this.room.state.players.onAdd = (player: Player, key: string) => {
             console.log(player.name + " has been added at " + key);
             if (key === this.room?.sessionId){
                 this.name = player.name;
             }
+
+            player.onChange = function(changes){
+                changes.forEach(change => {
+                    if (change.field == 'playerNum'){
+                        if (key === this_.room?.sessionId){
+                            this_.playerNum = change.value;
+                            for (let i=0;i<this_.playerNumListeners.length;i++){
+                                this_.playerNumListeners[i]();
+                            }
+                        }
+                    }
+                });
+            };
+
             this.players[key] = player;
             this.updatePlayerChangeListeners();
         };
@@ -170,7 +262,25 @@ class ClientHandler {
             console.log(player + "has been removed at" + key);
             delete this.players[key];
             this.updatePlayerChangeListeners();
-        }
+        };
+
+        //Need to do this in order to access inner properties
+        //i.e. need full sync before attaching listeners
+        this.room.onStateChange.once(()=>{
+            this.room!.state.gameState.pieces.onChange = (piece:any,key:any) =>{
+                for (let i=0;i<this.pieceChangeListeners.length;i++){
+                    this.pieceChangeListeners[i](piece);
+                }
+            };
+
+            this.room!.state.gameState.pieces.onRemove = (piece:any,key:any) =>{
+                for (let i=0;i<this.pieceChangeListeners.length;i++) {
+                    this.pieceDeleteListeners[i](piece);
+                }
+            };
+        });
+
+
     }
 
     private updatePlayerChangeListeners() {
@@ -191,6 +301,10 @@ class ClientHandler {
 
     startGame() {
         this.sendMessage({startGame:true});
+    }
+
+    requestMove(move: {id: string; x: number; y: number}) {
+        this.sendMessage({'takeTurn':true,move:move});
     }
 }
 

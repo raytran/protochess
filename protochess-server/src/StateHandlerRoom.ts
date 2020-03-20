@@ -1,5 +1,5 @@
 import {Client, Room} from "colyseus";
-import {State,Player} from "protochess-shared"
+import {Movement,BoardLocation,State,Player} from "protochess-shared"
 
 export class StateHandlerRoom extends Room<State> {
     maxClients = 4;
@@ -53,12 +53,30 @@ export class StateHandlerRoom extends Room<State> {
     }
 
     onMessage(client: Client, data: any) {
+        if (data['takeTurn']){
+            console.log(data['move'])
+            if (this.state.gameState.whosTurn == this.state.players[client.sessionId].playerNum
+                && this.state.gameState.pieces[data['move']['id']]){
+                    let piece = this.state.gameState.pieces[data['move']['id']];
+                    let startX = piece.location.x;
+                    let startY = piece.location.y;
+                    let endX = data['move']['x'];
+                    let endY = data['move']['y'];
+                    try {
+                        let startLoc = new BoardLocation(startX, startY);
+                        let endLoc = new BoardLocation(endX, endY);
+                        let movement = new Movement(startLoc, endLoc);
+                        this.state.gameState.takeTurn(movement);
+                    }catch (e) {
+                    }
+            }
+        }
         if (data['chatMsg']){
             this.broadcast({sender:client.sessionId, chatMsg:data['chatMsg']})
         }
         if (data['switchLeader']){
             if (client.sessionId === this.leaderSessionId
-            && data['switchLeader'] !== this.leaderSessionId){
+                && data['switchLeader'] !== this.leaderSessionId){
                 console.log("Leader wants to switch leaders");
                 this.switchLeader(data['switchLeader']);
             }
@@ -66,6 +84,9 @@ export class StateHandlerRoom extends Room<State> {
 
         if (data['startGame']){
             if (client.sessionId === this.leaderSessionId){
+                //Initalize game
+                //Assign player numbers
+                this.state.gameState.assignPlayerNumbers(this.state.players);
                 this.broadcast({startGame:true})
             }
         }

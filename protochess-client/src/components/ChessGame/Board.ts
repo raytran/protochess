@@ -1,30 +1,51 @@
 import {fabric} from "fabric";
 import {GameState} from "protochess-shared";
-import {Group} from "fabric/fabric-impl";
 const Board = {
-    loadBoard(canvas:fabric.Canvas, gameState:GameState,tileWidth:number,tileHeight:number){
-        let tileMap = new Map<string,fabric.Rect>();
+    tileMap: new Map<string,fabric.Rect>(),
+    canvas: null,
+    tileWidth: -1,
+    tileHeight: -1,
+    init(canvas:fabric.Canvas,tileWidth:number,tileHeight:number){
+        //@ts-ignore
+        this.canvas = canvas;
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
+    },
+    loadBoard(inverted:boolean, gameState:GameState){
         for (let tile of gameState.board.tiles!){
             let x = tile.location.x;
             let y = tile.location.y;
+            if (!inverted){
+                y = gameState.board.height - y - 1;
+            }
             let rect = new fabric.Rect({
-                left : x*tileWidth,
-                top : y*tileHeight,
-                width : tileWidth,
-                height : tileHeight,
+                left : x*this.tileWidth,
+                top : y*this.tileHeight,
+                width : this.tileWidth,
+                height : this.tileHeight,
                 fill : tile.tileTypeStr == 'b'? '#3c74c8' : '#9dfcff',
                 selectable:false,
                 evented:false,
             });
 
 
-            tileMap.set("X"+x+"Y"+y,rect);
+            this.tileMap.set("X"+x+"Y"+y,rect);
 
-            canvas.add(rect);
+            //@ts-ignore
+            this.canvas.add(rect);
             rect.moveTo(-9999);
         }
 
-        return tileMap;
+        return this.tileMap;
+    },
+
+    deleteAll() {
+        for (let key of this.tileMap.keys()) {
+            let value = this.tileMap.get(key);
+            //@ts-ignore
+            this.canvas.remove(value!);
+            this.tileMap.delete(key);
+        }
     }
 };
 

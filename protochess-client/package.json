@@ -19,6 +19,7 @@
     "colyseus": "^0.12.3",
     "colyseus.js": "^0.12.1",
     "fabric": "^4.0.0-beta.7",
+    "fabric-history": "^1.1.0",
     "protochess-shared": "file:../protochess-shared",
     "react": "^16.13.0",
     "react-bootstrap": "^1.0.0-beta.17",

@@ -5,6 +5,7 @@ import {GameState} from "./GameState";
 import {Movement} from "./Movement";
 import {PieceType} from "./PieceType";
 import {CapturePattern} from "./CapturePattern";
+import shortid from "shortid";
 
 export abstract class Piece extends Schema{
     @type("number")
@@ -13,12 +14,15 @@ export abstract class Piece extends Schema{
     location:BoardLocation;
     @type("string")
     pieceTypeStr:string;
+    @type("string")
+    id:string;
     //The movement patterns that this piece uses
     movementPatterns:MovementPattern[];
     capturePatterns:CapturePattern[];
     pieceType:PieceType;
     constructor(owner:number,location:BoardLocation) {
         super();
+        this.id = shortid.generate();
         this.pieceType = PieceType.Custom;
         this.owner = owner;
         this.movementPatterns = [];
