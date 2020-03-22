@@ -228,8 +228,8 @@ class ClientHandler {
             }
         };
 
-        this.room.state.players.onChange = () => {
-            this.updatePlayerChangeListeners();
+        this.room.state.players.onChange = (changes:Colyseus.DataChange[]) => {
+            this.updatePlayerChangeListeners(changes);
         };
 
 
@@ -268,13 +268,14 @@ class ClientHandler {
         //i.e. need full sync before attaching listeners
         this.room.onStateChange.once(()=>{
             this.room!.state.gameState.pieces.onChange = (piece:any,key:any) =>{
+                console.log(piece + " changed at " +key);
                 for (let i=0;i<this.pieceChangeListeners.length;i++){
                     this.pieceChangeListeners[i](piece);
                 }
             };
 
             this.room!.state.gameState.pieces.onRemove = (piece:any,key:any) =>{
-                for (let i=0;i<this.pieceChangeListeners.length;i++) {
+                for (let i=0;i<this.pieceDeleteListeners.length;i++) {
                     this.pieceDeleteListeners[i](piece);
                 }
             };
@@ -283,9 +284,9 @@ class ClientHandler {
 
     }
 
-    private updatePlayerChangeListeners() {
+    private updatePlayerChangeListeners(changes?:Colyseus.DataChange[]) {
         for (let i = 0; i < this.playerChangeListeners.length; i++) {
-            this.playerChangeListeners[i]();
+            this.playerChangeListeners[i](changes);
         }
     }
 

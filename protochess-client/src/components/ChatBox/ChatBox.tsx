@@ -35,11 +35,10 @@ export class ChatBox extends Component<Props, {}> {
 
     render() {
         return (
-
-            <Form.Group className={this.props.className ? this.props.className : ""} controlId="exampleForm.ControlTextarea1">
-                <Form.Control ref={this.displayBox as React.RefObject<any>} value={this.props.displayText} className="input-disabled" disabled as="textarea" rows="3"/>
-                <Form.Control ref={this.textInput as React.RefObject<any>} as="input" onKeyDown={this.onKeyDown} placeholder="Enter text to send"/>
-            </Form.Group>
+            <div className={this.props.className ? this.props.className : ""}>
+                <Form.Control id={'chat-textarea'} ref={this.displayBox as React.RefObject<any>} value={this.props.displayText} className="input-disabled" disabled as="textarea" rows="3"/>
+                <Form.Control id={'chat-input'} ref={this.textInput as React.RefObject<any>} as="input" onKeyDown={this.onKeyDown} placeholder="Enter text to send"/>
+            </div>
         )
     }
 }

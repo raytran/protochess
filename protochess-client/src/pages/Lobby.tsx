@@ -67,10 +67,12 @@ class Lobby extends Component<{},myState> {
     render() {
         if (this.state.showGame) {
             return(
-                <div>
-                    <ChessGameContainer/>
-                    <PlayerListContainer/>
-                    <ChatContainer/>
+                <div id={'content'}>
+                    <ChessGameContainer width={450} height={450}/>
+                    <div id={"auxillary"}>
+                        <PlayerListContainer/>
+                        <ChatContainer/>
+                    </div>
                 </div>
             );
         }else return (
@@ -80,7 +82,7 @@ class Lobby extends Component<{},myState> {
                 <div className='rowC'>
                     <PlayerListContainer/>
                     <ChatContainer/>
-                    {this.state.showStartGameButton ? <Button variant="warning" onClick={this.onStartGameButtonClick}>Start Game</Button> : ""}
+                    {this.state.showStartGameButton ? <Button id={'startGameButton'} variant="warning" onClick={this.onStartGameButtonClick}>Start Game</Button> : ""}
                 </div>
             </div>
         );

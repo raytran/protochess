@@ -1,11 +1,13 @@
 import React, {Component} from "react";
 import {GameState,Piece} from "protochess-shared";
 import {fabric} from "fabric";
-import "./ChessGame.css";
 import Board from "./Board";
 import PieceHandler from "./PieceHandler";
+import {ColorConstants} from "./ColorConstants";
 
 interface IProps {
+    width:number,
+    height:number,
     gameState:GameState,
     requestMove:Function,
     inverted:boolean | null,
@@ -35,9 +37,8 @@ export default class ChessGame extends Component<IProps> {
         let canvas = new fabric.Canvas('myCanvas');
         this.canvas = canvas;
         canvas.preserveObjectStacking = true;
-        canvas.setHeight(500);
-        canvas.setWidth(500);
-        canvas.setBackgroundColor('rgba(255, 255, 255, 1)', canvas.renderAll.bind(canvas));
+        canvas.setHeight(this.props.height);
+        canvas.setWidth(this.props.width);
         canvas.selection = false;
 
         canvas.on({
@@ -57,7 +58,16 @@ export default class ChessGame extends Component<IProps> {
     }
 
     updatePiece(piece:Piece) {
+        let group = PieceHandler.pieceMap.get(piece.id);
+        if (group){
+            let oldXY = Board.fabricPosToXY(this.props.inverted!,group!.left!,group!.top!);
+            Board.updateBoardHighlight(this.props.inverted!,oldXY['x'],oldXY['y'],ColorConstants.LAST_MOVE_HIGHLIGHT_COLOR);
+            console.log(oldXY['y']);
+
+        }
         PieceHandler.updatePiece(this.props.gameState,piece);
+        Board.updateBoardHighlight(this.props.inverted!,piece.location.x,piece.location.y,ColorConstants.LAST_MOVE_HIGHLIGHT_COLOR);
+        console.log(piece.location.y);
     }
 
     deletePiece(piece:Piece){
@@ -70,6 +80,11 @@ export default class ChessGame extends Component<IProps> {
 
     unlockPieces(playerNum:number){
         PieceHandler.unlockPieces(playerNum);
+    }
+
+    setTileHighlight(x:number,y:number,color:string){
+        Board.setHighlightColor(this.props.inverted!,x,y,color)
+
     }
 
     displayWinner(playerNum:number){
@@ -87,7 +102,7 @@ export default class ChessGame extends Component<IProps> {
 
     render() {
         return (
-            <div>
+            <div id="chessGame">
                 <canvas id="myCanvas"/>
             </div>
         );

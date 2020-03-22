@@ -13,6 +13,7 @@ import bKnight from "./Assets/chess_pieces/Chess_ndt45.svg";
 import wBishop from "./Assets/chess_pieces/Chess_blt45.svg";
 import bBishop from "./Assets/chess_pieces/Chess_bdt45.svg";
 import ChessGame from "./ChessGame";
+import {ColorConstants} from "./ColorConstants";
 
 const PieceHandler = {
     playerNumPieceMap: new Map<number,Set<Piece>>(),
@@ -29,7 +30,6 @@ const PieceHandler = {
     },
     loadPieces(playerNum:number,inverted:boolean,chessGame:ChessGame, gameState:GameState){
         this.inverted = inverted;
-        let this_ = this;
         for (let pieceId in gameState.pieces){
             let piece = gameState.pieces[pieceId];
 
@@ -97,7 +97,7 @@ const PieceHandler = {
                 }
 
                 let x = piece.location.x;
-                let y= piece.location.y;
+                let y = piece.location.y;
 
                 if (!inverted){
                     y = gameState.board.height - y - 1;
@@ -108,7 +108,7 @@ const PieceHandler = {
                     top : 0,
                     width : this_.tileWidth,
                     height : this_.tileHeight,
-                    fill : 'rgba(0,0,0,0)',
+                    fill : ColorConstants.TRANSPARENT,
                     originX:'center',
                     originY:'center'
                 });
@@ -144,7 +144,7 @@ const PieceHandler = {
                             group!.set('left',oldLeft);
                             group!.set('top',oldTop);
                             group!.setCoords();
-                            resolve("Stuff worked!");
+                            resolve();
                         });
 
                         promise.then(()=>{
@@ -156,13 +156,14 @@ const PieceHandler = {
                 group.hasBorders = false;
                 //@ts-ignore
                 this_.canvas.add(group);
-                //@ts-ignore
-                this_.canvas.renderAll();
             });
 
         }
+        //@ts-ignore
+        this.canvas.renderAll();
         return this.pieceMap;
     },
+
 
     updatePiece(gameState:GameState,piece:Piece){
         if (this.pieceMap.has(piece.id)){
@@ -173,11 +174,15 @@ const PieceHandler = {
             if (!this.inverted){
                 y = gameState.board.height - y - 1;
             }
-            group!.set('left',x*this.tileWidth);
-            group!.set('top',y*this.tileHeight);
-            group!.setCoords();
-            //@ts-ignore
-            this.canvas.renderAll();
+            let this_ = this;
+
+            group!.animate({'left':x*this.tileWidth,'top':y*this.tileHeight},{
+                //@ts-ignore
+                onChange: this_.canvas!.renderAll.bind(this_.canvas),
+                easing:fabric.util.ease.easeInOutQuad,
+                duration: 300
+            });
+
         }
     },
 

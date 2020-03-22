@@ -57,18 +57,28 @@ export class StateHandlerRoom extends Room<State> {
             console.log(data['move'])
             if (this.state.gameState.whosTurn == this.state.players[client.sessionId].playerNum
                 && this.state.gameState.pieces[data['move']['id']]){
-                    let piece = this.state.gameState.pieces[data['move']['id']];
-                    let startX = piece.location.x;
-                    let startY = piece.location.y;
-                    let endX = data['move']['x'];
-                    let endY = data['move']['y'];
-                    try {
-                        let startLoc = new BoardLocation(startX, startY);
-                        let endLoc = new BoardLocation(endX, endY);
-                        let movement = new Movement(startLoc, endLoc);
-                        this.state.gameState.takeTurn(movement);
-                    }catch (e) {
+                let piece = this.state.gameState.pieces[data['move']['id']];
+                let startX = piece.location.x;
+                let startY = piece.location.y;
+                let endX = data['move']['x'];
+                let endY = data['move']['y'];
+                try {
+                    let startLoc = new BoardLocation(startX, startY);
+                    let endLoc = new BoardLocation(endX, endY);
+                    let movement = new Movement(startLoc, endLoc);
+                    if (this.state.gameState.takeTurn(movement)){
+                        for (let id in this.state.players) {
+                            const player: Player = this.state.players[id];
+                            player.inCheck = false;
+                            for (let num of this.state.gameState.getChecks()){
+                                if (player.playerNum == num){
+                                    player.inCheck = true;
+                                }
+                            }
+                        }
                     }
+                }catch (e) {
+                }
             }
         }
         if (data['chatMsg']){

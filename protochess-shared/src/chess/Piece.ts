@@ -16,12 +16,15 @@ export abstract class Piece extends Schema{
     pieceTypeStr:string;
     @type("string")
     id:string;
+    @type("boolean")
+    movedBefore:boolean;
     //The movement patterns that this piece uses
     movementPatterns:MovementPattern[];
     capturePatterns:CapturePattern[];
     pieceType:PieceType;
     constructor(owner:number,location:BoardLocation) {
         super();
+        this.movedBefore = false;
         this.id = shortid.generate();
         this.pieceType = PieceType.Custom;
         this.owner = owner;
@@ -47,5 +50,14 @@ export abstract class Piece extends Schema{
     }
     toAscii(){
         return 'w';
+    }
+
+    getLocation(){
+        return this.location;
+    }
+
+    setLocation(loc:BoardLocation){
+        this.movedBefore = true;
+        this.location = loc;
     }
 }

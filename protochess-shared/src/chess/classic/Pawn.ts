@@ -7,11 +7,9 @@ import {PieceType} from "../PieceType";
 import {CapturePattern} from "../CapturePattern";
 
 export class Pawn extends Piece{
-    startLoc: BoardLocation;
     constructor(owner:number,location:BoardLocation) {
         super(owner,location);
         this.pieceType = PieceType.Pawn;
-        this.startLoc = location;
 
         if (owner == 0) {
             this.movementPatterns.push(new MovementPattern(owner, 0, 1, 2, true));
@@ -27,7 +25,7 @@ export class Pawn extends Piece{
     }
 
     getPossibleMoves(gameState: GameState): Set<Movement> {
-        if (!(this.startLoc.x  == this.location.x && this.startLoc.y == this.location.y)){
+        if (this.movedBefore){
             //Moved already; can't move by 2
             this.movementPatterns[0].stepMax = 1;
         }else{

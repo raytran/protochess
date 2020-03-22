@@ -12,4 +12,7 @@ export class Player extends Schema {
 
     @type("number") //0 for white, 1 for black, 2 for more etc
     playerNum = -1;
+
+    @type("boolean")
+    inCheck = false;
 }

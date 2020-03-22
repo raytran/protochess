@@ -31,7 +31,7 @@ export class GameState extends Schema{
         this.kingMap = new Map<number, Piece>();
         this.pieces = new MapSchema<Piece>();
         for (let piece of pieces){
-            this.pieces[piece.id] = piece;
+            this.pieces[piece.id] = piece.clone();
 
             if (piece.pieceType == PieceType.King){
                 this.kingMap.set(piece.owner,piece);
@@ -61,23 +61,23 @@ export class GameState extends Schema{
             return false;
 
         //Look for target piece
-        let targetPiece = null;
-        for (let piece of this.getPiecesOfPlayer(this.whosTurn)){
+        let targetPieceInternal = null;
+        for (let piece of this.getPiecesOfPlayerInternal(this.whosTurn)){
             if (piece.location.x == movement.start.x && piece.location.y == movement.start.y){
-                targetPiece = piece;
+                targetPieceInternal = piece;
                 break;
             }
         }
 
-        if (!targetPiece) return false;
+        if (!targetPieceInternal) return false;
         //Correct color
-        if (this.whosTurn != targetPiece.owner) return false;
+        if (this.whosTurn != targetPieceInternal.owner) return false;
 
 
 
         //Check if this moves is in the player's possible moves
         let validMove = null;
-        for (let move of this.getValidMoves(this.whosTurn).get(targetPiece)!){
+        for (let move of this.getValidMoves(this.whosTurn).get(targetPieceInternal)!){
             if (move.end.x == movement.end.x
             && move.end.y == movement.end.y
             && move.start.x == movement.start.x
@@ -96,14 +96,15 @@ export class GameState extends Schema{
                 delete this.pieces[validMove.capturedPiece.id];
             }
 
-            targetPiece.location = validMove.end;
+            targetPieceInternal.setLocation(validMove.end);
+            this.pieces[targetPieceInternal.id].setLocation(validMove.end);
 
             //Next player's turn
             this.whosTurn = (this.whosTurn + 1) % this.numPlayers;
             //Check if the other player is in checkmate
             if (this.getValidMoves(this.whosTurn).size == 0 ){
                 console.log("OTHER PLAYER CHECKMATE")
-                this.winner = targetPiece.owner;
+                this.winner = targetPieceInternal.owner;
             }
             return true;
         }else{
@@ -114,7 +115,7 @@ export class GameState extends Schema{
     //Returns a map of valid moves for this player
     getValidMoves(playerNumber:number){
         let possibleMoves = new Map<Piece,Set<Movement>>();
-        for (let piece of this.getPiecesOfPlayer(playerNumber)){
+        for (let piece of this.getPiecesOfPlayerInternal(playerNumber)){
             if (!this.useChecks){
                 possibleMoves.set(piece,piece.getPossibleMoves(this));
             }else{
@@ -152,10 +153,9 @@ export class GameState extends Schema{
 
     }
 
-    getPiecesOfPlayer(playerNum:number):Set<Piece>{
+    getPiecesOfPlayerInternal(playerNum:number):Set<Piece>{
         let returnSet = new Set<Piece>();
-        for (let pieceId in this.pieces) {
-            let piece = this.pieces[pieceId];
+        for (let piece of this.piecesInternal) {
             if (piece.owner == playerNum){
                 returnSet.add(piece);
             }

@@ -1,13 +1,45 @@
+#chessGame{
+    width:450px;
+    height:450px;
+}
+
+
+#content{
+    display:flex;
+    align-items:stretch;
+}
+#auxillary{
+    display:flex;
+    flex-direction: column;
+    padding-left:10px;
+    flex-grow:2;
+}
+
 .chat{
-    display:inline-block;
-    vertical-align: top;
-    padding-top: 5px;
+    position: relative;
+    margin-top:5px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     text-align:left;
-    width:100%;
+    flex-grow: 2;
+}
+
+
+#chat-textarea{
+    flex-grow: 3;
+}
+#chat-input{
+    position: relative;
+    align-self: flex-end;
+    margin-bottom: 0;
 }
 .playerList{
-    display:inline-block;
     vertical-align: top;
     text-align:left;
     background-color: white;
+}
+
+#startGameButton{
+    margin-top:5px;
 }
