@@ -5,13 +5,14 @@ import {BoardLocation} from "./BoardLocation";
 import {ArraySchema, Schema, type} from "@colyseus/schema";
 
 //Represents just the tiles NOT pieces
-export class Board extends Schema{
-    @type([ Tile ])
-    tiles:ArraySchema<Tile> | null;
+export class Board extends Schema {
+    @type([Tile])
+    tiles: ArraySchema<Tile> | null;
     @type('number')
-    width:number;
+    width: number;
     @type('number')
-    height:number;
+    height: number;
+
     constructor() {
         super();
         this.width = 8;
@@ -19,27 +20,9 @@ export class Board extends Schema{
         this.tiles = new ArraySchema<Tile>();
         this.buildClassicBoard();
     }
-    //Build the board to a classic board
-    private buildClassicBoard():void{
-        this.width = 8;
-        this.height = 8;
-        this.tiles = new ArraySchema<Tile>();
 
-        for (let i=0;i<this.height;i++){
-            for (let j=0;j<this.width;j++){
-                if ((i+j) % 2 ==0){
-                    let tile = new Tile(new BoardLocation(j,i),TileType.Black);
-                    this.tiles.push(tile);
-                }else{
-                    let tile = new Tile(new BoardLocation(j,i),TileType.White);
-                    this.tiles.push(tile);
-                }
-            }
-        }
-    }
-
-    onBoard(boardLocation:BoardLocation){
-        if (this.width == null || this.height == null){
+    onBoard(boardLocation: BoardLocation) {
+        if (this.width == null || this.height == null) {
             throw new Error("Board is not built");
         }
         return (boardLocation.x >= 0
@@ -49,26 +32,47 @@ export class Board extends Schema{
     }
 
     //Prints the board tiles
-    toAscii():string{
-        if (this.width == null || this.height == null){
+    toAscii(): string {
+        if (this.width == null || this.height == null) {
             throw new Error("Board is not built");
         }
         let toReturn = "";
-        for (let i=this.height-1;i>=0;i--){
-            for (let j=0;j<this.width;j++){
-                toReturn += this.getTile(j,i)!.toAscii();
+        for (let i = this.height - 1; i >= 0; i--) {
+            for (let j = 0; j < this.width; j++) {
+                toReturn += this.getTile(j, i)!.toAscii();
             }
-            toReturn += i+'\n';
+            toReturn += i + '\n';
         }
         return toReturn;
     }
-    getTile(x:number,y:number){
+
+    getTile(x: number, y: number) {
         if (this.tiles != null)
-            return this.tiles[y*this.width + x];
+            return this.tiles[y * this.width + x];
     }
+
     //Instantiate
-    build(){
+    build() {
         this.buildClassicBoard();
+    }
+
+    //Build the board to a classic board
+    private buildClassicBoard(): void {
+        this.width = 8;
+        this.height = 8;
+        this.tiles = new ArraySchema<Tile>();
+
+        for (let i = 0; i < this.height; i++) {
+            for (let j = 0; j < this.width; j++) {
+                if ((i + j) % 2 == 0) {
+                    let tile = new Tile(new BoardLocation(j, i), TileType.Black);
+                    this.tiles.push(tile);
+                } else {
+                    let tile = new Tile(new BoardLocation(j, i), TileType.White);
+                    this.tiles.push(tile);
+                }
+            }
+        }
     }
 
 }

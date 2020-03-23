@@ -1,8 +1,6 @@
 import * as Colyseus from "colyseus.js";
 // @ts-ignore
 import {Player} from "protochess-shared";
-import {ChangeEvent} from "react";
-import {Simulate} from "react-dom/test-utils";
 
 class ClientHandler {
     private client: Colyseus.Client;
@@ -15,12 +13,12 @@ class ClientHandler {
     private gameStateListeners: Function[];
     private playerChangeListeners: Function[];
     private players: any;
-    private isLeader:boolean;
-    private name:string;
-    private playerNum:number | null;
+    private isLeader: boolean;
+    private name: string;
+    private playerNum: number | null;
 
     constructor() {
-        this.client = new Colyseus.Client('ws://'+window.location.hostname+':2567');
+        this.client = new Colyseus.Client('ws://' + window.location.hostname + ':2567');
         this.room = null;
         this.playerNum = null;
         this.playerNumListeners = [];
@@ -31,11 +29,11 @@ class ClientHandler {
         this.chatListeners = [];
         this.playerChangeListeners = [];
         this.players = {};
-        this.isLeader=false;
+        this.isLeader = false;
         this.name = "";
     }
 
-    getRoom(){
+    getRoom() {
         if (this.room)
             return this.room;
     }
@@ -74,11 +72,11 @@ class ClientHandler {
         else return 0;
     }
 
-    getName(){
+    getName() {
         return this.name;
     }
 
-    getPlayerNum(){
+    getPlayerNum() {
 
         return this.playerNum;
     }
@@ -108,6 +106,7 @@ class ClientHandler {
             this.gameStateListeners.splice(index, 1);
         }
     }
+
     addRedirectListener(func: Function) {
         this.redirectListeners.push(func);
     }
@@ -172,17 +171,31 @@ class ClientHandler {
             this.chatListeners.splice(index, 1);
         }
     }
-    getPlayers():Player[] {
+
+    getPlayers(): Player[] {
         return Object.values(this.players);
     }
 
-    sendMessage(data:any){
-        if (this.room){
+    sendMessage(data: any) {
+        if (this.room) {
             this.room.send(data);
         }
     }
-    getIsLeader(){
+
+    getIsLeader() {
         return this.isLeader;
+    }
+
+    switchLeader(newLeaderId: string) {
+        this.sendMessage({switchLeader: newLeaderId});
+    }
+
+    startGame() {
+        this.sendMessage({startGame: true});
+    }
+
+    requestMove(move: { id: string; x: number; y: number }) {
+        this.sendMessage({'takeTurn': true, move: move});
     }
 
     private updateRoom(newRoom: Colyseus.Room) {
@@ -190,20 +203,19 @@ class ClientHandler {
         this.players = {};
 
 
-
         this.room.onMessage(message => {
             console.log(message);
             console.log(this.room!.state);
-            if (message['leaderChange']){
+            if (message['leaderChange']) {
                 this.isLeader = false;
-                if (this.room?.sessionId==message['leaderChange']){
+                if (this.room?.sessionId == message['leaderChange']) {
                     this.isLeader = true;
                     console.log("I AM THE LEADER");
                     this.updatePlayerChangeListeners();
                 }
 
             }
-            if (message['chatMsg']){
+            if (message['chatMsg']) {
                 message['senderName'] = this.players[message['sender']].name;
                 this.updateChatListeners(message);
             }
@@ -213,7 +225,7 @@ class ClientHandler {
                 }
             }
 
-            if (message['startGame']){
+            if (message['startGame']) {
                 for (let i = 0; i < this.redirectListeners.length; i++) {
                     this.redirectListeners[i]("startGame");
                 }
@@ -222,13 +234,13 @@ class ClientHandler {
             }
         });
 
-        this.room.state.gameState.onChange = (changes:Colyseus.DataChange[])=>{
-            for (let i=0;i<this.gameStateListeners.length;i++){
+        this.room.state.gameState.onChange = (changes: Colyseus.DataChange[]) => {
+            for (let i = 0; i < this.gameStateListeners.length; i++) {
                 this.gameStateListeners[i](changes);
             }
         };
 
-        this.room.state.players.onChange = (changes:Colyseus.DataChange[]) => {
+        this.room.state.players.onChange = (changes: Colyseus.DataChange[]) => {
             this.updatePlayerChangeListeners(changes);
         };
 
@@ -237,16 +249,16 @@ class ClientHandler {
 
         this.room.state.players.onAdd = (player: Player, key: string) => {
             console.log(player.name + " has been added at " + key);
-            if (key === this.room?.sessionId){
+            if (key === this.room?.sessionId) {
                 this.name = player.name;
             }
 
-            player.onChange = function(changes){
+            player.onChange = function (changes) {
                 changes.forEach(change => {
-                    if (change.field == 'playerNum'){
-                        if (key === this_.room?.sessionId){
+                    if (change.field == 'playerNum') {
+                        if (key === this_.room?.sessionId) {
                             this_.playerNum = change.value;
-                            for (let i=0;i<this_.playerNumListeners.length;i++){
+                            for (let i = 0; i < this_.playerNumListeners.length; i++) {
                                 this_.playerNumListeners[i]();
                             }
                         }
@@ -266,16 +278,16 @@ class ClientHandler {
 
         //Need to do this in order to access inner properties
         //i.e. need full sync before attaching listeners
-        this.room.onStateChange.once(()=>{
-            this.room!.state.gameState.pieces.onChange = (piece:any,key:any) =>{
-                console.log(piece + " changed at " +key);
-                for (let i=0;i<this.pieceChangeListeners.length;i++){
+        this.room.onStateChange.once(() => {
+            this.room!.state.gameState.pieces.onChange = (piece: any, key: any) => {
+                console.log(piece + " changed at " + key);
+                for (let i = 0; i < this.pieceChangeListeners.length; i++) {
                     this.pieceChangeListeners[i](piece);
                 }
             };
 
-            this.room!.state.gameState.pieces.onRemove = (piece:any,key:any) =>{
-                for (let i=0;i<this.pieceDeleteListeners.length;i++) {
+            this.room!.state.gameState.pieces.onRemove = (piece: any, key: any) => {
+                for (let i = 0; i < this.pieceDeleteListeners.length; i++) {
                     this.pieceDeleteListeners[i](piece);
                 }
             };
@@ -284,28 +296,16 @@ class ClientHandler {
 
     }
 
-    private updatePlayerChangeListeners(changes?:Colyseus.DataChange[]) {
+    private updatePlayerChangeListeners(changes?: Colyseus.DataChange[]) {
         for (let i = 0; i < this.playerChangeListeners.length; i++) {
             this.playerChangeListeners[i](changes);
         }
     }
 
-    private updateChatListeners(data:any) {
+    private updateChatListeners(data: any) {
         for (let i = 0; i < this.chatListeners.length; i++) {
             this.chatListeners[i](data);
         }
-    }
-
-    switchLeader(newLeaderId: string) {
-        this.sendMessage({switchLeader:newLeaderId});
-    }
-
-    startGame() {
-        this.sendMessage({startGame:true});
-    }
-
-    requestMove(move: {id: string; x: number; y: number}) {
-        this.sendMessage({'takeTurn':true,move:move});
     }
 }
 

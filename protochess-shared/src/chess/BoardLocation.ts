@@ -1,17 +1,19 @@
 //X-Y point
 import {Schema, type} from "@colyseus/schema";
 
-export class BoardLocation extends Schema{
+export class BoardLocation extends Schema {
     @type("number")
-    x:number;
+    x: number;
     @type("number")
-    y:number;
-    constructor(x:number,y:number) {
+    y: number;
+
+    constructor(x: number, y: number) {
         super();
-        this.x=x;
-        this.y=y;
+        this.x = x;
+        this.y = y;
     }
-    toString(){
+
+    toString() {
         return this.x + " " + this.y;
     }
 }

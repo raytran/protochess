@@ -1,6 +1,7 @@
-#headerWrap{
+#headerWrap {
     display: inline;
 }
+
 body {
     background-color: #FFFFFF;
     padding-left: 40px;
@@ -12,9 +13,10 @@ h1, h2, p, ul, li {
     font-family: sans-serif;
 }
 
-ul{
+ul {
     list-style-type: none;
 }
+
 ul.header li {
     display: inline;
     list-style-type: none;
@@ -34,8 +36,8 @@ ul.header li a {
     display: inline-block;
 }
 
-#title{
-    color:black;
+#title {
+    color: black;
     font-weight: bold;
     text-decoration: none;
     padding: 20px;

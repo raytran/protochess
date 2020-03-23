@@ -4,26 +4,27 @@ import {GameState} from "./GameState";
 import {Movement} from "./Movement";
 import {BoardLocation} from "./BoardLocation";
 
-export class GameMaster{
-    gameState:GameState;
+export class GameMaster {
+    gameState: GameState;
+
     constructor() {
         let board = new Board();
         let pieces = PieceBuilder.classicSet();
-        this.gameState = new GameState(pieces,board);
+        this.gameState = new GameState(pieces, board);
     }
 
-    makeMove(x0:number,y0:number,xf:number,yf:number){
+    makeMove(x0: number, y0: number, xf: number, yf: number) {
         try {
             let startLoc = new BoardLocation(x0, y0);
             let endLoc = new BoardLocation(xf, yf);
             let movement = new Movement(startLoc, endLoc);
             return this.gameState.takeTurn(movement);
-        }catch (e) {
+        } catch (e) {
             return false;
         }
     }
 
-    toAscii(){
+    toAscii() {
         return this.gameState.toAscii();
     }
 }

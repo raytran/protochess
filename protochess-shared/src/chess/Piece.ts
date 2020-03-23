@@ -7,22 +7,23 @@ import {PieceType} from "./PieceType";
 import {CapturePattern} from "./CapturePattern";
 import shortid from "shortid";
 
-export abstract class Piece extends Schema{
+export abstract class Piece extends Schema {
     @type("number")
-    owner:number; //who owns this piece? 0 for white, 1 for black 2......
+    owner: number; //who owns this piece? 0 for white, 1 for black 2......
     @type(BoardLocation)
-    location:BoardLocation;
+    location: BoardLocation;
     @type("string")
-    pieceTypeStr:string;
+    pieceTypeStr: string;
     @type("string")
-    id:string;
+    id: string;
     @type("boolean")
-    movedBefore:boolean;
+    movedBefore: boolean;
     //The movement patterns that this piece uses
-    movementPatterns:MovementPattern[];
-    capturePatterns:CapturePattern[];
-    pieceType:PieceType;
-    constructor(owner:number,location:BoardLocation) {
+    movementPatterns: MovementPattern[];
+    capturePatterns: CapturePattern[];
+    pieceType: PieceType;
+
+    constructor(owner: number, location: BoardLocation) {
         super();
         this.movedBefore = false;
         this.id = shortid.generate();
@@ -33,9 +34,10 @@ export abstract class Piece extends Schema{
         this.capturePatterns = [];
         this.pieceTypeStr = this.toAscii();
     }
-    getPossibleMoves(gameState:GameState):Set<Movement>{
+
+    getPossibleMoves(gameState: GameState): Set<Movement> {
         if (this.location) {
-            let returnMoves:Movement[] = [];
+            let returnMoves: Movement[] = [];
             for (let pattern of this.movementPatterns) {
                 returnMoves.push(...Array.from(pattern.getPossibleMoves(this.location, gameState)));
             }
@@ -44,19 +46,20 @@ export abstract class Piece extends Schema{
             }
 
             return new Set<Movement>(returnMoves);
-        }else{
+        } else {
             return new Set<Movement>();
         }
     }
-    toAscii(){
+
+    toAscii() {
         return 'w';
     }
 
-    getLocation(){
+    getLocation() {
         return this.location;
     }
 
-    setLocation(loc:BoardLocation){
+    setLocation(loc: BoardLocation) {
         this.movedBefore = true;
         this.location = loc;
     }

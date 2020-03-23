@@ -3,11 +3,11 @@ import Button from 'react-bootstrap/Button';
 import {ListGroupItem} from "react-bootstrap";
 
 interface MyProps {
-    playerId:string;
-    playerName:string;
-    isLeader:boolean;
-    showMakeLeaderButton:boolean;
-    handleOnClick:(otherId:string)=>any;
+    playerId: string;
+    playerName: string;
+    isLeader: boolean;
+    showMakeLeaderButton: boolean;
+    handleOnClick: (otherId: string) => any;
 }
 
 export default class PlayerEntry extends Component<MyProps> {
@@ -15,19 +15,21 @@ export default class PlayerEntry extends Component<MyProps> {
         super(props);
         this.onClick = this.onClick.bind(this);
     }
-    private onClick(){
-        this.props.handleOnClick(this.props.playerId);
-    }
 
     render() {
-        return(
+        return (
             <ListGroupItem>
                 {!this.props.isLeader && this.props.showMakeLeaderButton ?
-                    <Button className="h-100" onClick={this.onClick} variant="secondary" size="sm">Make Leader</Button>:""}
+                    <Button className="h-100" onClick={this.onClick} variant="secondary" size="sm">Make
+                        Leader</Button> : ""}
                 {this.props.isLeader ? <b> Leader: </b> : " "}
                 {this.props.playerName}
             </ListGroupItem>
         )
+    }
+
+    private onClick() {
+        this.props.handleOnClick(this.props.playerId);
     }
 }
 

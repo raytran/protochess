@@ -1,4 +1,4 @@
-export enum TileType{
+export enum TileType {
     Black,
     White,
 }

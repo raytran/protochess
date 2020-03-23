@@ -15,7 +15,7 @@ class Home extends Component<{}, OwnState> {
         super(props);
         let this_ = this;
 
-        function onGameReady(type:string) {
+        function onGameReady(type: string) {
             if (type === "redirectChallenger") {
                 this_.setState({'redirect': "/roomId/" + ClientHandler.getRoomId()});
             }

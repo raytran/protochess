@@ -6,29 +6,29 @@ import {Movement} from "../Movement";
 import {PieceType} from "../PieceType";
 import {CapturePattern} from "../CapturePattern";
 
-export class Pawn extends Piece{
-    constructor(owner:number,location:BoardLocation) {
-        super(owner,location);
+export class Pawn extends Piece {
+    constructor(owner: number, location: BoardLocation) {
+        super(owner, location);
         this.pieceType = PieceType.Pawn;
 
         if (owner == 0) {
             this.movementPatterns.push(new MovementPattern(owner, 0, 1, 2, true));
-            this.capturePatterns.push(new CapturePattern(owner,-1,1,1,true));
-            this.capturePatterns.push(new CapturePattern(owner,1,1,1,true));
+            this.capturePatterns.push(new CapturePattern(owner, -1, 1, 1, true));
+            this.capturePatterns.push(new CapturePattern(owner, 1, 1, 1, true));
 
-        }else{
+        } else {
             this.movementPatterns.push(new MovementPattern(owner, 0, -1, 2, true));
-            this.capturePatterns.push(new CapturePattern(owner,-1,-1,1,true));
-            this.capturePatterns.push(new CapturePattern(owner,1,-1,1,true));
+            this.capturePatterns.push(new CapturePattern(owner, -1, -1, 1, true));
+            this.capturePatterns.push(new CapturePattern(owner, 1, -1, 1, true));
         }
 
     }
 
     getPossibleMoves(gameState: GameState): Set<Movement> {
-        if (this.movedBefore){
+        if (this.movedBefore) {
             //Moved already; can't move by 2
             this.movementPatterns[0].stepMax = 1;
-        }else{
+        } else {
             this.movementPatterns[0].stepMax = 2;
         }
 

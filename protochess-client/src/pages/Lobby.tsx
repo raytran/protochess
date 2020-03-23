@@ -7,42 +7,39 @@ import {Player} from 'protochess-shared';
 import './Lobby.css';
 import {Button} from "react-bootstrap";
 
-interface myState{
+interface myState {
     displayText: string;
-    name:string;
+    name: string;
     connectedUsers: Player[] | null;
-    showStartGameButton:boolean;
-    showGame:boolean | null;
+    showStartGameButton: boolean;
+    showGame: boolean | null;
 }
-class Lobby extends Component<{},myState> {
+
+class Lobby extends Component<{}, myState> {
     constructor(props: {}) {
         super(props);
         let roomId = "";
         try {
             roomId = "" + window.location.href.match(/roomId\/([a-zA-Z0-9\-_]+)/)![1];
             console.log(roomId);
-            this.state = {showGame:null, showStartGameButton:false, displayText: roomId, name: "", connectedUsers: null };
+            this.state = {
+                showGame: null,
+                showStartGameButton: false,
+                displayText: roomId,
+                name: "",
+                connectedUsers: null
+            };
         } catch (err) {
-            this.state = {showGame: null, showStartGameButton:false, displayText: "Url error", name: "" ,connectedUsers: null};
+            this.state = {
+                showGame: null,
+                showStartGameButton: false,
+                displayText: "Url error",
+                name: "",
+                connectedUsers: null
+            };
         }
         this.onPlayerChange = this.onPlayerChange.bind(this);
         this.onStartGame = this.onStartGame.bind(this);
-    }
-
-    private onPlayerChange():void{
-
-        let isLeader = ClientHandler.getIsLeader();
-        this.setState({showStartGameButton:isLeader, name:ClientHandler.getName()});
-    }
-
-    private onStartGameButtonClick(){
-        ClientHandler.startGame();
-    }
-
-    private onStartGame(type:string) {
-        if (type === "startGame") {
-            this.setState({showGame: true });
-        }
     }
 
     componentDidMount(): void {
@@ -66,26 +63,46 @@ class Lobby extends Component<{},myState> {
 
     render() {
         if (this.state.showGame) {
-            return(
+            return (
                 <div id={'content'}>
-                    <ChessGameContainer width={450} height={450}/>
+                    <div style={{flexShrink: 0, flexGrow: 0}} id={'chessGame'}>
+                        <ChessGameContainer width={450} height={450}/>
+                    </div>
                     <div id={"auxillary"}>
                         <PlayerListContainer/>
                         <ChatContainer/>
                     </div>
                 </div>
             );
-        }else return (
+        } else return (
             <div>
                 <h2>Lobby — {this.state.displayText} — {this.state.name} </h2>
                 <h4>Connected Users: </h4>
                 <div className='rowC'>
                     <PlayerListContainer/>
                     <ChatContainer/>
-                    {this.state.showStartGameButton ? <Button id={'startGameButton'} variant="warning" onClick={this.onStartGameButtonClick}>Start Game</Button> : ""}
+                    {this.state.showStartGameButton ?
+                        <Button id={'startGameButton'} variant="warning" onClick={this.onStartGameButtonClick}>Start
+                            Game</Button> : ""}
                 </div>
             </div>
         );
+    }
+
+    private onPlayerChange(): void {
+
+        let isLeader = ClientHandler.getIsLeader();
+        this.setState({showStartGameButton: isLeader, name: ClientHandler.getName()});
+    }
+
+    private onStartGameButtonClick() {
+        ClientHandler.startGame();
+    }
+
+    private onStartGame(type: string) {
+        if (type === "startGame") {
+            this.setState({showGame: true});
+        }
     }
 }
 

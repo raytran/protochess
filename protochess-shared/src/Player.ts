@@ -2,7 +2,7 @@ import {Schema, type} from "@colyseus/schema";
 
 export class Player extends Schema {
     @type("boolean")
-    isLeader= false;
+    isLeader = false;
 
     @type("string")
     id = "";

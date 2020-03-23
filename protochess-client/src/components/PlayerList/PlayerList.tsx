@@ -4,10 +4,10 @@ import PlayerEntry from './PlayerEntry';
 import {ListGroup} from "react-bootstrap";
 
 interface MyProps {
-    players:Player[] | null;
-    className:string | null;
-    showMakeLeaderButton:boolean;
-    handleLeaderButtonClick:(arg0:string)=>any
+    players: Player[] | null;
+    className: string | null;
+    showMakeLeaderButton: boolean;
+    handleLeaderButtonClick: (arg0: string) => any
 }
 
 export class PlayerList extends Component<MyProps> {
@@ -16,11 +16,11 @@ export class PlayerList extends Component<MyProps> {
     }
 
     render() {
-        return(
-            <div className = {this.props.className ? this.props.className : ""}>
+        return (
+            <div className={this.props.className ? this.props.className : ""}>
                 <ListGroup horizontal>
                     {
-                        this.props.players ? this.props.players.map((item:Player,index:number)=>(
+                        this.props.players ? this.props.players.map((item: Player, index: number) => (
                             <PlayerEntry key={item.id ? item.id : index}
                                          playerId={item.id}
                                          playerName={item.name}

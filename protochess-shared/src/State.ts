@@ -11,13 +11,13 @@ export class State extends Schema {
     players = new MapSchema<Player>();
 
     @type(GameState)
-    gameState = new GameState(PieceBuilder.classicSet(),new Board());
+    gameState = new GameState(PieceBuilder.classicSet(), new Board());
 
 
-    createPlayer(id: string,isLeader:boolean,name:string){
+    createPlayer(id: string, isLeader: boolean, name: string) {
         let newPlayer = new Player();
         newPlayer.isLeader = isLeader;
-        if (name=="") newPlayer.name = anonymus.create()[0];
+        if (name == "") newPlayer.name = anonymus.create()[0];
         else newPlayer.name = name;
 
         newPlayer.id = id;
