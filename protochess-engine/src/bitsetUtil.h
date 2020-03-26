@@ -11,17 +11,19 @@
 
 //Bitboard utility functions
 namespace bitsetUtil {
-    boost::dynamic_bitset<>
-    eastOne(const boost::dynamic_bitset<> &in, const Board &board);
+    boost::dynamic_bitset<> translate(Location delta, const boost::dynamic_bitset<> &in, const Board &board);
 
     boost::dynamic_bitset<>
-    westOne(const boost::dynamic_bitset<> &in, const Board &board);
+    east(int amt, const boost::dynamic_bitset<> &in, const Board &board);
 
     boost::dynamic_bitset<>
-    northOne(const boost::dynamic_bitset<> &in, const Board &board);
+    west(int amt, const boost::dynamic_bitset<> &in, const Board &board);
 
     boost::dynamic_bitset<>
-    southOne(const boost::dynamic_bitset<> &in, const Board &board);
+    north(int amt, const boost::dynamic_bitset<> &in, const Board &board);
+
+    boost::dynamic_bitset<>
+    south(int amt, const boost::dynamic_bitset<> &in, const Board &board);
 
     boost::dynamic_bitset<>
     northEastOne(const boost::dynamic_bitset<> &in, const Board &board);
@@ -38,6 +40,10 @@ namespace bitsetUtil {
     std::string bitsetToString(const boost::dynamic_bitset<> &bitset, const Dimensions &dimensions);
 
     int getIndex(int width, Location loc);
+
+    Location getLoc(int width, int index);
+
+    unsigned long findLast(const boost::dynamic_bitset<> &bitset);
 }
 
 

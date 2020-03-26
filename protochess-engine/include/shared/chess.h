@@ -14,7 +14,9 @@ private:
     int whosTurn = 0;
     Dimensions dimensions;
 
-    std::map<char, boost::dynamic_bitset<>> charToPieceBitsets(const char *pieces);
+    std::map<boost::uuids::uuid, Piece> charToPieceBitsets(const char *pieces);
+
+    std::map<char, MovementPattern> charToKnownMP(const char *pieces);
 
 public:
     Chess();

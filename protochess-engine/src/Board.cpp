@@ -17,6 +17,31 @@ Board::Board(int width, int height) : dimensions({width, height}),
     }
 
 
+    //Initialize left & right file masks
+    boost::dynamic_bitset<> cumulativeLeft(width * height);
+    boost::dynamic_bitset<> cumulativeRight(width * height);
+    for (int i = 0; i < width; i++) {
+        boost::dynamic_bitset<> newLeft(width * height);
+        boost::dynamic_bitset<> newRight(width * height);
+        newLeft |= cumulativeLeft;
+        newRight |= cumulativeRight;
+
+        for (int j = 0; j < height; j++) {
+            newLeft.set(bitsetUtil::getIndex(width, {i, j}), true);
+            newRight.set(bitsetUtil::getIndex(width, {width - i - 1, j}), true);
+        }
+        rightMasks.push_back(newRight);
+        leftMasks.push_back(newLeft);
+        cumulativeLeft |= newLeft;
+        cumulativeRight |= newRight;
+
+    }
+
+
+
+
+
+
     //Initialize ray attacks
     rayAttacks.insert({NORTH, std::vector<boost::dynamic_bitset<>>()});
     rayAttacks.insert({EAST, std::vector<boost::dynamic_bitset<>>()});
@@ -38,15 +63,6 @@ Board::Board(int width, int height) : dimensions({width, height}),
     rayAttacks.at(SOUTHEAST).assign(numBits, boost::dynamic_bitset<>(numBits));
     rayAttacks.at(SOUTHWEST).assign(numBits, boost::dynamic_bitset<>(numBits));
 
-    std::vector<boost::dynamic_bitset<>> &north = rayAttacks.at(NORTH);
-    std::vector<boost::dynamic_bitset<>> &east = rayAttacks.at(EAST);
-    std::vector<boost::dynamic_bitset<>> &south = rayAttacks.at(SOUTH);
-    std::vector<boost::dynamic_bitset<>> &west = rayAttacks.at(WEST);
-
-    std::vector<boost::dynamic_bitset<>> &northEast = rayAttacks.at(NORTHEAST);
-    std::vector<boost::dynamic_bitset<>> &northWest = rayAttacks.at(NORTHWEST);
-    std::vector<boost::dynamic_bitset<>> &southEast = rayAttacks.at(SOUTHEAST);
-    std::vector<boost::dynamic_bitset<>> &southWest = rayAttacks.at(SOUTHWEST);
     //Generate lookup tables
     //lookup tables do not contain same square
     for (int x = 0; x < width; x++) {
@@ -56,14 +72,14 @@ Board::Board(int width, int height) : dimensions({width, height}),
             //NORTH LOOKUP TABLE
             for (int j = y + 1; j < height; j++) {
                 int newIndex = bitsetUtil::getIndex(width, {x, j});
-                north.at(index).set(newIndex, true);
+                rayAttacks.at(NORTH)[index].set(newIndex, true);
             }
 
 
             //SOUTH LOOKUP TABLE
             for (int j = y - 1; j >= 0; j--) {
                 int newIndex = bitsetUtil::getIndex(width, {x, j});
-                south.at(index).set(newIndex, true);
+                rayAttacks.at(SOUTH)[index].set(newIndex, true);
             }
 
 
@@ -71,14 +87,14 @@ Board::Board(int width, int height) : dimensions({width, height}),
             //EAST LOOKUP TABLE
             for (int j = x + 1; j < width; j++) {
                 int newIndex = bitsetUtil::getIndex(width, {j, y});
-                east.at(index).set(newIndex, true);
+                rayAttacks.at(EAST)[index].set(newIndex, true);
             }
 
 
             //WEST LOOKUP TABLE
             for (int j = x - 1; j >= 0; j--) {
                 int newIndex = bitsetUtil::getIndex(width, {j, y});
-                west.at(index).set(newIndex, true);
+                rayAttacks.at(WEST)[index].set(newIndex, true);
             }
 
             //NORTHEAST LOOKUP TABLE
@@ -86,7 +102,7 @@ Board::Board(int width, int height) : dimensions({width, height}),
             int y2 = y + 1;
             while (x2 < width && y2 < height) {
                 int newIndex = bitsetUtil::getIndex(width, {x2, y2});
-                northEast.at(index).set(newIndex, true);
+                rayAttacks.at(NORTHEAST)[index].set(newIndex, true);
                 x2++;
                 y2++;
             }
@@ -97,7 +113,7 @@ Board::Board(int width, int height) : dimensions({width, height}),
             y2 = y + 1;
             while (x2 >= 0 && y2 < height) {
                 int newIndex = bitsetUtil::getIndex(width, {x2, y2});
-                northWest.at(index).set(newIndex, true);
+                rayAttacks.at(NORTHWEST)[index].set(newIndex, true);
                 x2--;
                 y2++;
             }
@@ -108,7 +124,7 @@ Board::Board(int width, int height) : dimensions({width, height}),
             y2 = y - 1;
             while (x2 < width && y2 >= 0) {
                 int newIndex = bitsetUtil::getIndex(width, {x2, y2});
-                southEast.at(index).set(newIndex, true);
+                rayAttacks.at(SOUTHEAST)[index].set(newIndex, true);
                 x2++;
                 y2--;
             }
@@ -119,12 +135,13 @@ Board::Board(int width, int height) : dimensions({width, height}),
             y2 = y - 1;
             while (x2 >= 0 && y2 >= 0) {
                 int newIndex = bitsetUtil::getIndex(width, {x2, y2});
-                southWest.at(index).set(newIndex, true);
+                rayAttacks.at(SOUTHWEST)[index].set(newIndex, true);
                 x2--;
                 y2--;
             }
         }
     }
+
 }
 
 boost::dynamic_bitset<> Board::getRightMostFile() const {
@@ -143,12 +160,12 @@ int Board::getHeight() const {
     return dimensions.height;
 }
 
-void Board::updateAllPieces(const std::map<int, Player> &players) {
+void Board::updateAllPieces(std::map<int, Player> &players) {
     allPieces.reset();
-    for (auto const &x : players) {
-        std::map<char, boost::dynamic_bitset<>> pPieces = x.second.getPieces();
-        for (auto const &x:pPieces) {
-            allPieces |= x.second;
+    for (auto &x : players) {
+        std::map<boost::uuids::uuid, Piece> pPieces = x.second.getPieces();
+        for (auto &x:pPieces) {
+            allPieces |= x.second.getBitset();
         }
     }
 }
@@ -160,6 +177,26 @@ boost::dynamic_bitset<> Board::getAllPieces() const {
 Dimensions Board::getDimensions() const {
     return dimensions;
 }
+
+boost::dynamic_bitset<> Board::getRayAttack(const Direction &dir, const int &index) {
+    return rayAttacks.at(dir)[index];
+}
+
+boost::dynamic_bitset<> Board::getRightMask(int numCols) const {
+    if (numCols == 0) {
+        return boost::dynamic_bitset<>(getWidth() * getHeight());
+    }
+    return rightMasks[numCols - 1];
+}
+
+boost::dynamic_bitset<> Board::getLeftMask(int numCols) const {
+    if (numCols == 0) {
+        return boost::dynamic_bitset<>(getWidth() * getHeight());
+    }
+    return leftMasks[numCols - 1];
+}
+
+
 
 
 

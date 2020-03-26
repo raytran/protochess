@@ -42,22 +42,28 @@ private:
      */
 
 
-    std::map<int, std::vector<boost::dynamic_bitset<>>> leftMasks;
-    std::map<int, std::vector<boost::dynamic_bitset<>>> rightMasks;
+    std::vector<boost::dynamic_bitset<>> leftMasks;
+    std::vector<boost::dynamic_bitset<>> rightMasks;
 public:
     Board(int width, int height);
 
-    void updateAllPieces(const std::map<int, Player> &players);
+    void updateAllPieces(std::map<int, Player> &players);
 
     int getWidth() const;
 
     int getHeight() const;
+
+    boost::dynamic_bitset<> getRayAttack(const Direction &dir, const int &index);
 
     boost::dynamic_bitset<> getRightMostFile() const;
 
     boost::dynamic_bitset<> getLeftMostFile() const;
 
     boost::dynamic_bitset<> getAllPieces() const;
+
+    boost::dynamic_bitset<> getRightMask(int numCols) const;
+
+    boost::dynamic_bitset<> getLeftMask(int numCols) const;
 
     Dimensions getDimensions() const;
 

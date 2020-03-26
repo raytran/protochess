@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include "types.h"
+#include "Piece.h"
 #include <boost/dynamic_bitset.hpp>
 
 class Player {
@@ -14,7 +15,9 @@ private:
     std::string name;
     //MAPs char to a bitboard of that piece
     //Not using an enum here to allow for any arbitrary number of piece types
-    std::map<char, boost::dynamic_bitset<>> pieces;
+    std::map<boost::uuids::uuid, Piece> pieces;
+    //How this player defines each piece to move
+    std::map<char, MovementPattern> movementMap;
 public:
     Player();
 
@@ -22,9 +25,13 @@ public:
 
     std::string getName();
 
-    void setPieces(std::map<char, boost::dynamic_bitset<>> pieceMap);
+    void setPieces(std::map<boost::uuids::uuid, Piece> pieceMap);
 
-    std::map<char, boost::dynamic_bitset<>> getPieces() const;
+    void setMovementMap(std::map<char, MovementPattern> map);
+
+    const std::map<boost::uuids::uuid, Piece> &getPieces();
+
+    const std::map<char, MovementPattern> &getMovementMap();
 };
 
 

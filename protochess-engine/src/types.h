@@ -5,6 +5,8 @@
 #pragma once
 
 #include <vector>
+#include <boost/uuid/uuid.hpp>
+#include <boost/dynamic_bitset.hpp>
 
 struct Dimensions {
     int width;
@@ -28,10 +30,17 @@ struct MovementPattern {
     std::vector<Location> deltas;
 };
 
-struct Move {
+struct LocationDelta {
     Location start;
     Location end;
 };
+
+struct Move {
+    bool capture;
+    LocationDelta locationDelta;
+};
+
+typedef boost::dynamic_bitset<>::size_type size_type;
 
 enum Direction {
     NORTH,

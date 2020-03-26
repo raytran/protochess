@@ -2,6 +2,7 @@
 // Created by raytran on 3/24/20.
 //
 
+#include <iostream>
 #include "bitsetUtil.h"
 
 namespace bitsetUtil {
@@ -27,23 +28,23 @@ namespace bitsetUtil {
     }
 
     boost::dynamic_bitset<>
-    eastOne(const boost::dynamic_bitset<> &in, const Board &board) {
-        return (in << 1) & ~board.getLeftMostFile();
+    east(int amt, const boost::dynamic_bitset<> &in, const Board &board) {
+        return (in << amt) & ~board.getLeftMask(amt);
     }
 
     boost::dynamic_bitset<>
-    westOne(const boost::dynamic_bitset<> &in, const Board &board) {
-        return (in >> 1) & ~board.getRightMostFile();
+    west(int amt, const boost::dynamic_bitset<> &in, const Board &board) {
+        return (in >> amt) & ~board.getRightMask(amt);
     }
 
     boost::dynamic_bitset<>
-    northOne(const boost::dynamic_bitset<> &in, const Board &board) {
-        return in << board.getWidth();
+    north(int amt, const boost::dynamic_bitset<> &in, const Board &board) {
+        return in << (amt * board.getWidth());
     }
 
     boost::dynamic_bitset<>
-    southOne(const boost::dynamic_bitset<> &in, const Board &board) {
-        return in >> board.getWidth();
+    south(int amt, const boost::dynamic_bitset<> &in, const Board &board) {
+        return in >> (amt * board.getWidth());
     }
 
     std::string bitsetToString(const boost::dynamic_bitset<> &bitboard, const Dimensions &dimensions) {
@@ -67,5 +68,37 @@ namespace bitsetUtil {
         return loc.y * width + loc.x;
     }
 
+    Location getLoc(int width, int index) {
+        return {index % width, index / width};
+    }
+
+    //Like find_first, but for last
+    unsigned long findLast(const boost::dynamic_bitset<> &bitset) {
+        unsigned long index = -1;
+        for (unsigned long i = bitset.size() - 1; i >= 0; i--) {
+            if (bitset[i]) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    boost::dynamic_bitset<> translate(Location delta, const boost::dynamic_bitset<> &in, const Board &board) {
+        boost::dynamic_bitset<> returnBits(in);
+        int dx = delta.x;
+        int dy = delta.y;
+        if (dx > 0) {
+            returnBits = east(dx, returnBits, board);
+        } else {
+            returnBits = west(-dx, returnBits, board);
+        }
+        if (dy > 0) {
+            returnBits = north(dy, returnBits, board);
+        } else {
+            returnBits = south(-dy, returnBits, board);
+        }
+        return returnBits;
+    }
 }
 

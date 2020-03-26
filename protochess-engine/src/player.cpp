@@ -12,10 +12,19 @@ std::string Player::getName() {
     return name;
 }
 
-void Player::setPieces(std::map<char, boost::dynamic_bitset<>> pieceMap) {
+void Player::setPieces(std::map<boost::uuids::uuid, Piece> pieceMap) {
     pieces = pieceMap;
 }
 
-std::map<char, boost::dynamic_bitset<>> Player::getPieces() const {
+const std::map<boost::uuids::uuid, Piece> &Player::getPieces() {
     return pieces;
 }
+
+const std::map<char, MovementPattern> &Player::getMovementMap() {
+    return movementMap;
+}
+
+void Player::setMovementMap(std::map<char, MovementPattern> map) {
+    movementMap = map;
+}
+
