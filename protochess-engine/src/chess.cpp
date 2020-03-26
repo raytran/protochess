@@ -3,7 +3,7 @@
 #include "shared/chess.h"
 #include "bitsetUtil.h"
 #include "movegen.h"
-#include "moverules.h"
+#include "piecerules.h"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
@@ -61,36 +61,37 @@ void Chess::buildClassicSet() {
             ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
             ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
             ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-            ' ', ' ', ' ', 'Q', ' ', ' ', ' ', ' ',
+            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+            'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
+            'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'
+    };
+
+    char bPieces[] = {
+            'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
+            'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
+            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
             ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
             ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
             ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
             ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
     };
 
-    char bPieces[] = {
-            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-            ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-            'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
-            'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'
-    };
+    players.at(0).setPieces(charToPieces(0, wPieces));
+    players.at(0).setMovementMap(charToKnownMP(piecerules::moveRules, wPieces));
+    players.at(0).setCaptureMap(charToKnownMP(piecerules::captureRules, wPieces));
 
-    players.at(0).setPieces(charToPieceBitsets(wPieces));
-    players.at(0).setMovementMap(charToKnownMP(wPieces));
-    players.at(1).setPieces(charToPieceBitsets(bPieces));
-    players.at(1).setMovementMap(charToKnownMP(bPieces));
+    players.at(1).setPieces(charToPieces(1, bPieces));
+    players.at(1).setMovementMap(charToKnownMP(piecerules::moveRules, bPieces));
+    players.at(1).setCaptureMap(charToKnownMP(piecerules::captureRules, bPieces));
 
-    board.updateAllPieces(players);
+    board.update(players);
 
-    movegen::generateMoves(players.at(0), board);
-    movegen::generateMoves(players.at(1), board);
 }
 
-std::map<boost::uuids::uuid, Piece> Chess::charToPieceBitsets(const char *pieces) {
+std::map<boost::uuids::uuid, Piece> Chess::charToPieces(int owner, const char *pieces) {
     std::map<boost::uuids::uuid, Piece> returnMap;
     boost::uuids::random_generator generator;
 
@@ -102,7 +103,8 @@ std::map<boost::uuids::uuid, Piece> Chess::charToPieceBitsets(const char *pieces
                 boost::uuids::uuid id = generator();
                 returnMap.insert(
                         std::make_pair(id,
-                                       Piece(id,
+                                       Piece(owner,
+                                             id,
                                              boost::dynamic_bitset<>(dimensions.width * dimensions.height),
                                              charHere,
                                              {x, y},
@@ -110,7 +112,7 @@ std::map<boost::uuids::uuid, Piece> Chess::charToPieceBitsets(const char *pieces
                 );
 
                 int i = bitsetUtil::getIndex(dimensions.width, {x, y});
-                returnMap.at(id).setBitset(returnMap.at(id).getBitset().set(i, true));
+                returnMap.at(id).setLocation({x, y}, i);
             }
             index++;
         }
@@ -126,7 +128,7 @@ void Chess::reset() {
     whosTurn = 0;
 }
 
-std::map<char, MovementPattern> Chess::charToKnownMP(const char *pieces) {
+std::map<char, MovementPattern> Chess::charToKnownMP(std::map<char, MovementPattern> &dictionary, const char *pieces) {
     std::map<char, MovementPattern> returnMap;
     int index = 0;
     for (int y = dimensions.height - 1; y >= 0; y--) {
@@ -134,17 +136,70 @@ std::map<char, MovementPattern> Chess::charToKnownMP(const char *pieces) {
             if (pieces[index] != ' ') {
                 char charHere = pieces[index];
                 //We know how to handle this type
-                if (moverules::rules.count(charHere) != 0) {
+                if (dictionary.count(charHere) != 0) {
                     returnMap.insert(
-                            std::make_pair(charHere, moverules::rules.at(charHere))
+                            std::make_pair(charHere, dictionary.at(charHere))
                     );
                 }
             }
             index++;
         }
     }
-
     return returnMap;
+}
+
+bool Chess::takeTurn(int startX, int startY, int endX, int endY) {
+    Location start = {startX, startY};
+    Location end = {endX, endY};
+    LocationDelta delta = {start, end};
+    boost::uuids::uuid idHere = players.at(whosTurn).getPieceIdAt(start);
+    if (!idHere.is_nil()) {
+        //There exists a piece at the start index
+        std::map<boost::uuids::uuid, std::vector<Move>> moves = movegen::generateMoves(players.at(whosTurn), board);
+        //This piece has viable moves; check if startLoc->endLoc is one of them
+        if (moves.count(idHere) != 0) {
+            for (auto &x : moves.at(idHere)) {
+                if (x.locationDelta == delta) {
+                    //Viable move!
+                    //Perform move
+                    makeMove(x);
+                    whosTurn = (int) ((whosTurn + 1) % players.size());
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void Chess::makeMove(Move move) {
+    if (move.capture) {
+        std::cout << "PIECE CAPTURED!";
+        Piece &captured = pieceAt(move.locationDelta.end);
+        players.at(captured.getOwner()).removePiece(captured.getId());
+    }
+    Piece &piece = pieceAt(move.locationDelta.start);
+    //Move the piece
+    piece.setLocation(move.locationDelta.end, bitsetUtil::getIndex(board.getWidth(), move.locationDelta.end));
+
+    update();
+}
+
+Piece &Chess::pieceAt(Location loc) {
+    for (auto &x:players) {
+        boost::uuids::uuid idHere = x.second.getPieceIdAt(loc);
+        if (!idHere.is_nil()) {
+            return x.second.getPieces().at(idHere);
+        }
+    }
+    throw std::runtime_error("Piece does not exist at loc");
+}
+
+void Chess::update() {
+    board.update(players);
+    for (auto &x:players) {
+        x.second.update();
+    }
 }
 
 

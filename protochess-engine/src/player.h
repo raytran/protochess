@@ -15,9 +15,13 @@ private:
     std::string name;
     //MAPs char to a bitboard of that piece
     //Not using an enum here to allow for any arbitrary number of piece types
+    boost::dynamic_bitset<> allPieces;
     std::map<boost::uuids::uuid, Piece> pieces;
     //How this player defines each piece to move
     std::map<char, MovementPattern> movementMap;
+
+    //How this player defines each piece to capture
+    std::map<char, MovementPattern> captureMap;
 public:
     Player();
 
@@ -27,11 +31,24 @@ public:
 
     void setPieces(std::map<boost::uuids::uuid, Piece> pieceMap);
 
+    void removePiece(boost::uuids::uuid pieceId);
+
+    void update();
+
     void setMovementMap(std::map<char, MovementPattern> map);
 
-    const std::map<boost::uuids::uuid, Piece> &getPieces();
-
     const std::map<char, MovementPattern> &getMovementMap();
+
+    void setCaptureMap(std::map<char, MovementPattern> map);
+
+    const std::map<char, MovementPattern> &getCaptureMap();
+
+    std::map<boost::uuids::uuid, Piece> &getPieces();
+
+    boost::dynamic_bitset<> getAllPiecesBitset();
+
+    boost::uuids::uuid getPieceIdAt(Location loc);
+
 };
 
 

@@ -47,7 +47,7 @@ private:
 public:
     Board(int width, int height);
 
-    void updateAllPieces(std::map<int, Player> &players);
+    void update(std::map<int, Player> &players);
 
     int getWidth() const;
 

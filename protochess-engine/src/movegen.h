@@ -22,7 +22,7 @@ namespace movegen {
     calculateNegativeAttacks(const Direction &dir, Board &board, const boost::dynamic_bitset<> &southAttack,
                              const boost::dynamic_bitset<> &allPieces);
 
-    std::vector<Move> generateMoves(Player &player, Board &board);
+    std::map<boost::uuids::uuid, std::vector<Move>> generateMoves(Player &player, Board &board);
 
     //Converts a bitboard w/one piece and its bitboard with destinations squares
     //to a set of location deltas

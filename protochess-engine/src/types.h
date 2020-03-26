@@ -18,6 +18,10 @@ struct Location {
     int y;
 };
 
+inline bool operator==(const Location &lhs, const Location &rhs) {
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
 struct MovementPattern {
     bool north;
     bool east;
@@ -34,6 +38,10 @@ struct LocationDelta {
     Location start;
     Location end;
 };
+
+inline bool operator==(const LocationDelta &lhs, const LocationDelta &rhs) {
+    return lhs.start == rhs.start && lhs.end == rhs.end;
+}
 
 struct Move {
     bool capture;

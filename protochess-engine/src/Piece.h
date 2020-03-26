@@ -11,22 +11,26 @@
 class Piece {
 private:
     char charRep;
+    int owner;
     boost::uuids::uuid id;
     boost::dynamic_bitset<> bitset;
     Location location;
     int locationIndex;
 public:
-    Piece(boost::uuids::uuid id, boost::dynamic_bitset<> bitset, char charRep, Location loc, int locationIndex);
+    Piece(int owner, boost::uuids::uuid id, boost::dynamic_bitset<> bitset, char charRep, Location loc,
+          int locationIndex);
 
-    boost::dynamic_bitset<> getBitset() const;
+    boost::dynamic_bitset<> &getBitset();
+
+    boost::uuids::uuid getId();
+
+    int getOwner();
 
     char getCharRep() const;
 
     void setCharRep(char c);
 
-    void setBitset(boost::dynamic_bitset<> bitset);
-
-    Location getLocation();
+    Location getLocation() const;
 
     int getLocationIndex() const;
 

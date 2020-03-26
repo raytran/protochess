@@ -160,7 +160,7 @@ int Board::getHeight() const {
     return dimensions.height;
 }
 
-void Board::updateAllPieces(std::map<int, Player> &players) {
+void Board::update(std::map<int, Player> &players) {
     allPieces.reset();
     for (auto &x : players) {
         std::map<boost::uuids::uuid, Piece> pPieces = x.second.getPieces();
