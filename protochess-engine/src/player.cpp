@@ -52,13 +52,13 @@ namespace protochess_engine {
         return allPieces;
     }
 
-    boost::uuids::uuid Player::getPieceIdAt(Location loc) {
-        for (auto const &x:pieces) {
+    std::shared_ptr<Piece> Player::getPieceAt(Location loc) {
+        for (auto &x:pieces) {
             if (x.second->getLocation() == loc) {
-                return x.first;
+                return x.second;
             }
         }
-        return {00000000 - 0000 - 0000 - 0000 - 000000000000};
+        return nullptr;
     }
 
     void Player::update() {
@@ -77,7 +77,7 @@ namespace protochess_engine {
         update();
     }
 
-    void Player::addPiece(const std::shared_ptr<Piece> &piece) {
+    void Player::addPiece(std::shared_ptr<Piece> piece) {
         pieces.insert({piece->getId(), piece});
     }
 

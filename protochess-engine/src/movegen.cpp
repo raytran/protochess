@@ -208,6 +208,18 @@ namespace protochess_engine {
             }
             return playersInCheck;
         }
+
+        bool isMoveValid(const Move &move, GameState &gameState, int playerNum, Board &board) {
+            bool returnVal = false;
+            gameState.makeMove(move);
+            std::unordered_set<int> playersInCheck = movegen::playersInCheck(gameState, board);
+            if (playersInCheck.find(playerNum) == playersInCheck.end()) {
+                //This move is ok; does not brings player into check
+                returnVal = true;
+            }
+            gameState.unmakeMove(move);
+            return returnVal;
+        }
     }
 }
 

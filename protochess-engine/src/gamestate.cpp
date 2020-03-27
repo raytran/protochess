@@ -42,21 +42,22 @@ namespace protochess_engine {
     }
 
     void GameState::unmakeMove(const Move &move) {
-        if (move.capture && move.capturedPiece != nullptr) {
-            std::shared_ptr<Piece> captured = move.capturedPiece;
-            players.at(captured->getOwner()).addPiece(captured);
-        }
         std::shared_ptr<Piece> piece = pieceAt(move.locationDelta.end);
         //Move the piece
         if (piece != nullptr) {
             piece->setLocation(move.locationDelta.start,
                                bitsetUtil::getIndex(board.getWidth(), move.locationDelta.start));
         }
+        if (move.capture) {
+
+            std::shared_ptr<Piece> captured = move.capturedPiece;
+            players.at(captured->getOwner()).addPiece(captured);
+        }
         update();
     }
 
     void GameState::makeMove(const Move &move) {
-        if (move.capture && move.capturedPiece != nullptr) {
+        if (move.capture) {
             std::shared_ptr<Piece> captured = move.capturedPiece;
             players.at(captured->getOwner()).removePiece(captured->getId());
         }
@@ -64,6 +65,8 @@ namespace protochess_engine {
         //Move the piece
         if (piece != nullptr) {
             piece->setLocation(move.locationDelta.end, bitsetUtil::getIndex(board.getWidth(), move.locationDelta.end));
+        } else {
+            std::cerr << "WE SHOULD NEVER BE HERE";
         }
 
         update();
@@ -71,9 +74,9 @@ namespace protochess_engine {
 
     std::shared_ptr<Piece> GameState::pieceAt(Location loc) {
         for (auto &x:players) {
-            boost::uuids::uuid idHere = x.second.getPieceIdAt(loc);
-            if (!idHere.is_nil()) {
-                return x.second.getPieces().at(idHere);
+            std::shared_ptr<Piece> piece = x.second.getPieceAt(loc);
+            if (piece != nullptr) {
+                return piece;
             }
         }
         return nullptr;
@@ -101,16 +104,13 @@ namespace protochess_engine {
 
         for (auto &x:pseudoMoves) {
             for (const auto &y:x.second) {
-                makeMove(y);
-                std::unordered_set<int> playersInCheck = movegen::playersInCheck(*this, board);
-                if (playersInCheck.find(playerNum) == playersInCheck.end()) {
+                if (movegen::isMoveValid(y, *this, playerNum, board)) {
                     //This move is ok; does not brings player into check
                     if (moves.count(x.first) == 0) {
                         moves.insert({x.first, std::unordered_set<Move>()});
                     }
                     moves.at(x.first).insert(y);
                 }
-                unmakeMove(y);
             }
         }
         return moves;

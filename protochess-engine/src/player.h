@@ -34,7 +34,7 @@ namespace protochess_engine {
 
         void removePiece(boost::uuids::uuid pieceId);
 
-        void addPiece(const std::shared_ptr<Piece> &piece);
+        void addPiece(std::shared_ptr<Piece> piece);
 
         void update();
 
@@ -50,7 +50,7 @@ namespace protochess_engine {
 
         boost::dynamic_bitset<> getAllPiecesBitset();
 
-        boost::uuids::uuid getPieceIdAt(Location loc);
+        std::shared_ptr<Piece> getPieceAt(Location loc);
 
     };
 }

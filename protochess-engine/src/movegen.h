@@ -14,6 +14,8 @@
 
 namespace protochess_engine {
     namespace movegen {
+        bool isMoveValid(const Move &move, GameState &gameState, int playerNum, Board &board);
+
         std::unordered_set<int> playersInCheck(GameState &gameState, Board &board);
 
         //Calculates north attacks, stopping (and including) the first blocker

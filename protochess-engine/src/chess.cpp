@@ -32,7 +32,7 @@ namespace protochess_engine {
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
+                'k', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
                 'R', 'N', 'B', 'Q', 'K', 'N', 'B', 'R'
         };
 
@@ -41,7 +41,7 @@ namespace protochess_engine {
                 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', 'r', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
@@ -123,6 +123,10 @@ namespace protochess_engine {
         Location start = {startX, startY};
         std::shared_ptr<Piece> startPiece = gameState.pieceAt(start);
         if (startPiece != nullptr && whosTurn == gameState.getWhosTurn()) {
+            std::cout << "----";
+            std::cout << "Start piece: \n";
+            std::cout << startPiece;
+            std::cout << "\n";
             boost::uuids::uuid idHere = startPiece->getId();
 
             Location end = {endX, endY};
@@ -134,6 +138,10 @@ namespace protochess_engine {
             if (moves.count(idHere) != 0) {
                 for (auto &x : moves.at(idHere)) {
                     if (x.locationDelta == delta) {
+
+                        std::cout << "After eval piece\n";
+                        std::cout << gameState.pieceAt(delta.start);
+                        std::cout << "-----\n";
                         //Viable move!
                         //Perform move
                         gameState.makeMove(x);
