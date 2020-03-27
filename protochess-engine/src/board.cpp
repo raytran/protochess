@@ -3,8 +3,8 @@
 //
 
 #include <iostream>
-#include "Board.h"
-#include "bitsetUtil.h"
+#include "board.h"
+#include "bitsetutil.h"
 
 namespace protochess_engine {
     Board::Board(int width, int height) : dimensions({width, height}),

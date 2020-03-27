@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include "movegen.h"
-#include "bitsetUtil.h"
+#include "bitsetutil.h"
 #include "piecerules.h"
 #include "types.h"
 #include <chrono>

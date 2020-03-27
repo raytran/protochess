@@ -3,7 +3,7 @@
 #include <string>
 #include <boost/dynamic_bitset.hpp>
 #include "../../src/types.h"
-#include "../../src/GameState.h"
+#include "../../src/gamestate.h"
 
 namespace protochess_engine {
     class Chess {

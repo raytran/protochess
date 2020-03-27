@@ -6,7 +6,7 @@
 
 #include <map>
 #include <unordered_set>
-#include "Board.h"
+#include "board.h"
 
 namespace protochess_engine {
     class GameState {

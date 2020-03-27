@@ -6,7 +6,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 #include "types.h"
-#include "Board.h"
+#include "board.h"
 #include <string>
 
 //Bitboard utility functions

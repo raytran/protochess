@@ -3,8 +3,8 @@
 //
 
 #include <iostream>
-#include "Piece.h"
-#include "bitsetUtil.h"
+#include "piece.h"
+#include "bitsetutil.h"
 
 namespace protochess_engine {
     Piece::Piece(bool appliesCheck, int owner, boost::uuids::uuid id, boost::dynamic_bitset<> bitset, char charRep,

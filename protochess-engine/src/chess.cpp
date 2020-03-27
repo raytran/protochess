@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "shared/chess.h"
-#include "bitsetUtil.h"
+#include "bitsetutil.h"
 #include "piecerules.h"
 #include "rankfile.h"
 #include <boost/uuid/uuid.hpp>
@@ -17,7 +17,6 @@ namespace protochess_engine {
     int Chess::registerPlayer(std::string playerName) {
         return gameState.registerPlayer(playerName);
     }
-
 
     void Chess::buildClassicSet() {
         reset();
@@ -159,6 +158,4 @@ namespace protochess_engine {
                 whosTurn
         );
     }
-
-
 }

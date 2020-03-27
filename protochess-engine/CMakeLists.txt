@@ -9,7 +9,7 @@ project(protochess_engine)
 #Generate the shared library from the library sources
 add_library(protochess_engine SHARED
         src/chess.cpp
-        src/types.h src/bitsetUtil.cpp src/bitsetUtil.h src/player.cpp src/player.h src/movegen.cpp src/movegen.h src/Board.cpp src/Board.h src/piecerules.cpp src/piecerules.h src/Piece.cpp src/Piece.h src/GameState.cpp src/GameState.h src/rankfile.h)
+        src/types.h src/bitsetutil.cpp src/bitsetutil.h src/player.cpp src/player.h src/movegen.cpp src/movegen.h src/board.cpp src/board.h src/piecerules.cpp src/piecerules.h src/piece.cpp src/piece.h src/gamestate.cpp src/gamestate.h src/rankfile.h)
 
 add_library(protochess::engine ALIAS protochess_engine)
 

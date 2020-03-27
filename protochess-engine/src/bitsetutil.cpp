@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "bitsetUtil.h"
+#include "bitsetutil.h"
 
 namespace protochess_engine {
     namespace bitsetUtil {

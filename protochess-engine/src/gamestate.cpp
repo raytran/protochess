@@ -4,8 +4,8 @@
 
 #include <iostream>
 #include <utility>
-#include "GameState.h"
-#include "bitsetUtil.h"
+#include "gamestate.h"
+#include "bitsetutil.h"
 #include "movegen.h"
 
 namespace protochess_engine {

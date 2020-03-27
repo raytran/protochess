@@ -10,7 +10,7 @@
 #include <shared/chess.h>
 #include "types.h"
 #include "player.h"
-#include "Board.h"
+#include "board.h"
 
 namespace protochess_engine {
     namespace movegen {

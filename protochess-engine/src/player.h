@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 #include "types.h"
-#include "Piece.h"
+#include "piece.h"
 #include <boost/dynamic_bitset.hpp>
 
 namespace protochess_engine {
