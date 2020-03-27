@@ -8,7 +8,10 @@
 #include <map>
 #include "types.h"
 
-namespace piecerules {
-    extern std::map<char, MovementPattern> moveRules;
-    extern std::map<char, MovementPattern> captureRules;
+namespace protochess_engine {
+    namespace piecerules {
+        extern std::map<char, MovementPattern> moveRules;
+        extern std::map<char, MovementPattern> captureRules;
+    }
 }
+

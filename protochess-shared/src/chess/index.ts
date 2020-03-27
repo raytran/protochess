@@ -1,15 +1,23 @@
 import {GameState} from "./GameState";
 import {PieceBuilder} from "./PieceBuilder";
 import {Board} from './Board'
+import { GameMaster } from "./GameMaster";
 //let board= new Board();
 //board.build();
 //console.log(board.toAscii());
 //console.log('test');
 
-//let gm = new GameMaster();
-//console.log(gm.toAscii());
-//gm.makeMove(4,1,4,3);
-//console.log(gm.toAscii());
+let gm = new GameMaster();
+
+console.log(gm.toAscii());
+
+var start = new Date().getTime();
+gm.makeMove(4,1,4,3);
+var end = new Date().getTime();
+var time = end - start;
+
+console.log("Call to doSomething took " + time + " milliseconds.");
+console.log(gm.toAscii());
 //console.log(gm.makeMove(3,6,3,4));
 //console.log(gm.toAscii());
 //console.log(gm.makeMove(4,3,3,4));

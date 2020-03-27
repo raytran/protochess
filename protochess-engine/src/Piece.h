@@ -8,33 +8,46 @@
 #include <boost/dynamic_bitset.hpp>
 #include "types.h"
 
-class Piece {
-private:
-    char charRep;
-    int owner;
-    boost::uuids::uuid id;
-    boost::dynamic_bitset<> bitset;
-    Location location;
-    int locationIndex;
-public:
-    Piece(int owner, boost::uuids::uuid id, boost::dynamic_bitset<> bitset, char charRep, Location loc,
-          int locationIndex);
+namespace protochess_engine {
+    class Piece {
+    private:
+        char charRep;
+        int owner;
+        bool movedBefore = false;
+        bool appliesCheck;
+        boost::uuids::uuid id;
+        boost::dynamic_bitset<> bitset;
+        Location location;
+        int locationIndex;
+    public:
+        Piece(bool appliesCheck,
+              int owner,
+              boost::uuids::uuid id,
+              boost::dynamic_bitset<> bitset,
+              char charRep,
+              Location loc,
+              int locationIndex);
 
-    boost::dynamic_bitset<> &getBitset();
+        bool getMovedBefore();
 
-    boost::uuids::uuid getId();
+        bool getAppliesCheck();
 
-    int getOwner();
+        boost::dynamic_bitset<> getBitset();
 
-    char getCharRep() const;
+        boost::uuids::uuid getId();
 
-    void setCharRep(char c);
+        int getOwner();
 
-    Location getLocation() const;
+        char getCharRep() const;
 
-    int getLocationIndex() const;
+        void setCharRep(char c);
 
-    void setLocation(Location loc, int index);
-};
+        Location getLocation() const;
 
+        int getLocationIndex() const;
 
+        void setLocation(Location loc, int index);
+
+        void setAppliesCheck(bool val);
+    };
+}

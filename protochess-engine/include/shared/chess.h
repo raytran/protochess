@@ -3,45 +3,34 @@
 #include <string>
 #include <boost/dynamic_bitset.hpp>
 #include "../../src/types.h"
-#include "../../src/player.h"
-#include "../../src/Board.h"
+#include "../../src/GameState.h"
 
-class Chess {
-private:
-    Board board;
-    std::map<int, Player> players;
-    int playerCounter = 0;
-    int whosTurn = 0;
-    Dimensions dimensions;
+namespace protochess_engine {
+    class Chess {
+    private:
+        GameState gameState;
 
-    //Called after a move
-    void update();
+        //Converts a char array to piece , assigning each piece a uuid at the same time
+        std::map<boost::uuids::uuid, std::shared_ptr<Piece>> charToPieces(int owner, std::vector<char> &pieces);
 
-    Piece &pieceAt(Location loc);
+        //Converts a char array to associated movement patterns declared in source
+        static std::map<char, MovementPattern>
+        charToKnownMP(std::map<char, MovementPattern> &dictionary, std::vector<char> &pieces);
 
-    //Makes a move, assuming its valid
-    void makeMove(Move move);
+    public:
+        bool takeTurn(const std::string &start, const std::string &end, int whosTurn);
 
-    //Converts a char array to piece , assigning each piece a uuid at the same time
-    std::map<boost::uuids::uuid, Piece> charToPieces(int owner, const char *pieces);
+        bool takeTurn(int startX, int startY, int endX, int endY, int whosTurn);
 
-    //Converts a char array to associated movement patterns declared in source
-    std::map<char, MovementPattern> charToKnownMP(std::map<char, MovementPattern> &dictionary, const char *pieces);
+        int registerPlayer(std::string playerName);
 
+        void buildClassicSet();
 
-public:
-    Chess();
+        std::string toString();
 
-    Chess(int width, int height);
+        void reset();
 
-    bool takeTurn(int startX, int startY, int endX, int endY);
+        Chess();
+    };
 
-    int registerPlayer(std::string playerName);
-
-    void buildClassicSet();
-
-    std::string toString();
-
-    void reset();
-};
-
+}
