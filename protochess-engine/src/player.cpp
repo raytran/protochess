@@ -16,6 +16,13 @@ namespace protochess_engine {
 
     void Player::setPieces(std::map<boost::uuids::uuid, std::shared_ptr<Piece>> pieceMap) {
         pieces = std::move(pieceMap);
+        piecesApplyCheck = {};
+
+        for (auto &x:pieces) {
+            if (x.second->getAppliesCheck()) {
+                piecesApplyCheck.insert({x.first, x.second});
+            }
+        }
 
         for (auto &x:pieces) {
             allPieces = boost::dynamic_bitset<>(x.second->getBitset());
@@ -74,6 +81,9 @@ namespace protochess_engine {
 
     void Player::removePiece(boost::uuids::uuid id) {
         pieces.erase(id);
+        if (piecesApplyCheck.count(id) != 0) {
+            piecesApplyCheck.erase(id);
+        }
     }
 
     void Player::addPiece(std::shared_ptr<Piece> piece) {
@@ -94,6 +104,10 @@ namespace protochess_engine {
 
     void Player::enableCastleRights() {
         canCastle_ = true;
+    }
+
+    std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &Player::getPiecesApplyCheck() {
+        return piecesApplyCheck;
     }
 
 }

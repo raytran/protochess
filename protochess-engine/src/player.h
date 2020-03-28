@@ -22,6 +22,7 @@ namespace protochess_engine {
         //Not using an enum here to allow for any arbitrary number of piece types
         boost::dynamic_bitset<> allPieces;
         std::map<boost::uuids::uuid, std::shared_ptr<Piece>> pieces;
+        std::map<boost::uuids::uuid, std::shared_ptr<Piece>> piecesApplyCheck;
         //How this player defines each piece to move
         std::map<char, MovementPattern> movementMap;
 
@@ -59,6 +60,8 @@ namespace protochess_engine {
         std::map<char, MovementPattern> &getCaptureMap();
 
         std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &getPieces();
+
+        std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &getPiecesApplyCheck();
 
         boost::dynamic_bitset<> getAllPiecesBitset();
 

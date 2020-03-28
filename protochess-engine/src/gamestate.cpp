@@ -220,4 +220,18 @@ namespace protochess_engine {
     std::map<int, Player> &GameState::getPlayerMap() {
         return players;
     }
+
+    std::unordered_set<int> GameState::getCheckMatedPlayers() {
+        std::unordered_set<int> returnSet = {};
+        for (auto &x : movegen::playersInCheck(*this, board)) {
+            if (generateMoves(x).empty()) {
+                returnSet.insert(x);
+            }
+        }
+        return returnSet;
+    }
+
+    std::unordered_set<int> GameState::getCheckedPlayers() {
+        return movegen::playersInCheck(*this, board);
+    }
 }

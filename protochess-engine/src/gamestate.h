@@ -6,6 +6,8 @@
 
 #include <map>
 #include <unordered_set>
+#include <boost/serialization/unordered_set.hpp>
+#include <bits/unordered_set.h>
 #include "board.h"
 
 namespace protochess_engine {
@@ -57,6 +59,10 @@ namespace protochess_engine {
 
         //Called after a move / after modifying properties
         void update();
+
+        std::unordered_set<int> getCheckMatedPlayers();
+
+        std::unordered_set<int> getCheckedPlayers();
     };
 
 

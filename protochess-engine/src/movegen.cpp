@@ -206,17 +206,12 @@ namespace protochess_engine {
                     //generate enemies
                     dynamic_bitset<> enemyPieces;
                     enemyPieces = allPlayerPieces & (~thisPlayerPieces);
-
-
-                    //Find the king
-                    for (auto &x:player.getPieces()) {
+                    //Find the pieces that can apply check
+                    for (auto &x:player.getPiecesApplyCheck()) {
                         //Check if this piece is a king that hasn't moved before
                         //And has ANY valid moves
-                        if ((x.second->getCharRep() == 'k' || x.second->getCharRep() == 'K')
-                            && pseudoMoves.find(x.first) != pseudoMoves.end()
+                        if (pseudoMoves.find(x.first) != pseudoMoves.end()
                             && !x.second->getMovedBefore()) {
-
-                            bool isWhite = x.second->getCharRep() == 'K';
                             //KINGSIDE CASTLING
                             //Check if player can move one square kingside
                             //Find the move to the right, if it exists

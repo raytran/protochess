@@ -39,7 +39,7 @@ namespace protochess_engine {
         };
 
         std::vector<char> bPieces = {
-                'r', ' ', ' ', ' ', 'k', 'b', 'n', 'r',
+                ' ', ' ', ' ', ' ', 'k', 'b', 'n', 'r',
                 'p', ' ', ' ', 'p', 'p', 'p', 'p', 'p',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
@@ -49,12 +49,12 @@ namespace protochess_engine {
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
         };
         gameState.setPieces(0, charToPieces(0, wPieces));
-        gameState.setMovementMap(0, charToKnownMP(piecerules::moveRules, wPieces));
-        gameState.setCaptureMap(0, charToKnownMP(piecerules::captureRules, wPieces));
+        gameState.setMovementMap(0, piecerules::moveRules);
+        gameState.setCaptureMap(0, piecerules::captureRules);
 
         gameState.setPieces(1, charToPieces(1, bPieces));
-        gameState.setMovementMap(1, charToKnownMP(piecerules::moveRules, bPieces));
-        gameState.setCaptureMap(1, charToKnownMP(piecerules::captureRules, bPieces));
+        gameState.setMovementMap(1, piecerules::moveRules);
+        gameState.setCaptureMap(1, piecerules::captureRules);
     }
 
     std::map<boost::uuids::uuid, std::shared_ptr<Piece>> Chess::charToPieces(int owner, std::vector<char> &pieces) {
@@ -115,36 +115,25 @@ namespace protochess_engine {
         gameState = GameState({8, 8});
     }
 
-    std::map<char, MovementPattern>
-    Chess::charToKnownMP(std::map<char, MovementPattern> &dictionary, std::vector<char> &pieces) {
-        std::map<char, MovementPattern> returnMap;
-        for (auto &x:pieces) {
-            if (x != ' ') {
-                if (dictionary.count(x) != 0) {
-                    returnMap.insert(
-                            std::make_pair(x, dictionary.at(x))
-                    );
-                }
-            }
-        }
-        return returnMap;
-    }
-
-    bool Chess::takeTurn(int startX, int startY, int endX, int endY, int whosTurn) {
+    TurnResult Chess::takeTurn(int startX, int startY, int endX, int endY, int whosTurn) {
         Location start = {startX, startY};
         std::shared_ptr<Piece> startPiece = gameState.pieceAt(start);
         if (startPiece != nullptr && whosTurn == gameState.getWhosTurn()) {
-            std::cout << "\n----";
-            std::cout << "Start piece: \n";
-            std::cout << startPiece;
-            std::cout << "\n";
             boost::uuids::uuid idHere = startPiece->getId();
 
             Location end = {endX, endY};
             LocationDelta delta = {start, end};
 
-
+            auto start = std::chrono::high_resolution_clock::now();
             std::map<boost::uuids::uuid, std::unordered_set<Move>> moves = gameState.generateMoves(whosTurn);
+
+            auto elapsed = std::chrono::high_resolution_clock::now() - start;
+
+            long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+
+            std::cout << "\nLEGAL MOVES TOOK:";
+            std::cout << microseconds;
+            std::cout << " MICROSECONDS\n";
 
 
             //Generate possible moves for this player
@@ -153,25 +142,29 @@ namespace protochess_engine {
                 for (auto &x : moves.at(idHere)) {
                     if (x.locationDelta == delta) {
 
-                        std::cout << "After eval piece\n";
-                        std::cout << gameState.pieceAt(delta.start);
-                        std::cout << "\n-----\n";
                         //Viable move!
                         //Perform move
                         gameState.makeMove(x);
                         gameState.incrementTurn();
-                        return true;
+                        return {true,
+                                gameState.getWhosTurn(),
+                                gameState.getCheckedPlayers(),
+                                gameState.getCheckMatedPlayers()};
                     }
                 }
             }
         }
-        return false;
+
+        return {false,
+                gameState.getWhosTurn(),
+                gameState.getCheckedPlayers(),
+                gameState.getCheckMatedPlayers()};
     }
 
     Chess::Chess() : gameState({8, 8}) {
     }
 
-    bool Chess::takeTurn(const std::string &start, const std::string &end, int whosTurn) {
+    TurnResult Chess::takeTurn(const std::string &start, const std::string &end, int whosTurn) {
         return takeTurn(
                 rankfile::toLocation(start).x,
                 rankfile::toLocation(start).y,
