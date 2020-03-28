@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <utility>
+#include <chrono>
 #include "gamestate.h"
 #include "bitsetutil.h"
 #include "movegen.h"
@@ -49,6 +50,10 @@ namespace protochess_engine {
             piece->setLocation(move.locationDelta.start,
                                bitsetUtil::getIndex(board.getWidth(), move.locationDelta.start));
 
+            //Promotions
+            if (move.promotion) {
+                piece->setCharRep(piece->getLastCharRep());
+            }
             if (move.capture) {
                 std::shared_ptr<Piece> captured = move.targetPiece;
                 players.at(captured->getOwner()).addPiece(captured);
@@ -82,6 +87,15 @@ namespace protochess_engine {
         std::shared_ptr<Piece> piece = pieceAt(move.locationDelta.start);
         //Move the piece
         if (piece != nullptr) {
+
+            //Promotions
+            if (move.promotion) {
+                piece->setLastCharRep(piece->getCharRep());
+                piece->setCharRep(move.promotedType);
+            }
+
+
+            //Captures and castles cannot both happen at the same time
             if (move.capture) {
 
                 std::shared_ptr<Piece> captured = move.targetPiece;
@@ -143,10 +157,13 @@ namespace protochess_engine {
 
     std::map<boost::uuids::uuid, std::unordered_set<Move>> GameState::generateMoves(int playerNum) {
         std::map<boost::uuids::uuid, std::unordered_set<Move>> moves = {};
+
+
         std::map<boost::uuids::uuid, std::unordered_set<Move>> pseudoMoves = movegen::generatePseudoLegalMoves(
                 *this,
                 players.at(playerNum),
                 board);
+
 
         for (auto &x:pseudoMoves) {
             for (const auto &y:x.second) {

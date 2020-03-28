@@ -97,6 +97,8 @@ namespace protochess_engine {
 
 namespace protochess_engine {
     struct Move {
+        bool promotion;
+        char promotedType;
         bool capture;
         ::std::shared_ptr<Piece> targetPiece;
         bool castleKingSide;
@@ -104,7 +106,10 @@ namespace protochess_engine {
         LocationDelta locationDelta;
 
         bool operator==(const Move &other) const {
-            return (capture == other.capture
+            return (
+                    promotion == other.promotion
+                    && promotedType == other.promotedType
+                    && capture == other.capture
                     && castleKingSide == other.castleKingSide
                     && castleQueenSide == other.castleQueenSide
                     && targetPiece == other.targetPiece
@@ -129,6 +134,8 @@ namespace std {
             // one member of 'Key' after the other:
             hash_combine(seed, hash_value(m.targetPiece));
             hash_combine(seed, hash_value(m.capture));
+            hash_combine(seed, hash_value(m.promotion));
+            hash_combine(seed, hash_value(m.promotedType));
             hash_combine(seed, hash_value(m.castleKingSide));
             hash_combine(seed, hash_value(m.castleQueenSide));
             hash_combine(seed, hash_value(m.locationDelta.start.x));

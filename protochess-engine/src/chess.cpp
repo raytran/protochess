@@ -6,6 +6,7 @@
 #include "rankfile.h"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <chrono>
 
 namespace protochess_engine {
     using boost::dynamic_bitset;
@@ -28,18 +29,18 @@ namespace protochess_engine {
 
         std::vector<char> wPieces = {
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', 'P', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', 'R', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 'P', 'P', 'P', 'P', 'P', 'P', 'P', ' ',
-                'R', ' ', ' ', ' ', 'K', ' ', ' ', 'R'
+                'R', ' ', ' ', 'Q', 'K', ' ', ' ', 'R'
         };
 
         std::vector<char> bPieces = {
                 'r', ' ', ' ', ' ', 'k', 'b', 'n', 'r',
-                'p', 'p', ' ', 'p', 'p', 'p', 'p', 'p',
+                'p', ' ', ' ', 'p', 'p', 'p', 'p', 'p',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
@@ -70,11 +71,20 @@ namespace protochess_engine {
                 if (pieces[index] != ' ') {
                     char charHere = pieces[index];
                     boost::uuids::uuid id = generator();
+
+                    bool promotable = charHere == 'p' || charHere == 'P';
+                    char promoteTo = ' ';
+                    if (promotable) {
+                        if (charHere == 'p') promoteTo = 'q';
+                        else promoteTo = 'Q';
+                    }
                     returnMap.insert(
                             std::make_pair(
                                     id,
                                     std::make_shared<Piece>(
                                             Piece(
+                                                    promotable,
+                                                    promoteTo,
                                                     charHere == 'k' || charHere == 'K',
                                                     owner,
                                                     id,
@@ -133,9 +143,12 @@ namespace protochess_engine {
             Location end = {endX, endY};
             LocationDelta delta = {start, end};
 
+
+            std::map<boost::uuids::uuid, std::unordered_set<Move>> moves = gameState.generateMoves(whosTurn);
+
+
             //Generate possible moves for this player
             //And check if the location delta matches
-            std::map<boost::uuids::uuid, std::unordered_set<Move>> moves = gameState.generateMoves(whosTurn);
             if (moves.count(idHere) != 0) {
                 for (auto &x : moves.at(idHere)) {
                     if (x.locationDelta == delta) {

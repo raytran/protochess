@@ -74,7 +74,6 @@ namespace protochess_engine {
 
     void Player::removePiece(boost::uuids::uuid id) {
         pieces.erase(id);
-        update();
     }
 
     void Player::addPiece(std::shared_ptr<Piece> piece) {

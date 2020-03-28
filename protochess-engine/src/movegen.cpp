@@ -2,8 +2,8 @@
 // Created by raytran on 3/25/20.
 //
 
-#include <iostream>
 #include "movegen.h"
+#include <iostream>
 #include "bitsetutil.h"
 #include "piecerules.h"
 #include "types.h"
@@ -59,11 +59,13 @@ namespace protochess_engine {
                 return returnSet;
             }
 
-            map<uuid, unordered_set<Move>>
-            generatePseudoMoveCaptures_(GameState &gameState, bool captures, Player &player, Board &board) {
-                map<uuid, unordered_set<Move>> returnSet = {};
+            void generatePseudoMoveCaptures_(map<uuid, unordered_set<Move>> &returnSet,
+                                             GameState &gameState,
+                                             bool captures,
+                                             Player &player,
+                                             Board &board) {
 
-                map<uuid, std::shared_ptr<Piece>> playerPieceMap = player.getPieces();
+                map<uuid, std::shared_ptr<Piece>> &playerPieceMap = player.getPieces();
                 map<char, MovementPattern> &playerMPmap = captures ? player.getCaptureMap()
                                                                    : player.getMovementMap();
                 dynamic_bitset<> allPlayerPieces = dynamic_bitset<>(board.getAllPieces());
@@ -78,12 +80,12 @@ namespace protochess_engine {
 
                 for (auto &x:playerPieceMap) {
                     //Determine which movement pattern to use
-                    MovementPattern thisMP;
+                    MovementPattern &thisMP = piecerules::moveRules.at('k');
                     if (playerMPmap.count(x.second->getCharRep()) != 0) {
                         thisMP = playerMPmap.at(x.second->getCharRep());
                     } else {
+                        std::cerr << x.second->getCharRep();
                         std::cerr << "WARNING: unknown piece MP; defaulting to king-style movement\n";
-                        thisMP = piecerules::moveRules.at('k');
                     }
 
                     //Squares that the piece can move to, including captures
@@ -161,11 +163,23 @@ namespace protochess_engine {
 
                             bool captureHere = (singleEndPoint & enemyPieces).any();
                             if (captures == captureHere) {
+
+
+                                bool promotion = false;
+                                char promoteTo = ' ';
+                                //Promotion
+                                if (delta.end.y == board.getHeight() - 1 && x.second->getPromotable()) {
+                                    promotion = true;
+                                    promoteTo = x.second->getPromoteTo();
+                                }
+
                                 if (returnSet.count(x.first) == 0) {
                                     returnSet.insert({x.first, unordered_set<Move>()});
                                 }
                                 returnSet.at(x.first).insert(
-                                        {captures,
+                                        {promotion,
+                                         promoteTo,
+                                         captures,
                                          gameState.pieceAt(delta.end),
                                          false,
                                          false,
@@ -175,16 +189,14 @@ namespace protochess_engine {
                         }
                     }
                 }
-                return returnSet;
             }
 
 
-            map<uuid, unordered_set<Move>>
-            generateCastlingPseudoMoves_(GameState &gameState,
-                                         map<uuid, unordered_set<Move>> &pseudoMoves,
-                                         Player &player,
-                                         Board &board) {
-                map<uuid, unordered_set<Move>> returnSet = {};
+            void generateCastlingPseudoMoves_(map<uuid, unordered_set<Move>> &returnSet,
+                                              GameState &gameState,
+                                              map<uuid, unordered_set<Move>> &pseudoMoves,
+                                              Player &player,
+                                              Board &board) {
 
                 //Check if this player can castle
                 if (player.canCastle()) {
@@ -197,7 +209,6 @@ namespace protochess_engine {
 
 
                     //Find the king
-
                     for (auto &x:player.getPieces()) {
                         //Check if this piece is a king that hasn't moved before
                         //And has ANY valid moves
@@ -235,6 +246,8 @@ namespace protochess_engine {
                                                 returnSet.insert({x.first, unordered_set<Move>()});
                                             }
                                             returnSet.at(x.first).insert({false,
+                                                                          ' ',
+                                                                          false,
                                                                           castlingRook,
                                                                           true,
                                                                           false,
@@ -280,6 +293,8 @@ namespace protochess_engine {
                                                 returnSet.insert({x.first, unordered_set<Move>()});
                                             }
                                             returnSet.at(x.first).insert({false,
+                                                                          ' ',
+                                                                          false,
                                                                           castlingRook,
                                                                           false,
                                                                           true,
@@ -290,12 +305,10 @@ namespace protochess_engine {
                                     break;
                                 }
                             }
-
                             break; //king check
                         }
                     }
                 }
-                return returnSet;
             } //genpseudocastle
         } //Anon namespace
 
@@ -303,46 +316,26 @@ namespace protochess_engine {
         map<uuid, unordered_set<Move>>
         generatePseudoLegalMoves(GameState &gameState, Player &player, Board &board) {
             map<uuid, unordered_set<Move>> returnMoves = {};
-
             //Calculate captures
-            map<uuid, unordered_set<Move>> captures = generatePseudoMoveCaptures_(gameState,
-                                                                                  true,
-                                                                                  player,
-                                                                                  board);
-            for (auto &x:captures) {
-                returnMoves.insert({x.first, x.second});
-            }
+            generatePseudoMoveCaptures_(returnMoves,
+                                        gameState,
+                                        true,
+                                        player,
+                                        board);
 
             //Calculate translations
-            map<uuid, unordered_set<Move>> translates = generatePseudoMoveCaptures_(gameState,
-                                                                                    false,
-                                                                                    player,
-                                                                                    board);
-
-            for (auto &x:translates) {
-                if (returnMoves.count(x.first) == 0) {
-                    returnMoves.insert({x.first, unordered_set<Move>()});
-                }
-                for (auto &y:x.second) {
-                    returnMoves.at(x.first).insert(y);
-                }
-            }
-
+            generatePseudoMoveCaptures_(returnMoves,
+                                        gameState,
+                                        false,
+                                        player,
+                                        board);
 
             //Calculate castling moves
-            map<uuid, unordered_set<Move>> castles = generateCastlingPseudoMoves_(gameState,
-                                                                                  returnMoves,
-                                                                                  player,
-                                                                                  board);
-
-            for (auto &x:castles) {
-                if (returnMoves.count(x.first) == 0) {
-                    returnMoves.insert({x.first, unordered_set<Move>()});
-                }
-                for (auto &y:x.second) {
-                    returnMoves.at(x.first).insert(y);
-                }
-            }
+            generateCastlingPseudoMoves_(returnMoves,
+                                         gameState,
+                                         returnMoves,
+                                         player,
+                                         board);
 
             return returnMoves;
         }
@@ -353,8 +346,8 @@ namespace protochess_engine {
             map<int, Player> &players = gameState.getPlayerMap();
 
             for (auto &x:players) {
-                map<uuid, unordered_set<Move>> captures =
-                        generatePseudoMoveCaptures_(gameState, true, x.second, board);
+                map<uuid, unordered_set<Move>> captures;
+                generatePseudoMoveCaptures_(captures, gameState, true, x.second, board);
 
                 for (auto &y:captures) {
                     for (auto &z:y.second) {
@@ -369,12 +362,24 @@ namespace protochess_engine {
         }
 
         bool isMoveValid(const Move &move, GameState &gameState, int playerNum, Board &board) {
-            bool returnVal = false;
+            bool returnVal = true;
             gameState.makeMove(move);
-            unordered_set<int> playersInCheck = movegen::playersInCheck(gameState, board);
-            if (playersInCheck.find(playerNum) == playersInCheck.end()) {
-                //This move is ok; does not brings player into check
-                returnVal = true;
+            for (auto &x:gameState.getPlayerMap()) {
+                //Calculate moves for other players
+                if (x.second.getPlayerNum() != playerNum) {
+                    map<uuid, unordered_set<Move>> captures;
+                    generatePseudoMoveCaptures_(captures, gameState, true, x.second, board);
+
+                    for (auto &y:captures) {
+                        for (auto &z:y.second) {
+                            //z.targetPiece
+                            if (z.targetPiece->getOwner() == playerNum && z.targetPiece->getAppliesCheck()) {
+                                returnVal = false;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
             gameState.unmakeMove(move);
             return returnVal;

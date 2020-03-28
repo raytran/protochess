@@ -12,7 +12,10 @@ namespace protochess_engine {
     class Piece {
     private:
         char charRep;
+        char lastCharRep;
         int owner;
+        bool promotable;
+        char promoteTo;
         bool lastMovedBefore = false;
         bool movedBefore = false;
         bool appliesCheck;
@@ -21,19 +24,30 @@ namespace protochess_engine {
         Location location;
         int locationIndex;
     public:
-        Piece(bool appliesCheck,
-              int owner,
-              boost::uuids::uuid id,
-              boost::dynamic_bitset<> bitset,
-              char charRep,
-              Location loc,
-              int locationIndex);
+        Piece(
+                bool promotable,
+                char promoteTo,
+                bool appliesCheck,
+                int owner,
+                boost::uuids::uuid id,
+                boost::dynamic_bitset<> bitset,
+                char charRep,
+                Location loc,
+                int locationIndex);
 
         bool getLastMovedBefore();
 
         void setLastMovedBefore(bool newVal);
 
         bool getMovedBefore();
+
+        bool getPromotable();
+
+        void setPromotable(bool newVal);
+
+        char getPromoteTo();
+
+        void setPromoteTo(char newChar);
 
         void setMovedBefore(bool newVal);
 
@@ -48,6 +62,11 @@ namespace protochess_engine {
         char getCharRep() const;
 
         void setCharRep(char c);
+
+
+        char getLastCharRep() const;
+
+        void setLastCharRep(char c);
 
         Location getLocation() const;
 

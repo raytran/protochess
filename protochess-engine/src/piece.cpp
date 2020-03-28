@@ -7,13 +7,17 @@
 #include "bitsetutil.h"
 
 namespace protochess_engine {
-    Piece::Piece(bool appliesCheck, int owner, boost::uuids::uuid id, boost::dynamic_bitset<> bitset, char charRep,
+    Piece::Piece(bool promotable, char promoteTo, bool appliesCheck, int owner, boost::uuids::uuid id,
+                 boost::dynamic_bitset<> bitset, char charRep,
                  Location loc, int index) :
+            promotable(promotable),
+            promoteTo(promoteTo),
             appliesCheck(appliesCheck),
             owner(owner),
             id(id),
             bitset(bitset),
             charRep(charRep),
+            lastCharRep(charRep),
             location(loc),
             locationIndex(index) {
     }
@@ -75,6 +79,31 @@ namespace protochess_engine {
 
     bool Piece::getLastMovedBefore() {
         return lastMovedBefore;
+    }
+
+    bool Piece::getPromotable() {
+        return promotable;
+    }
+
+    void Piece::setPromotable(bool newVal) {
+        promotable = newVal;
+    }
+
+
+    char Piece::getPromoteTo() {
+        return promoteTo;
+    }
+
+    void Piece::setPromoteTo(char newChar) {
+        promoteTo = newChar;
+    }
+
+    char Piece::getLastCharRep() const {
+        return lastCharRep;
+    }
+
+    void Piece::setLastCharRep(char c) {
+        lastCharRep = c;
     }
 }
 
