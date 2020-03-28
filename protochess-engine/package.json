@@ -1,0 +1,23 @@
+{
+  "name": "protochess-engine",
+  "version": "1.0.0",
+  "description": "protochess backend",
+  "main": "index.ts",
+  "gypfile": true,
+  "scripts": {
+    "test": "ts-node index.ts",
+    "build": "node-gyp rebuild",
+    "clean": "node-gyp clean"
+  },
+  "devDependencies": {
+    "ts-node": "^8.1.0",
+    "typescript": "^3.4.5",
+    "node-gyp": "^3.3.1"
+  },
+  "dependencies": {
+    "bindings": "~1.2.1",
+    "node-addon-api": "^2.0.0"
+  },
+  "author": "Raymond Tran",
+  "license": "ISC"
+}

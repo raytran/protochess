@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "shared/chess.h"
+#include "../include/shared/chess.h"
 #include "bitsetutil.h"
 #include "piecerules.h"
 #include "rankfile.h"
@@ -30,18 +30,18 @@ namespace protochess_engine {
 
         std::vector<char> wPieces = {
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', 'P', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                'P', 'P', 'P', 'P', 'P', 'P', 'P', ' ',
-                'R', ' ', ' ', 'Q', 'K', ' ', ' ', 'R'
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
+                'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'
         };
 
         std::vector<char> bPieces = {
-                ' ', ' ', ' ', ' ', 'k', 'b', 'n', 'r',
-                'p', ' ', ' ', 'p', 'p', 'p', 'p', 'p',
+                'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
+                'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',

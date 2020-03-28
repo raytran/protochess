@@ -7,7 +7,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 #include <unordered_set>
-#include <shared/chess.h>
+#include "../include/shared/chess.h"
 #include "types.h"
 #include "player.h"
 #include "board.h"

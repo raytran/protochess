@@ -46,6 +46,6 @@ namespace protochess_engine {
 
         Location getLoc(int width, int index);
 
-        unsigned long findLast(const dynamic_bitset<> &bitset);
+        long findLast(const dynamic_bitset<> &bitset);
     }
 }

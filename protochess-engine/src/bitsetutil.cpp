@@ -76,9 +76,9 @@ namespace protochess_engine {
         }
 
         //Like find_first, but for last
-        unsigned long findLast(const dynamic_bitset<> &bitset) {
-            unsigned long index = -1;
-            for (unsigned long i = bitset.size() - 1; i >= 0; i--) {
+        long findLast(const dynamic_bitset<> &bitset) {
+            long index = -1;
+            for (long i = bitset.size() - 1; i >= 0; i--) {
                 if (bitset[i]) {
                     index = i;
                     break;
