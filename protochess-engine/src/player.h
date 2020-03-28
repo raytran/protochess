@@ -29,7 +29,7 @@ namespace protochess_engine {
         //How this player defines each piece to capture
         std::map<char, MovementPattern> captureMap;
     public:
-        Player(int playerNum);
+        explicit Player(int playerNum);
 
         explicit Player(int playerNum, std::string name);
 
@@ -39,7 +39,7 @@ namespace protochess_engine {
 
         void removePiece(boost::uuids::uuid pieceId);
 
-        void addPiece(std::shared_ptr<Piece> piece);
+        void addPiece(const std::shared_ptr<Piece> &piece);
 
         void update();
 

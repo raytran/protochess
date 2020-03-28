@@ -51,7 +51,7 @@ namespace protochess_engine {
         }
 
         std::string bitsetToString(const dynamic_bitset<> &bitboard, const Dimensions &dimensions) {
-            std::string returnString = "";
+            std::string returnString;
             int width = dimensions.width;
             int height = dimensions.height;
             for (int y = height - 1; y >= 0; y--) {

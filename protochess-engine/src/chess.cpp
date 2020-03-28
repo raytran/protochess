@@ -7,6 +7,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <chrono>
+#include <utility>
 
 namespace protochess_engine {
     using boost::dynamic_bitset;
@@ -17,7 +18,7 @@ namespace protochess_engine {
     }
 
     int Chess::registerPlayer(std::string playerName) {
-        return gameState.registerPlayer(playerName);
+        return gameState.registerPlayer(std::move(playerName));
     }
 
     void Chess::buildClassicSet() {

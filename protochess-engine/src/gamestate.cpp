@@ -150,7 +150,7 @@ namespace protochess_engine {
     }
 
     int GameState::registerPlayer(std::string name) {
-        players.insert({playerCounter, Player(playerCounter, name)});
+        players.insert({playerCounter, Player(playerCounter, std::move(name))});
         playerCounter++;
         return playerCounter - 1;
     }

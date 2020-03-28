@@ -3,12 +3,14 @@
 //
 
 #include <iostream>
+#include <utility>
+#include <utility>
 #include "player.h"
 
 namespace protochess_engine {
     Player::Player(int playerNum) : playerNum(playerNum), name("Anon") {}
 
-    Player::Player(int playerNum, std::string name) : playerNum(playerNum), name(name) {}
+    Player::Player(int playerNum, std::string name) : playerNum(playerNum), name(std::move(std::move(name))) {}
 
     std::string Player::getName() {
         return name;
@@ -43,7 +45,7 @@ namespace protochess_engine {
     }
 
     void Player::setMovementMap(std::map<char, MovementPattern> map) {
-        movementMap = map;
+        movementMap = std::move(map);
     }
 
 
@@ -52,7 +54,7 @@ namespace protochess_engine {
     }
 
     void Player::setCaptureMap(std::map<char, MovementPattern> map) {
-        captureMap = map;
+        captureMap = std::move(map);
     }
 
     boost::dynamic_bitset<> Player::getAllPiecesBitset() {
@@ -86,7 +88,7 @@ namespace protochess_engine {
         }
     }
 
-    void Player::addPiece(std::shared_ptr<Piece> piece) {
+    void Player::addPiece(const std::shared_ptr<Piece> &piece) {
         pieces.insert({piece->getId(), piece});
     }
 

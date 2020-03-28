@@ -151,41 +151,40 @@ namespace protochess_engine {
                     //Filter out attacks on your own pieces
                     validSquares &= ~thisPlayerPieces;
 
+                    //Filter valid squares according to whether we want captures only
+                    //Or non-captures only
+                    if (captures) {
+                        validSquares &= enemyPieces;
+                    } else {
+                        validSquares &= ~enemyPieces;
+                    }
+
                     //Convert the valid squares board to moves
                     if (validSquares.any()) {
                         std::vector<LocationDelta> deltas = bitboardsToDeltas(board.getDimensions(),
                                                                               x.second->getBitset(),
                                                                               validSquares);
                         for (auto &delta : deltas) {
-
-                            dynamic_bitset<> singleEndPoint(board.getWidth() * board.getHeight());
-                            singleEndPoint.set(bitsetUtil::getIndex(board.getWidth(), delta.end), true);
-
-                            bool captureHere = (singleEndPoint & enemyPieces).any();
-                            if (captures == captureHere) {
-
-
-                                bool promotion = false;
-                                char promoteTo = ' ';
-                                //Promotion
-                                if (delta.end.y == board.getHeight() - 1 && x.second->getPromotable()) {
-                                    promotion = true;
-                                    promoteTo = x.second->getPromoteTo();
-                                }
-
-                                if (returnSet.count(x.first) == 0) {
-                                    returnSet.insert({x.first, unordered_set<Move>()});
-                                }
-                                returnSet.at(x.first).insert(
-                                        {promotion,
-                                         promoteTo,
-                                         captures,
-                                         gameState.pieceAt(delta.end),
-                                         false,
-                                         false,
-                                         delta}
-                                );
+                            bool promotion = false;
+                            char promoteTo = ' ';
+                            //Promotion
+                            if (delta.end.y == board.getHeight() - 1 && x.second->getPromotable()) {
+                                promotion = true;
+                                promoteTo = x.second->getPromoteTo();
                             }
+
+                            if (returnSet.count(x.first) == 0) {
+                                returnSet.insert({x.first, unordered_set<Move>()});
+                            }
+                            returnSet.at(x.first).insert(
+                                    {promotion,
+                                     promoteTo,
+                                     captures,
+                                     gameState.pieceAt(delta.end),
+                                     false,
+                                     false,
+                                     delta}
+                            );
                         }
                     }
                 }

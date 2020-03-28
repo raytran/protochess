@@ -3,6 +3,8 @@
 //
 
 #include <iostream>
+#include <utility>
+#include <utility>
 #include "piece.h"
 #include "bitsetutil.h"
 
@@ -15,7 +17,7 @@ namespace protochess_engine {
             appliesCheck(appliesCheck),
             owner(owner),
             id(id),
-            bitset(bitset),
+            bitset(std::move(std::move(bitset))),
             charRep(charRep),
             lastCharRep(charRep),
             location(loc),
