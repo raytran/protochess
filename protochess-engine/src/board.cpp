@@ -7,6 +7,7 @@
 #include "bitsetutil.h"
 
 namespace protochess_engine {
+    using boost::dynamic_bitset;
     Board::Board(int width, int height) : dimensions({width, height}),
                                           allPieces(width * height),
                                           leftMostFile(width * height),
@@ -18,11 +19,11 @@ namespace protochess_engine {
         }
 
         //Initialize left & right file masks
-        boost::dynamic_bitset<> cumulativeLeft(width * height);
-        boost::dynamic_bitset<> cumulativeRight(width * height);
+        dynamic_bitset<> cumulativeLeft(width * height);
+        dynamic_bitset<> cumulativeRight(width * height);
         for (int i = 0; i < width; i++) {
-            boost::dynamic_bitset<> newLeft(width * height);
-            boost::dynamic_bitset<> newRight(width * height);
+            dynamic_bitset<> newLeft(width * height);
+            dynamic_bitset<> newRight(width * height);
             newLeft |= cumulativeLeft;
             newRight |= cumulativeRight;
 
@@ -37,24 +38,24 @@ namespace protochess_engine {
         }
 
         //Initialize ray attacks
-        rayAttacks.insert({NORTH, std::vector<boost::dynamic_bitset<>>()});
-        rayAttacks.insert({EAST, std::vector<boost::dynamic_bitset<>>()});
-        rayAttacks.insert({SOUTH, std::vector<boost::dynamic_bitset<>>()});
-        rayAttacks.insert({WEST, std::vector<boost::dynamic_bitset<>>()});
-        rayAttacks.insert({NORTHEAST, std::vector<boost::dynamic_bitset<>>()});
-        rayAttacks.insert({NORTHWEST, std::vector<boost::dynamic_bitset<>>()});
-        rayAttacks.insert({SOUTHEAST, std::vector<boost::dynamic_bitset<>>()});
-        rayAttacks.insert({SOUTHWEST, std::vector<boost::dynamic_bitset<>>()});
+        rayAttacks.insert({NORTH, std::vector<dynamic_bitset<>>()});
+        rayAttacks.insert({EAST, std::vector<dynamic_bitset<>>()});
+        rayAttacks.insert({SOUTH, std::vector<dynamic_bitset<>>()});
+        rayAttacks.insert({WEST, std::vector<dynamic_bitset<>>()});
+        rayAttacks.insert({NORTHEAST, std::vector<dynamic_bitset<>>()});
+        rayAttacks.insert({NORTHWEST, std::vector<dynamic_bitset<>>()});
+        rayAttacks.insert({SOUTHEAST, std::vector<dynamic_bitset<>>()});
+        rayAttacks.insert({SOUTHWEST, std::vector<dynamic_bitset<>>()});
 
         int numBits = width * height;
-        rayAttacks.at(NORTH).assign(numBits, boost::dynamic_bitset<>(numBits));
-        rayAttacks.at(EAST).assign(numBits, boost::dynamic_bitset<>(numBits));
-        rayAttacks.at(SOUTH).assign(numBits, boost::dynamic_bitset<>(numBits));
-        rayAttacks.at(WEST).assign(numBits, boost::dynamic_bitset<>(numBits));
-        rayAttacks.at(NORTHEAST).assign(numBits, boost::dynamic_bitset<>(numBits));
-        rayAttacks.at(NORTHWEST).assign(numBits, boost::dynamic_bitset<>(numBits));
-        rayAttacks.at(SOUTHEAST).assign(numBits, boost::dynamic_bitset<>(numBits));
-        rayAttacks.at(SOUTHWEST).assign(numBits, boost::dynamic_bitset<>(numBits));
+        rayAttacks.at(NORTH).assign(numBits, dynamic_bitset<>(numBits));
+        rayAttacks.at(EAST).assign(numBits, dynamic_bitset<>(numBits));
+        rayAttacks.at(SOUTH).assign(numBits, dynamic_bitset<>(numBits));
+        rayAttacks.at(WEST).assign(numBits, dynamic_bitset<>(numBits));
+        rayAttacks.at(NORTHEAST).assign(numBits, dynamic_bitset<>(numBits));
+        rayAttacks.at(NORTHWEST).assign(numBits, dynamic_bitset<>(numBits));
+        rayAttacks.at(SOUTHEAST).assign(numBits, dynamic_bitset<>(numBits));
+        rayAttacks.at(SOUTHWEST).assign(numBits, dynamic_bitset<>(numBits));
 
         //Generate lookup tables
         //lookup tables do not contain same square
@@ -122,11 +123,11 @@ namespace protochess_engine {
         }
     }
 
-    boost::dynamic_bitset<> Board::getRightMostFile() const {
+    dynamic_bitset<> Board::getRightMostFile() const {
         return rightMostFile;
     }
 
-    boost::dynamic_bitset<> Board::getLeftMostFile() const {
+    dynamic_bitset<> Board::getLeftMostFile() const {
         return leftMostFile;
     }
 
@@ -148,7 +149,7 @@ namespace protochess_engine {
         }
     }
 
-    boost::dynamic_bitset<> Board::getAllPieces() const {
+    dynamic_bitset<> Board::getAllPieces() const {
         return allPieces;
     }
 
@@ -156,20 +157,20 @@ namespace protochess_engine {
         return dimensions;
     }
 
-    boost::dynamic_bitset<> Board::getRayAttack(const Direction &dir, const int &index) {
+    dynamic_bitset<> Board::getRayAttack(const Direction &dir, const int &index) {
         return rayAttacks.at(dir)[index];
     }
 
-    boost::dynamic_bitset<> Board::getRightMask(int numCols) const {
+    dynamic_bitset<> Board::getRightMask(int numCols) const {
         if (numCols == 0) {
-            return boost::dynamic_bitset<>(getWidth() * getHeight());
+            return dynamic_bitset<>(getWidth() * getHeight());
         }
         return rightMasks[numCols - 1];
     }
 
-    boost::dynamic_bitset<> Board::getLeftMask(int numCols) const {
+    dynamic_bitset<> Board::getLeftMask(int numCols) const {
         if (numCols == 0) {
-            return boost::dynamic_bitset<>(getWidth() * getHeight());
+            return dynamic_bitset<>(getWidth() * getHeight());
         }
         return leftMasks[numCols - 1];
     }

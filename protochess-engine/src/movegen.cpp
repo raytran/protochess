@@ -10,14 +10,19 @@
 #include <chrono>
 
 namespace protochess_engine {
-    using namespace bitsetUtil;
     namespace movegen {
+        using namespace bitsetUtil;
+        using boost::dynamic_bitset;
+        using boost::uuids::uuid;
+        using std::map;
+        using std::unordered_set;
         namespace {
-            boost::dynamic_bitset<>
-            calculatePositiveAttacks(const Direction &dir, Board &board, const boost::dynamic_bitset<> &positiveAttack,
-                                     const boost::dynamic_bitset<> &allPieces) {
-                boost::dynamic_bitset<> returnAttack(positiveAttack);
-                boost::dynamic_bitset<> blockers = positiveAttack & allPieces;
+            dynamic_bitset<> calculatePositiveAttacks(const Direction &dir,
+                                                      Board &board,
+                                                      const dynamic_bitset<> &positiveAttack,
+                                                      const dynamic_bitset<> &allPieces) {
+                dynamic_bitset<> returnAttack(positiveAttack);
+                dynamic_bitset<> blockers = positiveAttack & allPieces;
                 if (blockers.any()) {
                     //Piece is being blocked
                     returnAttack = positiveAttack ^ board.getRayAttack(dir, blockers.find_first());
@@ -25,11 +30,12 @@ namespace protochess_engine {
                 return returnAttack;
             }
 
-            boost::dynamic_bitset<>
-            calculateNegativeAttacks(const Direction &dir, Board &board, const boost::dynamic_bitset<> &negativeAttack,
-                                     const boost::dynamic_bitset<> &allPieces) {
-                boost::dynamic_bitset<> returnAttack(negativeAttack);
-                boost::dynamic_bitset<> blockers = negativeAttack & allPieces;
+            dynamic_bitset<> calculateNegativeAttacks(const Direction &dir,
+                                                      Board &board,
+                                                      const dynamic_bitset<> &negativeAttack,
+                                                      const dynamic_bitset<> &allPieces) {
+                dynamic_bitset<> returnAttack(negativeAttack);
+                dynamic_bitset<> blockers = negativeAttack & allPieces;
                 if (blockers.any()) {
                     //Piece is being blocked
                     returnAttack = negativeAttack ^ board.getRayAttack(dir, bitsetUtil::findLast(blockers));
@@ -38,13 +44,13 @@ namespace protochess_engine {
             }
 
             std::vector<LocationDelta> bitboardsToDeltas(const Dimensions &dimensions,
-                                                         const boost::dynamic_bitset<> &onePiece,
-                                                         boost::dynamic_bitset<> destinations) {
+                                                         const dynamic_bitset<> &onePiece,
+                                                         dynamic_bitset<> destinations) {
 
                 std::vector<LocationDelta> returnSet;
                 Location start = bitsetUtil::getLoc(dimensions.width, onePiece.find_first());
 
-                while (destinations.find_first() != boost::dynamic_bitset<>::npos) {
+                while (destinations.find_first() != dynamic_bitset<>::npos) {
                     size_type index = destinations.find_first();
                     Location end = bitsetUtil::getLoc(dimensions.width, index);
                     returnSet.push_back({start, end});
@@ -53,20 +59,20 @@ namespace protochess_engine {
                 return returnSet;
             }
 
-            std::map<boost::uuids::uuid, std::unordered_set<Move>>
+            map<uuid, unordered_set<Move>>
             generatePseudoMoveCaptures_(GameState &gameState, bool captures, Player &player, Board &board) {
-                std::map<boost::uuids::uuid, std::unordered_set<Move>> returnSet = {};
+                map<uuid, unordered_set<Move>> returnSet = {};
 
-                std::map<boost::uuids::uuid, std::shared_ptr<Piece>> playerPieceMap = player.getPieces();
-                std::map<char, MovementPattern> &playerMPmap = captures ? player.getCaptureMap()
-                                                                        : player.getMovementMap();
-                boost::dynamic_bitset<> allPlayerPieces = boost::dynamic_bitset<>(board.getAllPieces());
+                map<uuid, std::shared_ptr<Piece>> playerPieceMap = player.getPieces();
+                map<char, MovementPattern> &playerMPmap = captures ? player.getCaptureMap()
+                                                                   : player.getMovementMap();
+                dynamic_bitset<> allPlayerPieces = dynamic_bitset<>(board.getAllPieces());
 
                 //Generate all of this player's pieces
-                boost::dynamic_bitset<> thisPlayerPieces = player.getAllPiecesBitset();
+                dynamic_bitset<> thisPlayerPieces = player.getAllPiecesBitset();
 
                 //generate enemies
-                boost::dynamic_bitset<> enemyPieces;
+                dynamic_bitset<> enemyPieces;
                 enemyPieces = allPlayerPieces & (~thisPlayerPieces);
 
 
@@ -81,7 +87,7 @@ namespace protochess_engine {
                     }
 
                     //Squares that the piece can move to, including captures
-                    boost::dynamic_bitset<> validSquares(board.getWidth() * board.getHeight());
+                    dynamic_bitset<> validSquares(board.getWidth() * board.getHeight());
                     int locIndex = x.second->getLocationIndex();
                     //SLIDING MOVES:
                     //POSITIVE ATTACKS
@@ -150,13 +156,13 @@ namespace protochess_engine {
                                                                               validSquares);
                         for (auto &delta : deltas) {
 
-                            boost::dynamic_bitset<> singleEndPoint(board.getWidth() * board.getHeight());
+                            dynamic_bitset<> singleEndPoint(board.getWidth() * board.getHeight());
                             singleEndPoint.set(bitsetUtil::getIndex(board.getWidth(), delta.end), true);
 
                             bool captureHere = (singleEndPoint & enemyPieces).any();
                             if (captures == captureHere) {
                                 if (returnSet.count(x.first) == 0) {
-                                    returnSet.insert({x.first, std::unordered_set<Move>()});
+                                    returnSet.insert({x.first, unordered_set<Move>()});
                                 }
                                 returnSet.at(x.first).insert(
                                         {captures,
@@ -173,20 +179,20 @@ namespace protochess_engine {
             }
 
 
-            std::map<boost::uuids::uuid, std::unordered_set<Move>>
+            map<uuid, unordered_set<Move>>
             generateCastlingPseudoMoves_(GameState &gameState,
-                                         std::map<boost::uuids::uuid, std::unordered_set<Move>> &pseudoMoves,
+                                         map<uuid, unordered_set<Move>> &pseudoMoves,
                                          Player &player,
                                          Board &board) {
-                std::map<boost::uuids::uuid, std::unordered_set<Move>> returnSet = {};
+                map<uuid, unordered_set<Move>> returnSet = {};
 
                 //Check if this player can castle
                 if (player.canCastle()) {
-                    boost::dynamic_bitset<> allPlayerPieces = boost::dynamic_bitset<>(board.getAllPieces());
+                    dynamic_bitset<> allPlayerPieces = dynamic_bitset<>(board.getAllPieces());
                     //Generate all of this player's pieces
-                    boost::dynamic_bitset<> thisPlayerPieces = player.getAllPiecesBitset();
+                    dynamic_bitset<> thisPlayerPieces = player.getAllPiecesBitset();
                     //generate enemies
-                    boost::dynamic_bitset<> enemyPieces;
+                    dynamic_bitset<> enemyPieces;
                     enemyPieces = allPlayerPieces & (~thisPlayerPieces);
 
 
@@ -213,7 +219,7 @@ namespace protochess_engine {
                                         //Is occupied by a piece that is a rook that hasn't moved yet
                                         Location end = z.locationDelta.end;
                                         end.x += 1;
-                                        boost::dynamic_bitset<> nextSquare(board.getWidth() * board.getHeight());
+                                        dynamic_bitset<> nextSquare(board.getWidth() * board.getHeight());
                                         nextSquare.set(bitsetUtil::getIndex(board.getWidth(), end), true);
                                         Location castlingRookLoc = end;
                                         castlingRookLoc.x += 1;
@@ -226,7 +232,7 @@ namespace protochess_engine {
                                             (castlingRook->getCharRep() == 'r' || castlingRook->getCharRep() == 'R')) {
                                             //Add the pseudo move
                                             if (returnSet.count(x.first) == 0) {
-                                                returnSet.insert({x.first, std::unordered_set<Move>()});
+                                                returnSet.insert({x.first, unordered_set<Move>()});
                                             }
                                             returnSet.at(x.first).insert({false,
                                                                           castlingRook,
@@ -252,7 +258,7 @@ namespace protochess_engine {
 
                                         Location end = z.locationDelta.end;
                                         end.x -= 1;
-                                        boost::dynamic_bitset<> nextSquare(board.getWidth() * board.getHeight());
+                                        dynamic_bitset<> nextSquare(board.getWidth() * board.getHeight());
                                         nextSquare.set(bitsetUtil::getIndex(board.getWidth(), end), true);
 
                                         //Make sure the square next to the rook is empty as well
@@ -271,7 +277,7 @@ namespace protochess_engine {
                                             (castlingRook->getCharRep() == 'r' || castlingRook->getCharRep() == 'R')) {
                                             //Add the pseudo move
                                             if (returnSet.count(x.first) == 0) {
-                                                returnSet.insert({x.first, std::unordered_set<Move>()});
+                                                returnSet.insert({x.first, unordered_set<Move>()});
                                             }
                                             returnSet.at(x.first).insert({false,
                                                                           castlingRook,
@@ -294,28 +300,28 @@ namespace protochess_engine {
         } //Anon namespace
 
 
-        std::map<boost::uuids::uuid, std::unordered_set<Move>>
+        map<uuid, unordered_set<Move>>
         generatePseudoLegalMoves(GameState &gameState, Player &player, Board &board) {
-            std::map<boost::uuids::uuid, std::unordered_set<Move>> returnMoves = {};
+            map<uuid, unordered_set<Move>> returnMoves = {};
 
             //Calculate captures
-            std::map<boost::uuids::uuid, std::unordered_set<Move>> captures = generatePseudoMoveCaptures_(gameState,
-                                                                                                          true,
-                                                                                                          player,
-                                                                                                          board);
+            map<uuid, unordered_set<Move>> captures = generatePseudoMoveCaptures_(gameState,
+                                                                                  true,
+                                                                                  player,
+                                                                                  board);
             for (auto &x:captures) {
                 returnMoves.insert({x.first, x.second});
             }
 
             //Calculate translations
-            std::map<boost::uuids::uuid, std::unordered_set<Move>> translates = generatePseudoMoveCaptures_(gameState,
-                                                                                                            false,
-                                                                                                            player,
-                                                                                                            board);
+            map<uuid, unordered_set<Move>> translates = generatePseudoMoveCaptures_(gameState,
+                                                                                    false,
+                                                                                    player,
+                                                                                    board);
 
             for (auto &x:translates) {
                 if (returnMoves.count(x.first) == 0) {
-                    returnMoves.insert({x.first, std::unordered_set<Move>()});
+                    returnMoves.insert({x.first, unordered_set<Move>()});
                 }
                 for (auto &y:x.second) {
                     returnMoves.at(x.first).insert(y);
@@ -324,14 +330,14 @@ namespace protochess_engine {
 
 
             //Calculate castling moves
-            std::map<boost::uuids::uuid, std::unordered_set<Move>> castles = generateCastlingPseudoMoves_(gameState,
-                                                                                                          returnMoves,
-                                                                                                          player,
-                                                                                                          board);
+            map<uuid, unordered_set<Move>> castles = generateCastlingPseudoMoves_(gameState,
+                                                                                  returnMoves,
+                                                                                  player,
+                                                                                  board);
 
             for (auto &x:castles) {
                 if (returnMoves.count(x.first) == 0) {
-                    returnMoves.insert({x.first, std::unordered_set<Move>()});
+                    returnMoves.insert({x.first, unordered_set<Move>()});
                 }
                 for (auto &y:x.second) {
                     returnMoves.at(x.first).insert(y);
@@ -342,13 +348,12 @@ namespace protochess_engine {
         }
 
 
-
-        std::unordered_set<int> playersInCheck(GameState &gameState, Board &board) {
-            std::unordered_set<int> playersInCheck = {};
-            std::map<int, Player> &players = gameState.getPlayerMap();
+        unordered_set<int> playersInCheck(GameState &gameState, Board &board) {
+            unordered_set<int> playersInCheck = {};
+            map<int, Player> &players = gameState.getPlayerMap();
 
             for (auto &x:players) {
-                std::map<boost::uuids::uuid, std::unordered_set<Move>> captures =
+                map<uuid, unordered_set<Move>> captures =
                         generatePseudoMoveCaptures_(gameState, true, x.second, board);
 
                 for (auto &y:captures) {
@@ -366,7 +371,7 @@ namespace protochess_engine {
         bool isMoveValid(const Move &move, GameState &gameState, int playerNum, Board &board) {
             bool returnVal = false;
             gameState.makeMove(move);
-            std::unordered_set<int> playersInCheck = movegen::playersInCheck(gameState, board);
+            unordered_set<int> playersInCheck = movegen::playersInCheck(gameState, board);
             if (playersInCheck.find(playerNum) == playersInCheck.end()) {
                 //This move is ok; does not brings player into check
                 returnVal = true;

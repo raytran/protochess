@@ -9,13 +9,15 @@
 #include "player.h"
 
 namespace protochess_engine {
+    using boost::dynamic_bitset;
+
     class Board {
     private:
         Dimensions dimensions;
-        boost::dynamic_bitset<> allPieces;
-        boost::dynamic_bitset<> leftMostFile;
-        boost::dynamic_bitset<> rightMostFile;
-        std::map<Direction, std::vector<boost::dynamic_bitset<>>> rayAttacks;
+        dynamic_bitset<> allPieces;
+        dynamic_bitset<> leftMostFile;
+        dynamic_bitset<> rightMostFile;
+        std::map<Direction, std::vector<dynamic_bitset<>>> rayAttacks;
 
         /*
         Contains file masks (0 indexed) s.t.
@@ -43,8 +45,8 @@ namespace protochess_engine {
          */
 
 
-        std::vector<boost::dynamic_bitset<>> leftMasks;
-        std::vector<boost::dynamic_bitset<>> rightMasks;
+        std::vector<dynamic_bitset<>> leftMasks;
+        std::vector<dynamic_bitset<>> rightMasks;
     public:
         Board(int width, int height);
 
@@ -54,17 +56,17 @@ namespace protochess_engine {
 
         int getHeight() const;
 
-        boost::dynamic_bitset<> getRayAttack(const Direction &dir, const int &index);
+        dynamic_bitset<> getRayAttack(const Direction &dir, const int &index);
 
-        boost::dynamic_bitset<> getRightMostFile() const;
+        dynamic_bitset<> getRightMostFile() const;
 
-        boost::dynamic_bitset<> getLeftMostFile() const;
+        dynamic_bitset<> getLeftMostFile() const;
 
-        boost::dynamic_bitset<> getAllPieces() const;
+        dynamic_bitset<> getAllPieces() const;
 
-        boost::dynamic_bitset<> getRightMask(int numCols) const;
+        dynamic_bitset<> getRightMask(int numCols) const;
 
-        boost::dynamic_bitset<> getLeftMask(int numCols) const;
+        dynamic_bitset<> getLeftMask(int numCols) const;
 
         Dimensions getDimensions() const;
     };

@@ -8,6 +8,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 
 namespace protochess_engine {
+    using boost::dynamic_bitset;
     std::string Chess::toString() {
         std::string returnString;
         returnString += gameState.toString();
@@ -77,8 +78,8 @@ namespace protochess_engine {
                                                     charHere == 'k' || charHere == 'K',
                                                     owner,
                                                     id,
-                                                    boost::dynamic_bitset<>(gameState.getWidth()
-                                                                            * gameState.getHeight()),
+                                                    dynamic_bitset<>(gameState.getWidth()
+                                                                     * gameState.getHeight()),
                                                     charHere,
                                                     {x, y},
                                                     bitsetUtil::getIndex(gameState.getWidth(),

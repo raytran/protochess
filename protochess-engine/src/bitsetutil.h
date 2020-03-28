@@ -12,38 +12,40 @@
 //Bitboard utility functions
 namespace protochess_engine {
     namespace bitsetUtil {
-        boost::dynamic_bitset<> translate(Location delta, const boost::dynamic_bitset<> &in, const Board &board);
+        using boost::dynamic_bitset;
 
-        boost::dynamic_bitset<>
-        east(int amt, const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<> translate(Location delta, const dynamic_bitset<> &in, const Board &board);
 
-        boost::dynamic_bitset<>
-        west(int amt, const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<>
+        east(int amt, const dynamic_bitset<> &in, const Board &board);
 
-        boost::dynamic_bitset<>
-        north(int amt, const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<>
+        west(int amt, const dynamic_bitset<> &in, const Board &board);
 
-        boost::dynamic_bitset<>
-        south(int amt, const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<>
+        north(int amt, const dynamic_bitset<> &in, const Board &board);
 
-        boost::dynamic_bitset<>
-        northEastOne(const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<>
+        south(int amt, const dynamic_bitset<> &in, const Board &board);
 
-        boost::dynamic_bitset<>
-        northWestOne(const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<>
+        northEastOne(const dynamic_bitset<> &in, const Board &board);
 
-        boost::dynamic_bitset<>
-        southEastOne(const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<>
+        northWestOne(const dynamic_bitset<> &in, const Board &board);
 
-        boost::dynamic_bitset<>
-        southWestOne(const boost::dynamic_bitset<> &in, const Board &board);
+        dynamic_bitset<>
+        southEastOne(const dynamic_bitset<> &in, const Board &board);
 
-        std::string bitsetToString(const boost::dynamic_bitset<> &bitset, const Dimensions &dimensions);
+        dynamic_bitset<>
+        southWestOne(const dynamic_bitset<> &in, const Board &board);
+
+        std::string bitsetToString(const dynamic_bitset<> &bitset, const Dimensions &dimensions);
 
         int getIndex(int width, Location loc);
 
         Location getLoc(int width, int index);
 
-        unsigned long findLast(const boost::dynamic_bitset<> &bitset);
+        unsigned long findLast(const dynamic_bitset<> &bitset);
     }
 }
