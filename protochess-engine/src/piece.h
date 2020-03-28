@@ -13,6 +13,7 @@ namespace protochess_engine {
     private:
         char charRep;
         int owner;
+        bool lastMovedBefore = false;
         bool movedBefore = false;
         bool appliesCheck;
         boost::uuids::uuid id;
@@ -28,7 +29,13 @@ namespace protochess_engine {
               Location loc,
               int locationIndex);
 
+        bool getLastMovedBefore();
+
+        void setLastMovedBefore(bool newVal);
+
         bool getMovedBefore();
+
+        void setMovedBefore(bool newVal);
 
         bool getAppliesCheck();
 

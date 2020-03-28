@@ -23,7 +23,6 @@ namespace protochess_engine {
     }
 
     void Piece::setLocation(Location loc, int index) {
-        movedBefore = true;
         locationIndex = index;
         location = loc;
         bitset.reset();
@@ -64,6 +63,18 @@ namespace protochess_engine {
 
     bool Piece::getMovedBefore() {
         return movedBefore;
+    }
+
+    void Piece::setMovedBefore(bool newVal) {
+        movedBefore = newVal;
+    }
+
+    void Piece::setLastMovedBefore(bool newVal) {
+        lastMovedBefore = newVal;
+    }
+
+    bool Piece::getLastMovedBefore() {
+        return lastMovedBefore;
     }
 }
 

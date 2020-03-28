@@ -13,8 +13,48 @@ namespace protochess_engine {
     using namespace bitsetUtil;
     namespace movegen {
         namespace {
+            boost::dynamic_bitset<>
+            calculatePositiveAttacks(const Direction &dir, Board &board, const boost::dynamic_bitset<> &positiveAttack,
+                                     const boost::dynamic_bitset<> &allPieces) {
+                boost::dynamic_bitset<> returnAttack(positiveAttack);
+                boost::dynamic_bitset<> blockers = positiveAttack & allPieces;
+                if (blockers.any()) {
+                    //Piece is being blocked
+                    returnAttack = positiveAttack ^ board.getRayAttack(dir, blockers.find_first());
+                }
+                return returnAttack;
+            }
+
+            boost::dynamic_bitset<>
+            calculateNegativeAttacks(const Direction &dir, Board &board, const boost::dynamic_bitset<> &negativeAttack,
+                                     const boost::dynamic_bitset<> &allPieces) {
+                boost::dynamic_bitset<> returnAttack(negativeAttack);
+                boost::dynamic_bitset<> blockers = negativeAttack & allPieces;
+                if (blockers.any()) {
+                    //Piece is being blocked
+                    returnAttack = negativeAttack ^ board.getRayAttack(dir, bitsetUtil::findLast(blockers));
+                }
+                return returnAttack;
+            }
+
+            std::vector<LocationDelta> bitboardsToDeltas(const Dimensions &dimensions,
+                                                         const boost::dynamic_bitset<> &onePiece,
+                                                         boost::dynamic_bitset<> destinations) {
+
+                std::vector<LocationDelta> returnSet;
+                Location start = bitsetUtil::getLoc(dimensions.width, onePiece.find_first());
+
+                while (destinations.find_first() != boost::dynamic_bitset<>::npos) {
+                    size_type index = destinations.find_first();
+                    Location end = bitsetUtil::getLoc(dimensions.width, index);
+                    returnSet.push_back({start, end});
+                    destinations.set(index, false);
+                }
+                return returnSet;
+            }
+
             std::map<boost::uuids::uuid, std::unordered_set<Move>>
-            generateMoves_(GameState &gameState, bool captures, Player &player, Board &board) {
+            generatePseudoMoveCaptures_(GameState &gameState, bool captures, Player &player, Board &board) {
                 std::map<boost::uuids::uuid, std::unordered_set<Move>> returnSet = {};
 
                 std::map<boost::uuids::uuid, std::shared_ptr<Piece>> playerPieceMap = player.getPieces();
@@ -118,76 +158,190 @@ namespace protochess_engine {
                                 if (returnSet.count(x.first) == 0) {
                                     returnSet.insert({x.first, std::unordered_set<Move>()});
                                 }
-                                returnSet.at(x.first).insert({captures, gameState.pieceAt(delta.end), delta});
+                                returnSet.at(x.first).insert(
+                                        {captures,
+                                         gameState.pieceAt(delta.end),
+                                         false,
+                                         false,
+                                         delta}
+                                );
                             }
                         }
                     }
                 }
                 return returnSet;
             }
-        }
+
+
+            std::map<boost::uuids::uuid, std::unordered_set<Move>>
+            generateCastlingPseudoMoves_(GameState &gameState,
+                                         std::map<boost::uuids::uuid, std::unordered_set<Move>> &pseudoMoves,
+                                         Player &player,
+                                         Board &board) {
+                std::map<boost::uuids::uuid, std::unordered_set<Move>> returnSet = {};
+
+                //Check if this player can castle
+                if (player.canCastle()) {
+                    boost::dynamic_bitset<> allPlayerPieces = boost::dynamic_bitset<>(board.getAllPieces());
+                    //Generate all of this player's pieces
+                    boost::dynamic_bitset<> thisPlayerPieces = player.getAllPiecesBitset();
+                    //generate enemies
+                    boost::dynamic_bitset<> enemyPieces;
+                    enemyPieces = allPlayerPieces & (~thisPlayerPieces);
+
+
+                    //Find the king
+
+                    for (auto &x:player.getPieces()) {
+                        //Check if this piece is a king that hasn't moved before
+                        //And has ANY valid moves
+                        if ((x.second->getCharRep() == 'k' || x.second->getCharRep() == 'K')
+                            && pseudoMoves.find(x.first) != pseudoMoves.end()
+                            && !x.second->getMovedBefore()) {
+
+                            bool isWhite = x.second->getCharRep() == 'K';
+                            //KINGSIDE CASTLING
+                            //Check if player can move one square kingside
+                            //Find the move to the right, if it exists
+                            for (auto &z:pseudoMoves.at(x.first)) {
+                                //Make sure this is not a capture move
+                                if (!z.capture
+                                    && z.locationDelta.end.x - z.locationDelta.start.x == 1
+                                    && z.locationDelta.end.y - z.locationDelta.start.y == 0) {
+                                    if (isMoveValid(z, gameState, player.getPlayerNum(), board)) {
+                                        //Check if the next square is not occupied & if the leftmost square
+                                        //Is occupied by a piece that is a rook that hasn't moved yet
+                                        Location end = z.locationDelta.end;
+                                        end.x += 1;
+                                        boost::dynamic_bitset<> nextSquare(board.getWidth() * board.getHeight());
+                                        nextSquare.set(bitsetUtil::getIndex(board.getWidth(), end), true);
+                                        Location castlingRookLoc = end;
+                                        castlingRookLoc.x += 1;
+                                        std::shared_ptr<Piece> castlingRook = gameState.pieceAt(castlingRookLoc);
+                                        if (!(nextSquare & allPlayerPieces).any()
+                                            && castlingRook != nullptr
+                                            && castlingRook->getOwner() == player.getPlayerNum()
+                                            && !castlingRook->getMovedBefore()
+                                            &&
+                                            (castlingRook->getCharRep() == 'r' || castlingRook->getCharRep() == 'R')) {
+                                            //Add the pseudo move
+                                            if (returnSet.count(x.first) == 0) {
+                                                returnSet.insert({x.first, std::unordered_set<Move>()});
+                                            }
+                                            returnSet.at(x.first).insert({false,
+                                                                          castlingRook,
+                                                                          true,
+                                                                          false,
+                                                                          {z.locationDelta.start, end}
+                                                                         });
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                            //QUEENSIDE castling
+                            //Check if player can move one square queenside
+                            //Find the move to the left, if it exists
+                            for (auto &z:pseudoMoves.at(x.first)) {
+                                //Make sure this is not a capture move
+                                if (!z.capture
+                                    && z.locationDelta.end.x - z.locationDelta.start.x == -1
+                                    && z.locationDelta.end.y - z.locationDelta.start.y == 0) {
+                                    if (isMoveValid(z, gameState, player.getPlayerNum(), board)) {
+                                        //Check if the next square is not occupied
+
+                                        Location end = z.locationDelta.end;
+                                        end.x -= 1;
+                                        boost::dynamic_bitset<> nextSquare(board.getWidth() * board.getHeight());
+                                        nextSquare.set(bitsetUtil::getIndex(board.getWidth(), end), true);
+
+                                        //Make sure the square next to the rook is empty as well
+                                        nextSquare.set(bitsetUtil::getIndex(board.getWidth(), {end.x - 1, end.y}),
+                                                       true);
+
+
+                                        Location castlingRookLoc = end;
+                                        castlingRookLoc.x -= 2;
+                                        std::shared_ptr<Piece> castlingRook = gameState.pieceAt(castlingRookLoc);
+                                        if (!(nextSquare & allPlayerPieces).any()
+                                            && castlingRook != nullptr
+                                            && castlingRook->getOwner() == player.getPlayerNum()
+                                            && !castlingRook->getMovedBefore()
+                                            &&
+                                            (castlingRook->getCharRep() == 'r' || castlingRook->getCharRep() == 'R')) {
+                                            //Add the pseudo move
+                                            if (returnSet.count(x.first) == 0) {
+                                                returnSet.insert({x.first, std::unordered_set<Move>()});
+                                            }
+                                            returnSet.at(x.first).insert({false,
+                                                                          castlingRook,
+                                                                          false,
+                                                                          true,
+                                                                          {z.locationDelta.start, end}
+                                                                         });
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+
+                            break; //king check
+                        }
+                    }
+                }
+                return returnSet;
+            } //genpseudocastle
+        } //Anon namespace
+
 
         std::map<boost::uuids::uuid, std::unordered_set<Move>>
         generatePseudoLegalMoves(GameState &gameState, Player &player, Board &board) {
             std::map<boost::uuids::uuid, std::unordered_set<Move>> returnMoves = {};
-            std::map<boost::uuids::uuid, std::unordered_set<Move>> captures = generateMoves_(gameState, true, player,
-                                                                                             board);
+
+            //Calculate captures
+            std::map<boost::uuids::uuid, std::unordered_set<Move>> captures = generatePseudoMoveCaptures_(gameState,
+                                                                                                          true,
+                                                                                                          player,
+                                                                                                          board);
             for (auto &x:captures) {
                 returnMoves.insert({x.first, x.second});
             }
-            std::map<boost::uuids::uuid, std::unordered_set<Move>> translates = generateMoves_(gameState, false, player,
-                                                                                               board);
+
+            //Calculate translations
+            std::map<boost::uuids::uuid, std::unordered_set<Move>> translates = generatePseudoMoveCaptures_(gameState,
+                                                                                                            false,
+                                                                                                            player,
+                                                                                                            board);
+
             for (auto &x:translates) {
                 if (returnMoves.count(x.first) == 0) {
-                    returnMoves.insert({x.first, x.second});
-                } else {
-                    for (auto &y:x.second) {
-                        returnMoves.at(x.first).insert(y);
-                    }
+                    returnMoves.insert({x.first, std::unordered_set<Move>()});
+                }
+                for (auto &y:x.second) {
+                    returnMoves.at(x.first).insert(y);
                 }
             }
+
+
+            //Calculate castling moves
+            std::map<boost::uuids::uuid, std::unordered_set<Move>> castles = generateCastlingPseudoMoves_(gameState,
+                                                                                                          returnMoves,
+                                                                                                          player,
+                                                                                                          board);
+
+            for (auto &x:castles) {
+                if (returnMoves.count(x.first) == 0) {
+                    returnMoves.insert({x.first, std::unordered_set<Move>()});
+                }
+                for (auto &y:x.second) {
+                    returnMoves.at(x.first).insert(y);
+                }
+            }
+
             return returnMoves;
         }
 
-        std::vector<LocationDelta> bitboardsToDeltas(const Dimensions &dimensions,
-                                                     const boost::dynamic_bitset<> &onePiece,
-                                                     boost::dynamic_bitset<> destinations) {
 
-            std::vector<LocationDelta> returnSet;
-            Location start = bitsetUtil::getLoc(dimensions.width, onePiece.find_first());
-
-            while (destinations.find_first() != boost::dynamic_bitset<>::npos) {
-                size_type index = destinations.find_first();
-                Location end = bitsetUtil::getLoc(dimensions.width, index);
-                returnSet.push_back({start, end});
-                destinations.set(index, false);
-            }
-            return returnSet;
-        }
-
-        boost::dynamic_bitset<>
-        calculatePositiveAttacks(const Direction &dir, Board &board, const boost::dynamic_bitset<> &positiveAttack,
-                                 const boost::dynamic_bitset<> &allPieces) {
-            boost::dynamic_bitset<> returnAttack(positiveAttack);
-            boost::dynamic_bitset<> blockers = positiveAttack & allPieces;
-            if (blockers.any()) {
-                //Piece is being blocked
-                returnAttack = positiveAttack ^ board.getRayAttack(dir, blockers.find_first());
-            }
-            return returnAttack;
-        }
-
-        boost::dynamic_bitset<>
-        calculateNegativeAttacks(const Direction &dir, Board &board, const boost::dynamic_bitset<> &negativeAttack,
-                                 const boost::dynamic_bitset<> &allPieces) {
-            boost::dynamic_bitset<> returnAttack(negativeAttack);
-            boost::dynamic_bitset<> blockers = negativeAttack & allPieces;
-            if (blockers.any()) {
-                //Piece is being blocked
-                returnAttack = negativeAttack ^ board.getRayAttack(dir, bitsetUtil::findLast(blockers));
-            }
-            return returnAttack;
-        }
 
         std::unordered_set<int> playersInCheck(GameState &gameState, Board &board) {
             std::unordered_set<int> playersInCheck = {};
@@ -195,13 +349,13 @@ namespace protochess_engine {
 
             for (auto &x:players) {
                 std::map<boost::uuids::uuid, std::unordered_set<Move>> captures =
-                        generateMoves_(gameState, true, x.second, board);
+                        generatePseudoMoveCaptures_(gameState, true, x.second, board);
 
                 for (auto &y:captures) {
                     for (auto &z:y.second) {
-                        //z.capturedPiece
-                        if (z.capturedPiece->getAppliesCheck()) {
-                            playersInCheck.insert(z.capturedPiece->getOwner());
+                        //z.targetPiece
+                        if (z.targetPiece->getAppliesCheck()) {
+                            playersInCheck.insert(z.targetPiece->getOwner());
                         }
                     }
                 }

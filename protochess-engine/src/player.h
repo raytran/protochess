@@ -13,6 +13,10 @@
 namespace protochess_engine {
     class Player {
     private:
+        bool canCastle_ = true;
+
+        int playerNum;
+
         std::string name;
         //MAPs char to a bitboard of that piece
         //Not using an enum here to allow for any arbitrary number of piece types
@@ -24,9 +28,9 @@ namespace protochess_engine {
         //How this player defines each piece to capture
         std::map<char, MovementPattern> captureMap;
     public:
-        Player();
+        Player(int playerNum);
 
-        explicit Player(std::string name);
+        explicit Player(int playerNum, std::string name);
 
         std::string getName();
 
@@ -37,6 +41,14 @@ namespace protochess_engine {
         void addPiece(std::shared_ptr<Piece> piece);
 
         void update();
+
+        int getPlayerNum();
+
+        void disableCastleRights();
+
+        void enableCastleRights();
+
+        bool canCastle();
 
         void setMovementMap(std::map<char, MovementPattern> map);
 

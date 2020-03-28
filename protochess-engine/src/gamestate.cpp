@@ -43,32 +43,78 @@ namespace protochess_engine {
 
     void GameState::unmakeMove(const Move &move) {
         std::shared_ptr<Piece> piece = pieceAt(move.locationDelta.end);
-        //Move the piece
         if (piece != nullptr) {
+            //Move the piece
+            piece->setMovedBefore(piece->getLastMovedBefore());
             piece->setLocation(move.locationDelta.start,
                                bitsetUtil::getIndex(board.getWidth(), move.locationDelta.start));
-        }
-        if (move.capture) {
 
-            std::shared_ptr<Piece> captured = move.capturedPiece;
-            players.at(captured->getOwner()).addPiece(captured);
+            if (move.capture) {
+                std::shared_ptr<Piece> captured = move.targetPiece;
+                players.at(captured->getOwner()).addPiece(captured);
+            } else if (move.castleKingSide || move.castleQueenSide) {
+                //Move the rook
+                std::shared_ptr<Piece> rook = move.targetPiece;
+                Location rookLoc = move.locationDelta.end;
+                if (move.castleKingSide) {
+                    rookLoc.x += 1;
+                } else {
+                    rookLoc.x -= 2;
+                }
+                rook->setLocation(rookLoc, bitsetUtil::getIndex(board.getWidth(), rookLoc));
+                rook->setMovedBefore(rook->getLastMovedBefore());
+                //Undo disable this player's castling rights
+                players.at(piece->getOwner()).enableCastleRights();
+            }
+        } else {
+            std::cerr << "\nUNMAKE NULLPTR\n";
+            std::cerr << move.locationDelta.start.x;
+            std::cerr << move.locationDelta.start.y;
+            std::cerr << move.locationDelta.end.x;
+            std::cerr << move.locationDelta.end.y;
+            std::cerr << "---\n";
         }
         update();
     }
 
     void GameState::makeMove(const Move &move) {
-        if (move.capture) {
-            std::shared_ptr<Piece> captured = move.capturedPiece;
-            players.at(captured->getOwner()).removePiece(captured->getId());
-        }
+
         std::shared_ptr<Piece> piece = pieceAt(move.locationDelta.start);
         //Move the piece
         if (piece != nullptr) {
+            if (move.capture) {
+
+                std::shared_ptr<Piece> captured = move.targetPiece;
+                players.at(captured->getOwner()).removePiece(captured->getId());
+            } else if (move.castleKingSide || move.castleQueenSide) {
+                //Move the rook
+                std::shared_ptr<Piece> rook = move.targetPiece;
+                Location rookLoc = move.locationDelta.end;
+                if (move.castleKingSide) {
+                    rookLoc.x -= 1;
+                } else {
+                    rookLoc.x += 1;
+                }
+                rook->setLastMovedBefore(rook->getLastMovedBefore());
+                rook->setLocation(rookLoc, bitsetUtil::getIndex(board.getWidth(), rookLoc));
+                rook->setMovedBefore(true);
+                //Disable this player's castling rights
+                players.at(piece->getOwner()).disableCastleRights();
+            }
+            //Move the piece
+            piece->setLastMovedBefore(piece->getMovedBefore());
             piece->setLocation(move.locationDelta.end, bitsetUtil::getIndex(board.getWidth(), move.locationDelta.end));
+            piece->setMovedBefore(true);
         } else {
+
+            std::cerr << "\n";
+            std::cerr << move.locationDelta.start.x;
+            std::cerr << move.locationDelta.start.y;
+            std::cerr << move.locationDelta.end.x;
+            std::cerr << move.locationDelta.end.y;
+            std::cerr << "\n";
             std::cerr << "WE SHOULD NEVER BE HERE";
         }
-
         update();
     }
 
@@ -90,7 +136,7 @@ namespace protochess_engine {
     }
 
     int GameState::registerPlayer(std::string name) {
-        players.insert({playerCounter, Player(name)});
+        players.insert({playerCounter, Player(playerCounter, name)});
         playerCounter++;
         return playerCounter - 1;
     }

@@ -29,19 +29,19 @@ namespace protochess_engine {
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', 'R', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                'k', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
-                'R', 'N', 'B', 'Q', 'K', 'N', 'B', 'R'
+                'P', 'P', 'P', 'P', 'P', 'P', 'P', ' ',
+                'R', ' ', ' ', ' ', 'K', ' ', ' ', 'R'
         };
 
         std::vector<char> bPieces = {
-                'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
-                'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
+                'r', ' ', ' ', ' ', 'k', 'b', 'n', 'r',
+                'p', 'p', ' ', 'p', 'p', 'p', 'p', 'p',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', 'r', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
@@ -123,7 +123,7 @@ namespace protochess_engine {
         Location start = {startX, startY};
         std::shared_ptr<Piece> startPiece = gameState.pieceAt(start);
         if (startPiece != nullptr && whosTurn == gameState.getWhosTurn()) {
-            std::cout << "----";
+            std::cout << "\n----";
             std::cout << "Start piece: \n";
             std::cout << startPiece;
             std::cout << "\n";
@@ -141,7 +141,7 @@ namespace protochess_engine {
 
                         std::cout << "After eval piece\n";
                         std::cout << gameState.pieceAt(delta.start);
-                        std::cout << "-----\n";
+                        std::cout << "\n-----\n";
                         //Viable move!
                         //Perform move
                         gameState.makeMove(x);

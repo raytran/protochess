@@ -6,9 +6,9 @@
 #include "player.h"
 
 namespace protochess_engine {
-    Player::Player() : name("Anon") {}
+    Player::Player(int playerNum) : playerNum(playerNum), name("Anon") {}
 
-    Player::Player(std::string name) : name(name) {}
+    Player::Player(int playerNum, std::string name) : playerNum(playerNum), name(name) {}
 
     std::string Player::getName() {
         return name;
@@ -79,6 +79,22 @@ namespace protochess_engine {
 
     void Player::addPiece(std::shared_ptr<Piece> piece) {
         pieces.insert({piece->getId(), piece});
+    }
+
+    void Player::disableCastleRights() {
+        canCastle_ = false;
+    }
+
+    bool Player::canCastle() {
+        return canCastle_;
+    }
+
+    int Player::getPlayerNum() {
+        return playerNum;
+    }
+
+    void Player::enableCastleRights() {
+        canCastle_ = true;
     }
 
 }

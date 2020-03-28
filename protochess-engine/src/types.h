@@ -21,6 +21,10 @@ namespace protochess_engine {
     inline bool operator==(const Location &lhs, const Location &rhs) {
         return lhs.x == rhs.x && lhs.y == rhs.y;
     }
+
+    inline bool operator!=(const Location &lhs, const Location &rhs) {
+        return !(lhs.x == rhs.x && lhs.y == rhs.y);
+    }
 }
 
 namespace std {
@@ -68,6 +72,10 @@ namespace protochess_engine {
         return lhs.start == rhs.start && lhs.end == rhs.end;
     }
 
+    inline bool operator!=(const LocationDelta &lhs, const LocationDelta &rhs) {
+        return !(lhs == rhs);
+    }
+
 
     typedef boost::dynamic_bitset<>::size_type size_type;
 
@@ -90,12 +98,16 @@ namespace protochess_engine {
 namespace protochess_engine {
     struct Move {
         bool capture;
-        ::std::shared_ptr<Piece> capturedPiece;
+        ::std::shared_ptr<Piece> targetPiece;
+        bool castleKingSide;
+        bool castleQueenSide;
         LocationDelta locationDelta;
 
         bool operator==(const Move &other) const {
             return (capture == other.capture
-                    && capturedPiece == other.capturedPiece
+                    && castleKingSide == other.castleKingSide
+                    && castleQueenSide == other.castleQueenSide
+                    && targetPiece == other.targetPiece
                     && locationDelta == other.locationDelta);
         }
     };
@@ -115,11 +127,13 @@ namespace std {
 
             // Modify 'seed' by XORing and bit-shifting in
             // one member of 'Key' after the other:
-            hash_combine(seed, hash_value(m.capturedPiece));
+            hash_combine(seed, hash_value(m.targetPiece));
             hash_combine(seed, hash_value(m.capture));
+            hash_combine(seed, hash_value(m.castleKingSide));
+            hash_combine(seed, hash_value(m.castleQueenSide));
             hash_combine(seed, hash_value(m.locationDelta.start.x));
-            hash_combine(seed, hash_value(m.locationDelta.end.x));
             hash_combine(seed, hash_value(m.locationDelta.start.y));
+            hash_combine(seed, hash_value(m.locationDelta.end.x));
             hash_combine(seed, hash_value(m.locationDelta.end.y));
 
             return seed;
