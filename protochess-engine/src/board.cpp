@@ -174,4 +174,18 @@ namespace protochess_engine {
         }
         return leftMasks[numCols - 1];
     }
+
+    std::string Board::toBoardString() {
+        std::string return_string;
+        for (int x = 0; x < dimensions.width; x++) {
+            for (int y = 0; y < dimensions.height; y++) {
+                return_string += "|";
+                return_string += (x + y) % 2 == 0 ? "b" : "w";
+                return_string += std::to_string(x);
+                return_string += ",";
+                return_string += std::to_string(y);
+            }
+        }
+        return return_string;
+    }
 }

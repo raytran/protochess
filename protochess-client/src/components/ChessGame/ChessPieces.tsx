@@ -1,5 +1,4 @@
-import React, {Component} from "react";
-import {Map as IMap} from "immutable";
+import React from "react";
 import Draggable, {DraggableData, DraggableEvent} from "react-draggable";
 import {Board, Piece} from "protochess-shared";
 import {ReactComponent as WKing} from "./Assets/chess_pieces/Chess_klt45.svg";
@@ -21,45 +20,41 @@ interface IProps {
     tileWidth: number,
     tileHeight: number,
     pieces: MapSchema<Piece>,
+    playerNum: number,
     board: Board,
     inverted: boolean,
     onRequestMove: Function
 }
 
-interface IState {
-    disabledDragMap: IMap<string, boolean>
-}
-
-export default class ChessPieces extends Component<IProps, IState> {
-    private pieceIds: string[] = [];
+export default class ChessPieces extends React.PureComponent<IProps> {
+    private wking = <WKing viewBox={'0 0 45 45'}/>;
+    private bking = <BKing viewBox={"0 0 45 45"}/>;
+    private bqueen = <BQueen viewBox={"0 0 45 45"}/>;
+    private wqueen = <WQueen viewBox={"0 0 45 45"}/>;
+    private bbishop = <BBishop viewBox={"0 0 45 45"}/>;
+    private wbishop = <WBishop viewBox={"0 0 45 45"}/>;
+    private bknight = <BKnight viewBox={"0 0 45 45"}/>;
+    private wknight = <WKnight viewBox={"0 0 45 45"}/>;
+    private brook = <BRook viewBox={"0 0 45 45"}/>;
+    private wrook = <WRook viewBox={"0 0 45 45"}/>;
+    private bpawn = <BPawn viewBox={"-0.57 1 45 45"}/>;
+    private wpawn = <WPawn viewBox={"-0.57 1 45 45"}/>;
 
     constructor(props: IProps) {
         super(props);
         this.handleStop = this.handleStop.bind(this);
-        let disabledDragMap = new Map<string, boolean>();
-        for (let id in this.props.pieces) {
-            const piece: Piece = this.props.pieces[id];
-            this.pieceIds.push(id);
-            disabledDragMap.set(piece.id, false);
-        }
-
-        //Make maps immutable
-        this.state = {
-            //@ts-ignore
-            disabledDragMap: new IMap(disabledDragMap),
-        }
     }
 
     render() {
         return (
             <>
                 {
-                    this.pieceIds.map((key: string) => (
+                    Object.keys(this.props.pieces).map((key: string) => (
                         <Draggable
                             //@ts-ignore
                             key={key}
                             position={{x: 0, y: 0}}
-                            disabled={this.state.disabledDragMap.get(key)}
+                            disabled={this.props.pieces[key].owner != this.props.playerNum}
                             onStop={this.handleStop}>
                             <span id={key} style={{"position": "absolute", "left": 0, "top": 0}}>
                                 <ChessPiece pieceId={key}
@@ -77,77 +72,44 @@ export default class ChessPieces extends Component<IProps, IState> {
         );
     }
 
-    lockAllPieces() {
-        let newMap = new Map<string, boolean>();
-        this.state.disabledDragMap.forEach((value, key) => {
-            newMap.set(key, true);
-        });
-
-        //@ts-ignore
-        this.setState({disabledDragMap: new IMap(newMap)});
-    }
-
-    unlockPieces(playerNum: number) {
-        let newMap = new Map<string, boolean>();
-        this.state.disabledDragMap.forEach((value, key) => {
-            if (this.props.pieces[key]!.owner == playerNum) {
-                newMap.set(key, false);
-            } else {
-                newMap.set(key, true);
-            }
-        });
-        //@ts-ignore
-        this.setState({disabledDragMap: new IMap(newMap)});
-    }
-
-    deletePiece(piece: Piece) {
-        if (this.pieceIds.indexOf(piece.id)) {
-            this.pieceIds.splice(this.pieceIds.indexOf(piece.id), 1)
-        }
-        this.setState({
-            disabledDragMap:
-                this.state.disabledDragMap.delete(piece.id)
-        });
-    }
-
     private getSVGFromTypeStr(pieceTypeStr: string): React.ReactElement {
-        let svgItem = <WKing viewBox={'0 0 45 45'}/>;
+        let svgItem = this.wking;
         switch (pieceTypeStr) {
             case 'k':
-                svgItem = <BKing viewBox={"0 0 45 45"}/>;
+                svgItem = this.bking;
                 break;
             case 'K':
-                svgItem = <WKing viewBox={"0 0 45 45"}/>;
+                svgItem = this.wking;
                 break;
             case 'q':
-                svgItem = <BQueen viewBox={"0 0 45 45"}/>;
+                svgItem = this.bqueen;
                 break;
             case 'Q':
-                svgItem = <WQueen viewBox={"0 0 45 45"}/>;
+                svgItem = this.wqueen;
                 break;
             case 'b':
-                svgItem = <BBishop viewBox={"0 0 45 45"}/>;
+                svgItem = this.bbishop;
                 break;
             case 'B':
-                svgItem = <WBishop viewBox={"0 0 45 45"}/>;
+                svgItem = this.wbishop;
                 break;
             case 'n':
-                svgItem = <BKnight viewBox={"0 0 45 45"}/>;
+                svgItem = this.bknight;
                 break;
             case 'N':
-                svgItem = <WKnight viewBox={"0 0 45 45"}/>;
+                svgItem = this.wknight;
                 break;
             case 'r':
-                svgItem = <BRook viewBox={"0 0 45 45"}/>;
+                svgItem = this.brook;
                 break;
             case 'R':
-                svgItem = <WRook viewBox={"0 0 45 45"}/>;
+                svgItem = this.wrook;
                 break;
             case 'p':
-                svgItem = <BPawn viewBox={"-0.57 1 45 45"}/>;
+                svgItem = this.bpawn;
                 break;
             case 'P':
-                svgItem = <WPawn viewBox={"-0.57 1 45 45"}/>;
+                svgItem = this.wpawn;
                 break;
         }
         return svgItem;

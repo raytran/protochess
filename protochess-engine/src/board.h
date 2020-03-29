@@ -69,5 +69,7 @@ namespace protochess_engine {
         dynamic_bitset<> getLeftMask(int numCols) const;
 
         Dimensions getDimensions() const;
+
+        std::string toBoardString();
     };
 }

@@ -9,7 +9,6 @@ class ClientHandler {
     private redirectListeners: Function[];
     private pieceChangeListeners: Function[];
     private playerNumListeners: Function[];
-    private pieceDeleteListeners: Function[];
     private gameStateListeners: Function[];
     private playerChangeListeners: Function[];
     private players: any;
@@ -23,7 +22,6 @@ class ClientHandler {
         this.playerNum = null;
         this.playerNumListeners = [];
         this.pieceChangeListeners = [];
-        this.pieceDeleteListeners = [];
         this.redirectListeners = [];
         this.gameStateListeners = [];
         this.chatListeners = [];
@@ -139,20 +137,6 @@ class ClientHandler {
         }
     }
 
-
-    addPieceDeleteListener(func: Function) {
-        this.pieceDeleteListeners.push(func);
-        if (this.room != null) {
-            this.room.state.gameState.pieces.triggerAll();
-        }
-    }
-
-    removePieceDeleteListener(func: Function) {
-        let index = this.pieceDeleteListeners.indexOf(func);
-        if (index > -1) {
-            this.pieceDeleteListeners.splice(index, 1);
-        }
-    }
 
     removePlayerChangeListener(func: Function) {
         let index = this.playerChangeListeners.indexOf(func);
@@ -285,15 +269,7 @@ class ClientHandler {
                     this.pieceChangeListeners[i](piece);
                 }
             };
-
-            this.room!.state.gameState.pieces.onRemove = (piece: any, key: any) => {
-                for (let i = 0; i < this.pieceDeleteListeners.length; i++) {
-                    this.pieceDeleteListeners[i](piece);
-                }
-            };
         });
-
-
     }
 
     private updatePlayerChangeListeners(changes?: Colyseus.DataChange[]) {

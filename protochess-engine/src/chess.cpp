@@ -125,18 +125,7 @@ namespace protochess_engine {
             Location end = {endX, endY};
             LocationDelta delta = {start, end};
 
-            auto start = std::chrono::high_resolution_clock::now();
             std::map<boost::uuids::uuid, std::unordered_set<Move>> moves = gameState.generateMoves(whosTurn);
-
-            auto elapsed = std::chrono::high_resolution_clock::now() - start;
-
-            long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-
-            std::cout << "\nLEGAL MOVES TOOK:";
-            std::cout << microseconds;
-            std::cout << " MICROSECONDS\n";
-
-
             //Generate possible moves for this player
             //And check if the location delta matches
             if (moves.count(idHere) != 0) {
@@ -173,5 +162,13 @@ namespace protochess_engine {
                 rankfile::toLocation(end).y,
                 whosTurn
         );
+    }
+
+    std::string Chess::toPlayerPieceString() {
+        return gameState.toPlayerPieceString();
+    }
+
+    std::string Chess::toBoardString() {
+        return gameState.toBoardString();
     }
 }

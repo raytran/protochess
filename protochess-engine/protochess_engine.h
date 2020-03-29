@@ -11,6 +11,10 @@ private:
 
     Napi::Value ToString(const Napi::CallbackInfo &info);
 
+    Napi::Value ToPieceString(const Napi::CallbackInfo &info);
+
+    Napi::Value ToBoardString(const Napi::CallbackInfo &info);
+
     double value_;
 
     protochess_engine::Chess *chess;

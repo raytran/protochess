@@ -8,45 +8,32 @@ interface IProps {
     width: number,
     height: number,
     gameState: GameState,
+    playerNum: number,
     onRequestMove: Function,
     inverted: boolean
 }
 
-interface IState {
-    tileWidth: number,
-    tileHeight: number
-}
-
-export default class ChessGame extends Component<IProps, IState> {
+export default class ChessGame extends Component<IProps> {
     private localChessPieces: Map<string, Piece>;
     private lastMoveHighlightBuffer: any[];
     private chessPieces: Ref<ChessPieces>;
     private chessBoard: Ref<ChessBoard>;
+    private tileWidth = this.props.width / this.props.gameState.board.width;
+    private tileHeight = this.props.height / this.props.gameState.board.height;
 
     constructor(props: IProps) {
         super(props);
-
         this.lastMoveHighlightBuffer = [];
         this.chessPieces = React.createRef();
         this.chessBoard = React.createRef();
-        let tileWidth = this.props.width / this.props.gameState.board.width;
-        let tileHeight = this.props.height / this.props.gameState.board.height;
-        this.state = {tileWidth: tileWidth, tileHeight: tileHeight};
         this.localChessPieces = new Map<string, Piece>();
         for (let id in this.props.gameState.pieces) {
             const piece: Piece = this.props.gameState.pieces[id];
             this.localChessPieces.set(piece.id, piece.clone());
         }
-        console.log(this.localChessPieces);
-        this.onRequestMove = this.onRequestMove.bind(this);
     }
 
-    componentDidMount(): void {
-        console.log(this.props.inverted);
-    }
-
-    updatePiece(piece: Piece) {
-        console.log(this.localChessPieces.get(piece.id));
+    updatePieceHighlighting(piece: Piece) {
         let oldPiece = this.localChessPieces.get(piece.id);
         while (this.lastMoveHighlightBuffer.length > 0) {
             let removed = this.lastMoveHighlightBuffer.shift();
@@ -71,21 +58,6 @@ export default class ChessGame extends Component<IProps, IState> {
         this.lastMoveHighlightBuffer.push({x: x, y: y})
     }
 
-    deletePiece(piece: Piece) {
-        //@ts-ignore
-        this.chessPieces.current.deletePiece(piece);
-    }
-
-    lockAllPieces() {
-        //@ts-ignore
-        this.chessPieces.current.lockAllPieces()
-    }
-
-    unlockPieces(playerNum: number) {
-        //@ts-ignore
-        this.chessPieces.current.unlockPieces(playerNum);
-    }
-
     getTileHighlight(x: number, y: number) {
         //@ts-ignore
         return this.chessBoard.current.getTileHighlight(x, y);
@@ -105,27 +77,22 @@ export default class ChessGame extends Component<IProps, IState> {
                 <ChessBoard
                     ref={this.chessBoard}
                     inverted={this.props.inverted}
-                    tileWidth={this.state.tileWidth}
-                    tileHeight={this.state.tileHeight}
+                    tileWidth={this.tileWidth}
+                    tileHeight={this.tileHeight}
                     board={this.props.gameState.board}/>
 
                 <ChessPieces
                     ref={this.chessPieces}
-                    tileWidth={this.state.tileWidth}
-                    tileHeight={this.state.tileHeight}
+                    tileWidth={this.tileWidth}
+                    tileHeight={this.tileHeight}
                     inverted={this.props.inverted}
+                    playerNum={this.props.playerNum}
                     board={this.props.gameState.board}
                     pieces={this.props.gameState.pieces}
-                    onRequestMove={this.onRequestMove}
+                    onRequestMove={this.props.onRequestMove}
                 />
             </div>
         );
     }
-
-    onRequestMove(move: { x: number; y: number; id: any }) {
-        console.log(move);
-        this.props.onRequestMove(move);
-    }
-
 }
 

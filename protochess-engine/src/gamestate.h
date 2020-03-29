@@ -63,6 +63,10 @@ namespace protochess_engine {
         std::unordered_set<int> getCheckMatedPlayers();
 
         std::unordered_set<int> getCheckedPlayers();
+
+        std::string toPlayerPieceString();
+
+        std::string toBoardString();
     };
 
 

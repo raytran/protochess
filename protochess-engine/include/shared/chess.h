@@ -31,6 +31,10 @@ namespace protochess_engine {
 
         std::string toString();
 
+        std::string toPlayerPieceString();
+
+        std::string toBoardString();
+
         void reset();
 
         Chess();

@@ -13,7 +13,8 @@ interface IProps {
 interface IState {
     inverted: boolean | null,
     playerNum: number | null,
-    propsReady: boolean
+    propsReady: boolean,
+    gameState: any
 }
 
 export default class ChessGameContainer extends Component<IProps, IState> {
@@ -23,11 +24,15 @@ export default class ChessGameContainer extends Component<IProps, IState> {
         super(props);
         this.chessGame = React.createRef();
         this.onPieceChange = this.onPieceChange.bind(this);
-        this.onPieceDelete = this.onPieceDelete.bind(this);
         this.onPlayerNum = this.onPlayerNum.bind(this);
         this.onPlayerChange = this.onPlayerChange.bind(this);
         this.onGameStateChange = this.onGameStateChange.bind(this);
-        this.state = {propsReady: false, inverted: null, playerNum: null};
+        this.state = {
+            gameState: ClientHandler.getRoom()!.state.gameState,
+            propsReady: false,
+            inverted: null,
+            playerNum: null
+        };
     }
 
     componentDidMount(): void {
@@ -35,12 +40,10 @@ export default class ChessGameContainer extends Component<IProps, IState> {
         ClientHandler.addGameStateListener(this.onGameStateChange);
         ClientHandler.addPlayerChangeListener(this.onPlayerChange);
         ClientHandler.addPieceChangeListener(this.onPieceChange);
-        ClientHandler.addPieceDeleteListener(this.onPieceDelete);
     }
 
     componentWillUnmount(): void {
         ClientHandler.removePieceChangeListener(this.onPieceChange);
-        ClientHandler.removePieceDeleteListener(this.onPieceDelete);
         ClientHandler.removePlayerNumListener(this.onPlayerNum);
         ClientHandler.removePlayerChangeListener(this.onPlayerChange);
         ClientHandler.removeGameStateListener(this.onGameStateChange);
@@ -52,9 +55,10 @@ export default class ChessGameContainer extends Component<IProps, IState> {
                 <ChessGame width={this.props.width}
                            height={this.props.height}
                            ref={this.chessGame}
+                           playerNum={this.state.playerNum!}
                            inverted={this.state.inverted!}
                            onRequestMove={this.onRequestMove}
-                           gameState={ClientHandler.getRoom()!.state.gameState}/>
+                           gameState={this.state.gameState}/>
             );
         } else {
             return null;
@@ -81,7 +85,6 @@ export default class ChessGameContainer extends Component<IProps, IState> {
         if (changes) {
             //@ts-ignore
             if (changes['inCheck']) {
-                console.log("IN CHECK!!");
                 //@ts-ignore
                 this.setKingTileColor(changes['playerNum'], ColorConstants.IN_CHECK_HIGHLIGHT_COLOR);
             } else {
@@ -103,44 +106,19 @@ export default class ChessGameContainer extends Component<IProps, IState> {
     }
 
     private onGameStateChange(changes: Colyseus.DataChange[]) {
-        changes.forEach(change => {
-            //@ts-ignore
-            if (change.field == 'whosTurn') {
-                //@ts-ignore
-                this.chessGame.current.lockAllPieces();
-                //@ts-ignore
-                if (this.state.playerNum === change.value) {
-                    //@ts-ignore
-                    this.chessGame.current.unlockPieces(change.value);
-                }
-            }
-            //@ts-ignore
-            else if (change.field == 'winner') {
-                let winner = change.value;
-                //@ts-ignore
-                this.chessGame.current.displayWinner(winner);
-            }
-        });
-
+        //this.forceUpdate();
+        this.setState({gameState: ClientHandler.getRoom()!.state.gameState})
     }
 
     private onPieceChange(piece: Piece) {
         if (this.chessGame) {
             //@ts-ignore
-            this.chessGame.current.updatePiece(piece);
-        }
-    }
-
-    private onPieceDelete(piece: Piece) {
-        if (this.chessGame) {
-            //@ts-ignore
-            this.chessGame.current.deletePiece(piece);
+            this.chessGame.current.updatePieceHighlighting(piece);
         }
     }
 
     private onRequestMove(move: { id: string, x: number, y: number }) {
         ClientHandler.requestMove(move);
-
     }
 }
 
