@@ -1,8 +1,6 @@
 import {MapSchema, Schema, type} from "@colyseus/schema";
 import {Player} from './Player';
 import {GameState} from './chess/GameState'
-import {Board} from './chess/Board'
-import {PieceBuilder} from './chess/PieceBuilder'
 
 const anonymus = require("anonymus");
 
@@ -11,7 +9,7 @@ export class State extends Schema {
     players = new MapSchema<Player>();
 
     @type(GameState)
-    gameState = new GameState(PieceBuilder.classicSet(), new Board());
+    gameState = new GameState();
 
 
     createPlayer(id: string, isLeader: boolean, name: string) {

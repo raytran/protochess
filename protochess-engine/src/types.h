@@ -51,6 +51,10 @@ namespace protochess_engine {
         int height;
     };
 
+    struct Tile {
+        Location location;
+        char charRep;
+    };
     struct MovementPattern {
         bool north;
         bool east;

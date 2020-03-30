@@ -13,8 +13,10 @@ namespace protochess_engine {
         std::unordered_set<int> checkmatedPlayers;
     };
 
-    class Chess {
+    class ProtochessEngine {
     private:
+        friend class ProtochessEngineJS;
+
         GameState gameState;
 
         //Converts a char array to piece , assigning each piece a uuid at the same time
@@ -31,13 +33,9 @@ namespace protochess_engine {
 
         std::string toString();
 
-        std::string toPlayerPieceString();
-
-        std::string toBoardString();
-
         void reset();
 
-        Chess();
+        ProtochessEngine();
     };
 
 }

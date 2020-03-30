@@ -1,6 +1,44 @@
 cmake_minimum_required(VERSION 3.5)
+project(protochess_engine_js)
 
-project(protochess_engine)
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+#Requires boost
+find_package(Boost 1.36.0 REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+# Build a shared library named after the project from the files in `src/`
+file(GLOB SOURCE_FILES "include/shared/*.h" "src/*.cpp" "src/*.h")
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+
+# Gives our library file a .node extension without any "lib" prefix
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
+
+# Essential include files to build a node addon,
+# You should add this line in every CMake.js based project
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC})
+
+# Essential library files to link to a node addon
+# You should add this line in every CMake.js based project
+target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB})
+
+# Include N-API wrappers
+execute_process(COMMAND node -p "require('node-addon-api').include"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE NODE_ADDON_API_DIR
+        )
+string(REPLACE "\n" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${NODE_ADDON_API_DIR})
+
+
+#[[
 
 ############################################################
 # Create a library
@@ -35,3 +73,5 @@ target_link_libraries(main_binary
         PRIVATE
         protochess::engine
         )
+
+ ]]

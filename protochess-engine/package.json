@@ -5,9 +5,8 @@
   "main": "index.ts",
   "gypfile": true,
   "scripts": {
-    "test": "ts-node index.ts",
-    "build": "node-gyp rebuild",
-    "clean": "node-gyp clean"
+    "compile": "cmake-js compile",
+    "test": "ts-node index.ts"
   },
   "devDependencies": {
     "ts-node": "^8.1.0",
@@ -16,6 +15,8 @@
   },
   "dependencies": {
     "bindings": "~1.2.1",
+    "boost-lib": "^0.11.3",
+    "cmake-js": "^6.1.0",
     "node-addon-api": "^2.0.0"
   },
   "author": "Raymond Tran",

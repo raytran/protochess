@@ -168,7 +168,8 @@ namespace protochess_engine {
                             bool promotion = false;
                             char promoteTo = ' ';
                             //Promotion
-                            if (delta.end.y == board.getHeight() - 1 && x.second->getPromotable()) {
+                            if ((delta.end.y == 0 || delta.end.y == board.getHeight() - 1) &&
+                                x.second->getPromotable()) {
                                 promotion = true;
                                 promoteTo = x.second->getPromoteTo();
                             }

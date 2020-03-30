@@ -44,16 +44,16 @@ export default class ChessGame extends Component<IProps> {
             }
         }
         if (oldPiece) {
-            let x = oldPiece.location.x;
-            let y = oldPiece.location.y;
+            let x = oldPiece.x;
+            let y = oldPiece.y;
 
             this.setTileHighlight(x, y, ColorConstants.FROM_HIGHLIGHT_COLOR);
             this.lastMoveHighlightBuffer.push({x: x, y: y});
             this.localChessPieces.set(piece.id, piece.clone());
         }
 
-        let x = piece.location.x;
-        let y = piece.location.y;
+        let x = piece.x;
+        let y = piece.y;
         this.setTileHighlight(x, y, ColorConstants.TO_HIGHLIGHT_COLOR);
         this.lastMoveHighlightBuffer.push({x: x, y: y})
     }

@@ -8,6 +8,8 @@
 #include "gamestate.h"
 #include "bitsetutil.h"
 #include "movegen.h"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace protochess_engine {
     std::string GameState::toString() {
@@ -235,26 +237,9 @@ namespace protochess_engine {
         return movegen::playersInCheck(*this, board);
     }
 
-    std::string GameState::toBoardString() {
-        return board.toBoardString();
+    Board GameState::getBoard() {
+        return board;
     }
 
     //Format is @{PLAYERNUM}~{NAME}~p2,3q4,2
-    std::string GameState::toPlayerPieceString() {
-        std::string return_string;
-        for (auto &x:players) {
-            return_string += "@";
-            return_string += std::to_string(x.first);
-            return_string += "|";
-            return_string += x.second.getName();
-            for (auto &y:x.second.getPieces()) {
-                return_string += "|";
-                return_string += y.second->getCharRep();
-                return_string += std::to_string(y.second->getLocation().x);
-                return_string += ',';
-                return_string += std::to_string(y.second->getLocation().y);
-            }
-        }
-        return return_string;
-    }
 }

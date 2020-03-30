@@ -17,6 +17,7 @@ namespace protochess_engine {
         dynamic_bitset<> allPieces;
         dynamic_bitset<> leftMostFile;
         dynamic_bitset<> rightMostFile;
+        std::vector<Tile> tiles;
         std::map<Direction, std::vector<dynamic_bitset<>>> rayAttacks;
 
         /*
@@ -56,6 +57,8 @@ namespace protochess_engine {
 
         int getHeight() const;
 
+        std::vector<Tile> &getTiles();
+
         dynamic_bitset<> getRayAttack(const Direction &dir, const int &index);
 
         dynamic_bitset<> getRightMostFile() const;
@@ -70,6 +73,5 @@ namespace protochess_engine {
 
         Dimensions getDimensions() const;
 
-        std::string toBoardString();
     };
 }

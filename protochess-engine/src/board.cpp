@@ -12,6 +12,16 @@ namespace protochess_engine {
                                           allPieces(width * height),
                                           leftMostFile(width * height),
                                           rightMostFile(width * height) {
+        //Initialize Tiles
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                tiles.push_back({{x, y}, (x + y) % 2 == 0 ? 'b' : 'w'});
+            }
+        }
+
+
+
+
         //Initialize left&rightmost file masks
         for (int i = 0; i < height; i++) {
             leftMostFile.set(bitsetUtil::getIndex(width, {0, i}), true);
@@ -175,17 +185,7 @@ namespace protochess_engine {
         return leftMasks[numCols - 1];
     }
 
-    std::string Board::toBoardString() {
-        std::string return_string;
-        for (int x = 0; x < dimensions.width; x++) {
-            for (int y = 0; y < dimensions.height; y++) {
-                return_string += "|";
-                return_string += (x + y) % 2 == 0 ? "b" : "w";
-                return_string += std::to_string(x);
-                return_string += ",";
-                return_string += std::to_string(y);
-            }
-        }
-        return return_string;
+    std::vector<Tile> &Board::getTiles() {
+        return tiles;
     }
 }

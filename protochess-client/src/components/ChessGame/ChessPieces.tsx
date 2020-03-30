@@ -59,8 +59,8 @@ export default class ChessPieces extends React.PureComponent<IProps> {
                             <span id={key} style={{"position": "absolute", "left": 0, "top": 0}}>
                                 <ChessPiece pieceId={key}
                                             svgItem={this.getSVGFromTypeStr(this.props.pieces[key].pieceTypeStr)}
-                                            x={this.props.pieces[key].location.x * this.props.tileWidth}
-                                            y={this.props.inverted ? this.props.pieces[key].location.y * this.props.tileHeight : (this.props.board.height - this.props.pieces[key].location.y - 1) * this.props.tileHeight}
+                                            x={this.props.pieces[key].x * this.props.tileWidth}
+                                            y={this.props.inverted ? this.props.pieces[key].y * this.props.tileHeight : (this.props.board.height - this.props.pieces[key].y - 1) * this.props.tileHeight}
                                             height={this.props.tileHeight}
                                             width={this.props.tileWidth}/>
                             </span>
@@ -119,8 +119,8 @@ export default class ChessPieces extends React.PureComponent<IProps> {
         let dx = data.x;
         let dy = data.y;
         let key = data.node.id;
-        let x = this.props.pieces[key].location.x * this.props.tileWidth;
-        let y = this.props.inverted ? this.props.pieces[key].location.y * this.props.tileHeight : (this.props.board.height - this.props.pieces[key].location.y - 1) * this.props.tileHeight;
+        let x = this.props.pieces[key].x * this.props.tileWidth;
+        let y = this.props.inverted ? this.props.pieces[key].y * this.props.tileHeight : (this.props.board.height - this.props.pieces[key].y - 1) * this.props.tileHeight;
         x += dx;
         y += dy;
         let requestX = Math.round(x / this.props.tileWidth);

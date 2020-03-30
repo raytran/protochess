@@ -74,7 +74,7 @@ export default class ChessGameContainer extends Component<IProps, IState> {
                     //@ts-ignore
                     if (this.chessGame.current) {
                         //@ts-ignore
-                        this.chessGame.current.setTileHighlight(piece.location.x, piece.location.y, color);
+                        this.chessGame.current.setTileHighlight(piece.x, piece.y, color);
                     }
                 }
             }
@@ -96,6 +96,8 @@ export default class ChessGameContainer extends Component<IProps, IState> {
 
     private onPlayerNum() {
         let playerNum = ClientHandler.getPlayerNum();
+        console.log("MY PLAYER NUM IS:");
+        console.log(playerNum);
         if (playerNum !== null && playerNum >= 0) {
             if (playerNum! % 2 == 1) {
                 this.setState({propsReady: true, inverted: true, playerNum: playerNum})
@@ -106,8 +108,9 @@ export default class ChessGameContainer extends Component<IProps, IState> {
     }
 
     private onGameStateChange(changes: Colyseus.DataChange[]) {
-        //this.forceUpdate();
+        console.log(changes);
         this.setState({gameState: ClientHandler.getRoom()!.state.gameState})
+        this.forceUpdate();
     }
 
     private onPieceChange(piece: Piece) {

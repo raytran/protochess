@@ -55,6 +55,8 @@ namespace protochess_engine {
 
         boost::dynamic_bitset<> getBitset();
 
+        std::string getIdString();
+
         boost::uuids::uuid getId();
 
         int getOwner();

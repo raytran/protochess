@@ -1,15 +1,34 @@
 import {Client, Room} from "colyseus";
-import {BoardLocation, Movement, Player, State} from "protochess-shared"
+import ProtochessEngineJS from "protochess-engine";
+import {Piece, Player, State, Tile} from "protochess-shared"
 
 export class StateHandlerRoom extends Room<State> {
     maxClients = 4;
     leaderSessionId: string | null = null;
     didRedirect = false;
+    protochessEngine = new ProtochessEngineJS();
 
     onCreate(options: any) {
         console.log("StateHandlerRoom created!", options);
+        let newState = new State();
+        let engineState = this.protochessEngine.getState();
+        newState.gameState.board.width = engineState.board.width;
+        newState.gameState.board.height = engineState.board.height;
+        for (let tile of engineState.board.tiles) {
+            let localTile = new Tile(tile.x, tile.y, tile.charRep);
+            newState.gameState.board.tiles.push(localTile);
+        }
 
-        this.setState(new State());
+        for (let playerNum in engineState.players) {
+            let player = engineState.players[playerNum];
+            console.log(playerNum);
+            for (let pieceID in player) {
+                let piece = player[pieceID];
+                newState.gameState.pieces[pieceID] = new Piece(parseInt(playerNum), piece.x, piece.y, piece.charRep, pieceID);
+            }
+        }
+        this.setState(newState);
+        console.log(JSON.stringify(this.state, null, 2));
     }
 
     onJoin(client: Client) {
@@ -40,30 +59,64 @@ export class StateHandlerRoom extends Room<State> {
 
     onMessage(client: Client, data: any) {
         if (data['takeTurn']) {
-            console.log(data['move'])
-            if (this.state.gameState.whosTurn == this.state.players[client.sessionId].playerNum
+
+            let thisPlayerNum = this.state.players[client.sessionId].playerNum;
+            if (this.state.gameState.whosTurn == thisPlayerNum
                 && this.state.gameState.pieces[data['move']['id']]) {
                 let piece = this.state.gameState.pieces[data['move']['id']];
-                let startX = piece.location.x;
-                let startY = piece.location.y;
+                let startX = piece.x;
+                let startY = piece.y;
                 let endX = data['move']['x'];
                 let endY = data['move']['y'];
-                try {
-                    let startLoc = new BoardLocation(startX, startY);
-                    let endLoc = new BoardLocation(endX, endY);
-                    let movement = new Movement(startLoc, endLoc);
-                    if (this.state.gameState.takeTurn(movement)) {
+                let result = this.protochessEngine.takeTurn(startX, startY, endX, endY, thisPlayerNum);
+
+                console.log("RESULT:");
+                console.log(result);
+                if (result.success) {
+                    //Update checks
+                    for (let id in this.state.players) {
+                        const player: Player = this.state.players[id];
+                        player.inCheck = false;
+                    }
+
+                    for (let playersIdsInCheck of result.playersInCheck) {
                         for (let id in this.state.players) {
                             const player: Player = this.state.players[id];
-                            player.inCheck = false;
-                            for (let num of this.state.gameState.getChecks()) {
-                                if (player.playerNum == num) {
-                                    player.inCheck = true;
-                                }
+                            if (player.playerNum == playersIdsInCheck) {
+                                player.inCheck = true;
                             }
                         }
                     }
-                } catch (e) {
+                    //Update turn counter
+                    this.state.gameState.whosTurn = result.nextToMove;
+
+                    //Update pieces
+                    let enginePieceIDS = [];
+                    let engineState = this.protochessEngine.getState();
+                    for (let playerNum in engineState.players) {
+                        let player = engineState.players[playerNum];
+                        for (let pieceID in player) {
+                            enginePieceIDS.push(pieceID);
+                            let enginePiece = player[pieceID];
+                            if (this.state.gameState.pieces[pieceID].x != enginePiece.x
+                                || this.state.gameState.pieces[pieceID].y != enginePiece.y
+                                || this.state.gameState.pieces[pieceID].pieceTypeStr != enginePiece.charRep) {
+                                this.state.gameState.pieces[pieceID].x = enginePiece.x;
+                                this.state.gameState.pieces[pieceID].y = enginePiece.y;
+                                this.state.gameState.pieces[pieceID].pieceTypeStr = enginePiece.charRep;
+                            }
+                        }
+                    }
+
+                    let toDelete = [];
+                    for (let pieceID in this.state.gameState.pieces) {
+                        if (enginePieceIDS.indexOf(pieceID) == -1) {
+                            toDelete.push(pieceID);
+                        }
+                    }
+                    toDelete.forEach((v: string) => {
+                        delete this.state.gameState.pieces[v];
+                    })
                 }
             }
         }
@@ -82,7 +135,12 @@ export class StateHandlerRoom extends Room<State> {
             if (client.sessionId === this.leaderSessionId) {
                 //Initalize game
                 //Assign player numbers
-                this.state.gameState.assignPlayerNumbers(this.state.players);
+                let pNum = 0;
+                for (let id in this.state.players) {
+                    const player: Player = this.state.players[id];
+                    player.playerNum = pNum;
+                    pNum++;
+                }
                 this.broadcast({startGame: true})
             }
         }

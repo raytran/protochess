@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../include/shared/chess.h"
+#include "../include/shared/protochess_engine.h"
 #include "bitsetutil.h"
 #include "piecerules.h"
 #include "rankfile.h"
@@ -11,43 +11,44 @@
 
 namespace protochess_engine {
     using boost::dynamic_bitset;
-    std::string Chess::toString() {
+
+    std::string ProtochessEngine::toString() {
         std::string returnString;
         returnString += gameState.toString();
         return returnString;
     }
 
-    int Chess::registerPlayer(std::string playerName) {
+    int ProtochessEngine::registerPlayer(std::string playerName) {
         return gameState.registerPlayer(std::move(playerName));
     }
 
-    void Chess::buildClassicSet() {
+    void ProtochessEngine::buildClassicSet() {
         reset();
-        gameState = GameState({8, 8});
+        gameState = GameState({13, 8});
 
         gameState.registerPlayer("White"); //player num 0
         gameState.registerPlayer("Black"); //player num 1
 
         std::vector<char> wPieces = {
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
-                'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
+                'R', 'N', 'B', 'Q', 'R', 'Q', 'K', 'Q', 'R', 'Q', 'B', 'N', 'R'
         };
 
         std::vector<char> bPieces = {
-                'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
-                'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
+                'r', 'n', 'b', 'q', 'r', 'q', 'k', 'q', 'r', 'q', 'b', 'n', 'r',
+                'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
         };
         gameState.setPieces(0, charToPieces(0, wPieces));
         gameState.setMovementMap(0, piecerules::moveRules);
@@ -58,7 +59,8 @@ namespace protochess_engine {
         gameState.setCaptureMap(1, piecerules::captureRules);
     }
 
-    std::map<boost::uuids::uuid, std::shared_ptr<Piece>> Chess::charToPieces(int owner, std::vector<char> &pieces) {
+    std::map<boost::uuids::uuid, std::shared_ptr<Piece>>
+    ProtochessEngine::charToPieces(int owner, std::vector<char> &pieces) {
         std::map<boost::uuids::uuid, std::shared_ptr<Piece>> returnMap;
         boost::uuids::random_generator generator;
 
@@ -111,12 +113,12 @@ namespace protochess_engine {
         return returnMap;
     }
 
-    void Chess::reset() {
+    void ProtochessEngine::reset() {
         //Replace the gamestate
         gameState = GameState({8, 8});
     }
 
-    TurnResult Chess::takeTurn(int startX, int startY, int endX, int endY, int whosTurn) {
+    TurnResult ProtochessEngine::takeTurn(int startX, int startY, int endX, int endY, int whosTurn) {
         Location start = {startX, startY};
         std::shared_ptr<Piece> startPiece = gameState.pieceAt(start);
         if (startPiece != nullptr && whosTurn == gameState.getWhosTurn()) {
@@ -151,10 +153,10 @@ namespace protochess_engine {
                 gameState.getCheckMatedPlayers()};
     }
 
-    Chess::Chess() : gameState({8, 8}) {
+    ProtochessEngine::ProtochessEngine() : gameState({8, 8}) {
     }
 
-    TurnResult Chess::takeTurn(const std::string &start, const std::string &end, int whosTurn) {
+    TurnResult ProtochessEngine::takeTurn(const std::string &start, const std::string &end, int whosTurn) {
         return takeTurn(
                 rankfile::toLocation(start).x,
                 rankfile::toLocation(start).y,
@@ -162,13 +164,5 @@ namespace protochess_engine {
                 rankfile::toLocation(end).y,
                 whosTurn
         );
-    }
-
-    std::string Chess::toPlayerPieceString() {
-        return gameState.toPlayerPieceString();
-    }
-
-    std::string Chess::toBoardString() {
-        return gameState.toBoardString();
     }
 }

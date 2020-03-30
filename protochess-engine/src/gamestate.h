@@ -22,6 +22,8 @@ namespace protochess_engine {
     public:
         explicit GameState(Dimensions dim);
 
+        Board getBoard();
+
         //Dimension related
         const Dimensions &getDimensions();
 
@@ -64,9 +66,6 @@ namespace protochess_engine {
 
         std::unordered_set<int> getCheckedPlayers();
 
-        std::string toPlayerPieceString();
-
-        std::string toBoardString();
     };
 
 

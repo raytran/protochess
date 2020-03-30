@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 #include <utility>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "piece.h"
 #include "bitsetutil.h"
 
@@ -106,6 +108,10 @@ namespace protochess_engine {
 
     void Piece::setLastCharRep(char c) {
         lastCharRep = c;
+    }
+
+    std::string Piece::getIdString() {
+        return boost::uuids::to_string(id);
     }
 }
 

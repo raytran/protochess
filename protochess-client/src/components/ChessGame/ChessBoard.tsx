@@ -23,8 +23,8 @@ export default class ChessBoard extends Component<IProps, IState> {
         let tileHighlightMap = new Map<string, string>();
         for (let tile of this.props.board.tiles!) {
             let color = tile.tileTypeStr == 'b' ? ColorConstants.DARK_SQUARE : ColorConstants.LIGHT_SQUARE;
-            tileColorMap.set("x" + tile.location.x + "y" + tile.location.y, color);
-            tileHighlightMap.set("x" + tile.location.x + "y" + tile.location.y, ColorConstants.TRANSPARENT);
+            tileColorMap.set("x" + tile.x + "y" + tile.y, color);
+            tileHighlightMap.set("x" + tile.x + "y" + tile.y, ColorConstants.TRANSPARENT);
         }
 
         //@ts-ignore
@@ -43,13 +43,13 @@ export default class ChessBoard extends Component<IProps, IState> {
         return (
             <svg style={{width: '100%', height: '100%'}}>
                 {this.props.board.tiles!.map((tile) => (
-                    <ChessTile key={tile.location.x + "" + tile.location.y}
-                               x={tile.location.x * this.props.tileWidth}
-                               y={this.props.inverted ? tile.location.y * this.props.tileHeight : (this.props.board.height - tile.location.y - 1) * this.props.tileHeight}
+                    <ChessTile key={tile.x + "" + tile.y}
+                               x={tile.x * this.props.tileWidth}
+                               y={this.props.inverted ? tile.y * this.props.tileHeight : (this.props.board.height - tile.y - 1) * this.props.tileHeight}
                                width={this.props.tileWidth}
                                height={this.props.tileHeight}
-                               highlightColor={this.state.tileHighlightMap.get("x" + tile.location.x + "y" + tile.location.y)!}
-                               color={this.state.tileColorMap.get("x" + tile.location.x + "y" + tile.location.y)!}/>
+                               highlightColor={this.state.tileHighlightMap.get("x" + tile.x + "y" + tile.y)!}
+                               color={this.state.tileColorMap.get("x" + tile.x + "y" + tile.y)!}/>
                 ))}
 
             </svg>
