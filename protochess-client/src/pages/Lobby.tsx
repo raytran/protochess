@@ -66,7 +66,7 @@ class Lobby extends Component<{}, myState> {
             return (
                 <div id={'content'}>
                     <div style={{flexShrink: 0, flexGrow: 0}} id={'chessGame'}>
-                        <ChessGameContainer width={450} height={450}/>
+                        <ChessGameContainer width={700} height={450}/>
                     </div>
                     <div id={"auxillary"}>
                         <PlayerListContainer/>
