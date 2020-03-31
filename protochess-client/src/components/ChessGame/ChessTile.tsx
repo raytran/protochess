@@ -13,10 +13,22 @@ export class ChessTile extends React.PureComponent<IProps> {
     render() {
         return (
             <>
-                <rect x={this.props.x} y={this.props.y} width={this.props.width} height={this.props.height}
-                      style={{fill: this.props.color}}/>
-                <rect x={this.props.x} y={this.props.y} width={this.props.width} height={this.props.height}
-                      style={{fill: this.props.highlightColor}}/>
+                <div style={{
+                    position: "absolute",
+                    width: this.props.width,
+                    height: this.props.height,
+                    left: this.props.x,
+                    top: this.props.y,
+                    backgroundColor: this.props.color
+                }}/>
+                <div style={{
+                    position: "absolute",
+                    left: this.props.x,
+                    top: this.props.y,
+                    width: this.props.width,
+                    height: this.props.height,
+                    backgroundColor: this.props.highlightColor
+                }}/>
             </>
         );
     }

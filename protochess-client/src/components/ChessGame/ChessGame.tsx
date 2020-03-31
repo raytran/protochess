@@ -86,6 +86,7 @@ export default class ChessGame extends Component<IProps> {
                     tileWidth={this.tileWidth}
                     tileHeight={this.tileHeight}
                     inverted={this.props.inverted}
+                    whosTurn={this.props.gameState.whosTurn}
                     playerNum={this.props.playerNum}
                     board={this.props.gameState.board}
                     pieces={this.props.gameState.pieces}

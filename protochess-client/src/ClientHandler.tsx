@@ -178,7 +178,7 @@ class ClientHandler {
         this.sendMessage({startGame: true});
     }
 
-    requestMove(move: { id: string; x: number; y: number }) {
+    requestMove(move: { id: string; startX: number, startY: number, endX: number; endY: number }) {
         this.sendMessage({'takeTurn': true, move: move});
     }
 

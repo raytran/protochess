@@ -18,7 +18,7 @@ namespace protochess_engine {
         using std::unordered_set;
         namespace {
             dynamic_bitset<> calculatePositiveAttacks(const Direction &dir,
-                                                      Board &board,
+                                                      const Board &board,
                                                       const dynamic_bitset<> &positiveAttack,
                                                       const dynamic_bitset<> &allPieces) {
                 dynamic_bitset<> returnAttack(positiveAttack);
@@ -31,7 +31,7 @@ namespace protochess_engine {
             }
 
             dynamic_bitset<> calculateNegativeAttacks(const Direction &dir,
-                                                      Board &board,
+                                                      const Board &board,
                                                       const dynamic_bitset<> &negativeAttack,
                                                       const dynamic_bitset<> &allPieces) {
                 dynamic_bitset<> returnAttack(negativeAttack);
@@ -59,23 +59,98 @@ namespace protochess_engine {
                 return returnSet;
             }
 
+            dynamic_bitset<> generateValidSquares(const std::shared_ptr<Piece> &piece,
+                                                  const MovementPattern &thisMP,
+                                                  const Board &board,
+                                                  const dynamic_bitset<> &allPlayerPieces,
+                                                  const dynamic_bitset<> &thisPlayerPieces) {
+                //Determine which movement pattern to use
+
+                //Squares that the piece can move to, including captures
+                dynamic_bitset<> validSquares(board.getWidth() * board.getHeight());
+                int locIndex = piece->getLocationIndex();
+                //SLIDING MOVES:
+                //POSITIVE ATTACKS
+                if (thisMP.north) {
+                    validSquares |= calculatePositiveAttacks(NORTH, board,
+                                                             board.getRayAttack(NORTH, locIndex),
+                                                             allPlayerPieces);
+                }
+                if (thisMP.east) {
+                    validSquares |= calculatePositiveAttacks(EAST, board,
+                                                             board.getRayAttack(EAST, locIndex),
+                                                             allPlayerPieces);
+                }
+                if (thisMP.northEast) {
+                    validSquares |= calculatePositiveAttacks(NORTHEAST, board,
+                                                             board.getRayAttack(NORTHEAST, locIndex),
+                                                             allPlayerPieces);
+                }
+                if (thisMP.northWest) {
+                    validSquares |= calculatePositiveAttacks(NORTHWEST, board,
+                                                             board.getRayAttack(NORTHWEST, locIndex),
+                                                             allPlayerPieces);
+                }
+
+                //NEGATIVE ATTACKS
+                if (thisMP.south) {
+                    validSquares |= calculateNegativeAttacks(SOUTH, board,
+                                                             board.getRayAttack(SOUTH, locIndex),
+                                                             allPlayerPieces);
+                }
+                if (thisMP.west) {
+                    validSquares |= calculateNegativeAttacks(WEST, board,
+                                                             board.getRayAttack(WEST, locIndex),
+                                                             allPlayerPieces);
+                }
+                if (thisMP.southEast) {
+                    validSquares |= calculateNegativeAttacks(SOUTHEAST, board,
+                                                             board.getRayAttack(SOUTHEAST, locIndex),
+                                                             allPlayerPieces);
+                }
+                if (thisMP.southWest) {
+                    validSquares |= calculateNegativeAttacks(SOUTHWEST, board,
+                                                             board.getRayAttack(SOUTHWEST, locIndex),
+                                                             allPlayerPieces);
+                }
+
+                //NONSLIDING PIECES
+                for (auto &m : thisMP.deltas) {
+                    //Edge case pawn movement
+                    if ((piece->getCharRep() == 'p' || piece->getCharRep() == 'P')
+                        && piece->getMovedBefore()) {
+                        if (m.y == 2 || m.y == -2) {
+                            continue;
+                        }
+                    }
+                    validSquares |= bitsetUtil::translate(m, piece->getBitset(), board);
+                }
+
+                //Filter out attacks/moves on your own pieces
+                validSquares &= ~thisPlayerPieces;
+
+                return validSquares;
+            }
+
+            //Bitset returned is the locations of every destination for this player this turn
+            //Inserts into returnSet
             void generatePseudoMoveCaptures_(map<uuid, unordered_set<Move>> &returnSet,
                                              GameState &gameState,
                                              bool captures,
                                              Player &player,
                                              Board &board) {
 
-                map<uuid, std::shared_ptr<Piece>> &playerPieceMap = player.getPieces();
-                map<char, MovementPattern> &playerMPmap = captures ? player.getCaptureMap()
-                                                                   : player.getMovementMap();
-                dynamic_bitset<> allPlayerPieces = dynamic_bitset<>(board.getAllPieces());
+                dynamic_bitset<> return_bits(board.getWidth() * board.getHeight());
+                const map<uuid, std::shared_ptr<Piece>> &playerPieceMap = player.getPieces();
+                const map<char, MovementPattern> &playerMPmap = captures ? player.getCaptureMap()
+                                                                         : player.getMovementMap();
+                const dynamic_bitset<> &allPlayerPieces = board.getAllPieces();
 
                 //Generate all of this player's pieces
-                dynamic_bitset<> thisPlayerPieces = player.getAllPiecesBitset();
+                const dynamic_bitset<> &thisPlayerPieces = player.getAllPiecesBitset();
 
                 //generate enemies
-                dynamic_bitset<> enemyPieces;
-                enemyPieces = allPlayerPieces & (~thisPlayerPieces);
+                dynamic_bitset<> enemyPieces = allPlayerPieces & (~thisPlayerPieces);
 
 
                 for (auto &x:playerPieceMap) {
@@ -89,67 +164,11 @@ namespace protochess_engine {
                     }
 
                     //Squares that the piece can move to, including captures
-                    dynamic_bitset<> validSquares(board.getWidth() * board.getHeight());
-                    int locIndex = x.second->getLocationIndex();
-                    //SLIDING MOVES:
-                    //POSITIVE ATTACKS
-                    if (thisMP.north) {
-                        validSquares ^= calculatePositiveAttacks(NORTH, board,
-                                                                 board.getRayAttack(NORTH, locIndex),
-                                                                 allPlayerPieces);
-                    }
-                    if (thisMP.east) {
-                        validSquares ^= calculatePositiveAttacks(EAST, board,
-                                                                 board.getRayAttack(EAST, locIndex),
-                                                                 allPlayerPieces);
-                    }
-                    if (thisMP.northEast) {
-                        validSquares ^= calculatePositiveAttacks(NORTHEAST, board,
-                                                                 board.getRayAttack(NORTHEAST, locIndex),
-                                                                 allPlayerPieces);
-                    }
-                    if (thisMP.northWest) {
-                        validSquares ^= calculatePositiveAttacks(NORTHWEST, board,
-                                                                 board.getRayAttack(NORTHWEST, locIndex),
-                                                                 allPlayerPieces);
-                    }
-
-                    //NEGATIVE ATTACKS
-                    if (thisMP.south) {
-                        validSquares ^= calculateNegativeAttacks(SOUTH, board,
-                                                                 board.getRayAttack(SOUTH, locIndex),
-                                                                 allPlayerPieces);
-                    }
-                    if (thisMP.west) {
-                        validSquares ^= calculateNegativeAttacks(WEST, board,
-                                                                 board.getRayAttack(WEST, locIndex),
-                                                                 allPlayerPieces);
-                    }
-                    if (thisMP.southEast) {
-                        validSquares ^= calculateNegativeAttacks(SOUTHEAST, board,
-                                                                 board.getRayAttack(SOUTHEAST, locIndex),
-                                                                 allPlayerPieces);
-                    }
-                    if (thisMP.southWest) {
-                        validSquares ^= calculateNegativeAttacks(SOUTHWEST, board,
-                                                                 board.getRayAttack(SOUTHWEST, locIndex),
-                                                                 allPlayerPieces);
-                    }
-
-                    //NONSLIDING PIECES
-                    for (auto &m : thisMP.deltas) {
-                        //Edge case pawn movement
-                        if ((x.second->getCharRep() == 'p' || x.second->getCharRep() == 'P')
-                            && x.second->getMovedBefore()) {
-                            if (m.y == 2 || m.y == -2) {
-                                continue;
-                            }
-                        }
-                        validSquares ^= bitsetUtil::translate(m, x.second->getBitset(), board);
-                    }
-
-                    //Filter out attacks on your own pieces
-                    validSquares &= ~thisPlayerPieces;
+                    dynamic_bitset<> validSquares = generateValidSquares(x.second,
+                                                                         thisMP,
+                                                                         board,
+                                                                         allPlayerPieces,
+                                                                         thisPlayerPieces);
 
                     //Filter valid squares according to whether we want captures only
                     //Or non-captures only
@@ -373,7 +392,9 @@ namespace protochess_engine {
                                 break;
                             }
                         }
+                        if (!returnVal) break;
                     }
+                    if (!returnVal) break;
                 }
             }
             gameState.unmakeMove(move);

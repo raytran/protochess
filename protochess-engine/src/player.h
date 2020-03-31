@@ -55,15 +55,15 @@ namespace protochess_engine {
 
         void setCaptureMap(std::map<char, MovementPattern> map);
 
-        std::map<char, MovementPattern> &getMovementMap();
+        const std::map<char, MovementPattern> &getMovementMap() const;
 
-        std::map<char, MovementPattern> &getCaptureMap();
+        const std::map<char, MovementPattern> &getCaptureMap() const;
 
-        std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &getPieces();
+        const std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &getPieces() const;
 
         std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &getPiecesApplyCheck();
 
-        boost::dynamic_bitset<> getAllPiecesBitset();
+        const boost::dynamic_bitset<> &getAllPiecesBitset();
 
         std::shared_ptr<Piece> getPieceAt(Location loc);
 

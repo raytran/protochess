@@ -120,7 +120,7 @@ export default class ChessGameContainer extends Component<IProps, IState> {
         }
     }
 
-    private onRequestMove(move: { id: string, x: number, y: number }) {
+    private onRequestMove(move: { id: string, startX: number, startY: number, endX: number, endY: number }) {
         ClientHandler.requestMove(move);
     }
 }

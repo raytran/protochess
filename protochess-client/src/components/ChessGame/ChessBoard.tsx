@@ -41,7 +41,7 @@ export default class ChessBoard extends Component<IProps, IState> {
 
     render() {
         return (
-            <svg style={{width: '100%', height: '100%'}}>
+            <div>
                 {this.props.board.tiles!.map((tile) => (
                     <ChessTile key={tile.x + "" + tile.y}
                                x={tile.x * this.props.tileWidth}
@@ -51,8 +51,7 @@ export default class ChessBoard extends Component<IProps, IState> {
                                highlightColor={this.state.tileHighlightMap.get("x" + tile.x + "y" + tile.y)!}
                                color={this.state.tileColorMap.get("x" + tile.x + "y" + tile.y)!}/>
                 ))}
-
-            </svg>
+            </div>
         );
     }
 }

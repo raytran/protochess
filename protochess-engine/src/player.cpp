@@ -36,11 +36,11 @@ namespace protochess_engine {
         }
     }
 
-    std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &Player::getPieces() {
+    const std::map<boost::uuids::uuid, std::shared_ptr<Piece>> &Player::getPieces() const {
         return pieces;
     }
 
-    std::map<char, MovementPattern> &Player::getMovementMap() {
+    const std::map<char, MovementPattern> &Player::getMovementMap() const {
         return movementMap;
     }
 
@@ -49,7 +49,7 @@ namespace protochess_engine {
     }
 
 
-    std::map<char, MovementPattern> &Player::getCaptureMap() {
+    const std::map<char, MovementPattern> &Player::getCaptureMap() const {
         return captureMap;
     }
 
@@ -57,7 +57,7 @@ namespace protochess_engine {
         captureMap = std::move(map);
     }
 
-    boost::dynamic_bitset<> Player::getAllPiecesBitset() {
+    const boost::dynamic_bitset<> &Player::getAllPiecesBitset() {
         return allPieces;
     }
 

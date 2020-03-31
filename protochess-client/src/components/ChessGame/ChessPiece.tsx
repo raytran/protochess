@@ -4,7 +4,7 @@ import React from "react";
 
 interface IProps {
     pieceId: string
-    svgItem: React.ReactComponentElement<any>,
+    backgroundImage: string,
     x: number,
     y: number,
     height: number,
@@ -18,7 +18,7 @@ export class ChessPiece extends React.PureComponent<IProps> {
 
     render() {
         return (
-            <svg
+            <div
                 key={this.props.pieceId}
                 id={this.props.pieceId}
                 style={{
@@ -31,11 +31,13 @@ export class ChessPiece extends React.PureComponent<IProps> {
                     position: "absolute",
                     left: this.props.x,
                     top: this.props.y,
-                    transition: 'top 300ms ease-in-out, left 300ms ease-in-out'
+                    transition: 'top 300ms ease-in-out, left 300ms ease-in-out',
+                    backgroundImage: this.props.backgroundImage,
+                    backgroundSize: 'contain'
                 }}
             >
-                {this.props.svgItem}
-            </svg>
+                {}
+            </div>
         );
     }
 }

@@ -20,11 +20,11 @@ export class StateHandlerRoom extends Room<State> {
         }
 
         for (let playerNum in engineState.players) {
-            let player = engineState.players[playerNum];
+            let player = engineState.players[parseInt(playerNum)];
             console.log(playerNum);
             for (let pieceID in player) {
                 let piece = player[pieceID];
-                newState.gameState.pieces[pieceID] = new Piece(parseInt(playerNum), piece.x, piece.y, piece.charRep, pieceID);
+                newState.gameState.pieces[pieceID] = new Piece(parseInt(playerNum), parseInt(piece.x), parseInt(piece.y), piece.charRep, pieceID);
             }
         }
         this.setState(newState);
@@ -60,18 +60,14 @@ export class StateHandlerRoom extends Room<State> {
     onMessage(client: Client, data: any) {
         if (data['takeTurn']) {
 
-            let thisPlayerNum = this.state.players[client.sessionId].playerNum;
+            let thisPlayerNum = parseInt(this.state.players[client.sessionId].playerNum);
             if (this.state.gameState.whosTurn == thisPlayerNum
                 && this.state.gameState.pieces[data['move']['id']]) {
-                let piece = this.state.gameState.pieces[data['move']['id']];
-                let startX = piece.x;
-                let startY = piece.y;
-                let endX = data['move']['x'];
-                let endY = data['move']['y'];
+                let startX = parseInt(data['move']['startX']);
+                let startY = parseInt(data['move']['startY']);
+                let endX = parseInt(data['move']['endX']);
+                let endY = parseInt(data['move']['endY']);
                 let result = this.protochessEngine.takeTurn(startX, startY, endX, endY, thisPlayerNum);
-
-                console.log("RESULT:");
-                console.log(result);
                 if (result.success) {
                     //Update checks
                     for (let id in this.state.players) {

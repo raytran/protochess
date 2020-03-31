@@ -159,7 +159,7 @@ namespace protochess_engine {
         }
     }
 
-    dynamic_bitset<> Board::getAllPieces() const {
+    const dynamic_bitset<> &Board::getAllPieces() const {
         return allPieces;
     }
 
@@ -167,7 +167,7 @@ namespace protochess_engine {
         return dimensions;
     }
 
-    dynamic_bitset<> Board::getRayAttack(const Direction &dir, const int &index) {
+    dynamic_bitset<> Board::getRayAttack(const Direction &dir, const int &index) const {
         return rayAttacks.at(dir)[index];
     }
 

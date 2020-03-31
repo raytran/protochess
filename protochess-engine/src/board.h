@@ -59,13 +59,13 @@ namespace protochess_engine {
 
         std::vector<Tile> &getTiles();
 
-        dynamic_bitset<> getRayAttack(const Direction &dir, const int &index);
+        dynamic_bitset<> getRayAttack(const Direction &dir, const int &index) const;
 
         dynamic_bitset<> getRightMostFile() const;
 
         dynamic_bitset<> getLeftMostFile() const;
 
-        dynamic_bitset<> getAllPieces() const;
+        const dynamic_bitset<> &getAllPieces() const;
 
         dynamic_bitset<> getRightMask(int numCols) const;
 
