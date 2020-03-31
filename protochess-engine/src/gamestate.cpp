@@ -45,7 +45,7 @@ namespace protochess_engine {
     }
 
     void GameState::unmakeMove(const Move &move) {
-        std::shared_ptr<Piece> piece = pieceAt(move.locationDelta.end);
+        std::shared_ptr<Piece> piece = move.sourcePiece;
         if (piece != nullptr) {
             //Move the piece
             piece->setMovedBefore(piece->getLastMovedBefore());
@@ -86,7 +86,7 @@ namespace protochess_engine {
 
     void GameState::makeMove(const Move &move) {
 
-        std::shared_ptr<Piece> piece = pieceAt(move.locationDelta.start);
+        std::shared_ptr<Piece> piece = move.sourcePiece;
         //Move the piece
         if (piece != nullptr) {
 
@@ -95,7 +95,6 @@ namespace protochess_engine {
                 piece->setLastCharRep(piece->getCharRep());
                 piece->setCharRep(move.promotedType);
             }
-
 
             //Captures and castles cannot both happen at the same time
             if (move.capture) {
@@ -241,5 +240,30 @@ namespace protochess_engine {
         return board;
     }
 
-    //Format is @{PLAYERNUM}~{NAME}~p2,3q4,2
+    namespace {
+        unsigned long long perft_(int depth, int whosTurn, GameState &gameState) {
+            if (depth == 0) return 1;
+            unsigned long long nodes = 0;
+
+            std::map<boost::uuids::uuid, std::unordered_set<Move>>
+                    pseudoMoves = gameState.generateMoves(whosTurn);
+
+            for (auto &x:pseudoMoves) {
+                for (auto &y:x.second) {
+                    gameState.makeMove(y);
+                    nodes += perft_(depth - 1, (int) ((whosTurn + 1) % gameState.getPlayerMap().size()), gameState);
+                    gameState.unmakeMove(y);
+                }
+            }
+
+            return nodes;
+        }
+    }
+
+    unsigned long long GameState::perft(int depth) {
+        return perft_(depth, 0, *this);
+    }
 }
+
+
+

@@ -18,7 +18,8 @@ namespace protochess_engine {
                             {
                                     InstanceMethod("takeTurn", &ProtochessEngineJS::TakeTurn),
                                     InstanceMethod("toString", &ProtochessEngineJS::ToString),
-                                    InstanceMethod("getState", &ProtochessEngineJS::GetState)
+                                    InstanceMethod("getState", &ProtochessEngineJS::GetState),
+                                    InstanceMethod("perft", &ProtochessEngineJS::Perft)
                             });
 
         constructor = Napi::Persistent(func);
@@ -165,8 +166,17 @@ namespace protochess_engine {
         return obj;
     }
 
+    Napi::Value ProtochessEngineJS::Perft(const Napi::CallbackInfo &info) {
+        Napi::Env env = info.Env();
+        Napi::HandleScope scope(env);
+        if (info.Length() != 1 || !info[0].IsNumber()) {
+            Napi::TypeError::New(env, "Invalid args.").ThrowAsJavaScriptException();
+        }
+        return Napi::Number::New(env, this->chess->perft(info[0].As<Napi::Number>()));
+    }
 
-// Initialize native add-on
+
+    // Initialize native add-on
     Napi::Object Init(Napi::Env env, Napi::Object exports) {
         ProtochessEngineJS::Init(env, exports);
         return exports;

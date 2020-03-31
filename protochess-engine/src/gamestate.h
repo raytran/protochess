@@ -47,6 +47,8 @@ namespace protochess_engine {
 
         int getWhosTurn();
 
+        unsigned long long perft(int depth);
+
         //Unmakes a move, assuming its valid
         void unmakeMove(const Move &move);
 

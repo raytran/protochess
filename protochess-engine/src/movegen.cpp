@@ -197,7 +197,8 @@ namespace protochess_engine {
                                 returnSet.insert({x.first, unordered_set<Move>()});
                             }
                             returnSet.at(x.first).insert(
-                                    {promotion,
+                                    {x.second,
+                                     promotion,
                                      promoteTo,
                                      captures,
                                      gameState.pieceAt(delta.end),
@@ -259,7 +260,8 @@ namespace protochess_engine {
                                             if (returnSet.count(x.first) == 0) {
                                                 returnSet.insert({x.first, unordered_set<Move>()});
                                             }
-                                            returnSet.at(x.first).insert({false,
+                                            returnSet.at(x.first).insert({z.sourcePiece,
+                                                                          false,
                                                                           ' ',
                                                                           false,
                                                                           castlingRook,
@@ -306,7 +308,8 @@ namespace protochess_engine {
                                             if (returnSet.count(x.first) == 0) {
                                                 returnSet.insert({x.first, unordered_set<Move>()});
                                             }
-                                            returnSet.at(x.first).insert({false,
+                                            returnSet.at(x.first).insert({z.sourcePiece,
+                                                                          false,
                                                                           ' ',
                                                                           false,
                                                                           castlingRook,

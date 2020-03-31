@@ -11,6 +11,8 @@ namespace protochess_engine {
     private:
         static Napi::FunctionReference constructor;
 
+        Napi::Value Perft(const Napi::CallbackInfo &info);
+
         Napi::Value TakeTurn(const Napi::CallbackInfo &info);
 
         Napi::Value ToString(const Napi::CallbackInfo &info);

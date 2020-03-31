@@ -6,6 +6,7 @@
   "gypfile": true,
   "scripts": {
     "compile": "cmake-js compile",
+    "clean": "cmake-js clean",
     "test": "ts-node index.ts"
   },
   "devDependencies": {

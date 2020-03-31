@@ -165,4 +165,8 @@ namespace protochess_engine {
                 whosTurn
         );
     }
+
+    unsigned long long ProtochessEngine::perft(int depth) {
+        return gameState.perft(depth);
+    }
 }

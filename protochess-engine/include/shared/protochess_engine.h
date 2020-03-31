@@ -35,6 +35,8 @@ namespace protochess_engine {
 
         void reset();
 
+        unsigned long long perft(int depth);
+
         ProtochessEngine();
     };
 
