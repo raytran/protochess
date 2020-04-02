@@ -28,7 +28,6 @@ namespace protochess_engine {
 
         gameState.registerPlayer("White"); //player num 0
         gameState.registerPlayer("Black"); //player num 1
-
         std::vector<char> wPieces = {
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
                 ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',

@@ -19,28 +19,26 @@ namespace protochess_engine {
         namespace {
             dynamic_bitset<> calculatePositiveAttacks(const Direction &dir,
                                                       const Board &board,
-                                                      const dynamic_bitset<> &positiveAttack,
+                                                      dynamic_bitset<> positiveAttack,
                                                       const dynamic_bitset<> &allPieces) {
-                dynamic_bitset<> returnAttack(positiveAttack);
                 dynamic_bitset<> blockers = positiveAttack & allPieces;
                 if (blockers.any()) {
                     //Piece is being blocked
-                    returnAttack = positiveAttack ^ board.getRayAttack(dir, blockers.find_first());
+                    positiveAttack ^=  board.getRayAttack(dir, blockers.find_first());
                 }
-                return returnAttack;
+                return positiveAttack;
             }
 
             dynamic_bitset<> calculateNegativeAttacks(const Direction &dir,
                                                       const Board &board,
-                                                      const dynamic_bitset<> &negativeAttack,
+                                                      dynamic_bitset<> negativeAttack,
                                                       const dynamic_bitset<> &allPieces) {
-                dynamic_bitset<> returnAttack(negativeAttack);
                 dynamic_bitset<> blockers = negativeAttack & allPieces;
                 if (blockers.any()) {
                     //Piece is being blocked
-                    returnAttack = negativeAttack ^ board.getRayAttack(dir, bitsetUtil::findLast(blockers));
+                    negativeAttack ^= board.getRayAttack(dir, bitsetUtil::findLast(blockers));
                 }
-                return returnAttack;
+                return negativeAttack;
             }
 
             std::vector<LocationDelta> bitboardsToDeltas(const Dimensions &dimensions,
@@ -117,9 +115,13 @@ namespace protochess_engine {
                 //NONSLIDING PIECES
                 for (auto &m : thisMP.deltas) {
                     //Edge case pawn movement
-                    if ((piece->getCharRep() == 'p' || piece->getCharRep() == 'P')
-                        && piece->getMovedBefore()) {
-                        if (m.y == 2 || m.y == -2) {
+                    if (piece->getCharRep() == 'p' && piece->getLocation().y != 6){
+                        if (m.y == -2) {
+                            continue;
+                        }
+                    }
+                    if (piece->getCharRep() == 'P' && piece->getLocation().y != 1){
+                        if (m.y == 2) {
                             continue;
                         }
                     }

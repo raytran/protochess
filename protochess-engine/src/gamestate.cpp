@@ -120,6 +120,7 @@ namespace protochess_engine {
             piece->setLastMovedBefore(piece->getMovedBefore());
             piece->setLocation(move.locationDelta.end, bitsetUtil::getIndex(board.getWidth(), move.locationDelta.end));
             piece->setMovedBefore(true);
+
         } else {
 
             std::cerr << "\n";
@@ -144,10 +145,11 @@ namespace protochess_engine {
     }
 
     void GameState::update() {
-        board.update(players);
         for (auto &x:players) {
             x.second.update();
         }
+        //NEED to update players BEFORE board
+        board.update(players);
     }
 
     int GameState::registerPlayer(std::string name) {
@@ -194,6 +196,10 @@ namespace protochess_engine {
 
     void GameState::incrementTurn() {
         whosTurn = (int) ((whosTurn + 1) % players.size());
+    }
+
+    void GameState::decrementTurn() {
+        whosTurn = (int) ((whosTurn - 1) % players.size());
     }
 
     int GameState::getWhosTurn() {

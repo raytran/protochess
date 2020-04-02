@@ -39,7 +39,7 @@ namespace protochess_engine {
 
         void removePiece(boost::uuids::uuid pieceId);
 
-        void addPiece(const std::shared_ptr<Piece> &piece);
+        void addPiece(std::shared_ptr<Piece> piece);
 
         void update();
 

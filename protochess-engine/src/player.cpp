@@ -75,6 +75,7 @@ namespace protochess_engine {
             allPieces = boost::dynamic_bitset<>(x.second->getBitset());
             break;
         }
+        allPieces.reset();
 
         for (auto &x:pieces) {
             allPieces |= boost::dynamic_bitset<>(x.second->getBitset());
@@ -88,7 +89,7 @@ namespace protochess_engine {
         }
     }
 
-    void Player::addPiece(const std::shared_ptr<Piece> &piece) {
+    void Player::addPiece(std::shared_ptr<Piece> piece) {
         pieces.insert({piece->getId(), piece});
     }
 

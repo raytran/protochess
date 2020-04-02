@@ -45,6 +45,8 @@ namespace protochess_engine {
 
         void incrementTurn();
 
+        void decrementTurn();
+
         int getWhosTurn();
 
         unsigned long long perft(int depth);
