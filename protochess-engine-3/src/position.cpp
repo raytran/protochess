@@ -64,13 +64,13 @@ namespace protochess_engine{
     }
 
     Piece Position::pieceAt(int index) const {
-        if (!boost::multiprecision::bit_test(allPieces,index)){
-            return {-1,' '};
+        if (!bit_test(allPieces, index)) {
+            return {-1, ' '};
         }
         for (int i=0;i<playerPiecesMap.size();i++){
             for (auto &z:playerPiecesMap[i]){
-                if (boost::multiprecision::bit_test(z.second,index)){
-                    return {i,z.first};
+                if (bit_test(z.second, index)) {
+                    return {i, z.first};
                 }
             }
         }

@@ -14,7 +14,13 @@ namespace protochess_engine{
         std::unique_ptr<Position> currentPosition;
         std::unique_ptr<AttackTables> attackTables;
         int numPlayers = 2;
+
         unsigned long long perft_(int depth, int whosTurn);
+
+        unsigned long long perft_fast_(int depth, int whosTurn);
+
+        unsigned long long perft_divide_(int depth, int whosTurn);
+
     public:
 
         ProtochessEngine();
@@ -23,6 +29,9 @@ namespace protochess_engine{
         void loadFEN(std::string fenString);
 
         unsigned long long perft(int depth);
+
+        unsigned long long perft_divide(int depth);
+
 
         void makeMove(Move m);
 

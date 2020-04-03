@@ -11,7 +11,7 @@ namespace protochess_engine::bitboardutil {
         int height = dimensions.height;
         for (int y = height - 1; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
-                if (boost::multiprecision::bit_test(bitboard,getIndex(width, x, y))) {
+                if (bit_test(bitboard, getIndex(width, x, y))) {
                     returnString += "1 ";
                 } else {
                     returnString += ". ";

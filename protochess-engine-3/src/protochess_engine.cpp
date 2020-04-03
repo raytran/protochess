@@ -6,6 +6,7 @@
 #include "bitboardutil.h"
 #include "piecerules.h"
 #include "movegen.h"
+#include "rankfile.h"
 
 using boost::multiprecision::bit_set;
 using std::vector;
@@ -93,36 +94,72 @@ namespace protochess_engine{
 
 
     unsigned long long ProtochessEngine::perft_(int depth, int whosTurn = 0) {
-        if (depth == 0) return 1;
         unsigned long long nodes = 0;
 
         std::vector<Move> moves = movegen::generateLegalMoves(this,
                                                               attackTables.get(),
                                                               whosTurn,
                                                               currentPosition.get());
-
-        for (auto & move : moves) {
-            Position copy = *currentPosition;
+        if (depth == 0) return 1;
+        for (auto &move : moves) {
             currentPosition->makeMove(move);
-            nodes += perft_(depth - 1, (whosTurn + 1) % numPlayers) ;
+            nodes += perft_(depth - 1, (whosTurn + 1) % numPlayers);
             currentPosition->unmakeMove(move);
-
-
-            if (copy != *currentPosition){
-                std::cout<<"what?\n";
-                if(move.getIsCapture()){
-                    std::cout<<"capture move";
-                }
-                std::cerr<<"BRUH SHITS NOT EQUAL ";
-            }
         }
 
         return nodes;
     }
 
-    unsigned long long ProtochessEngine::perft(int depth) {
-        return perft_(depth,0);
+    unsigned long long ProtochessEngine::perft_fast_(int depth, int whosTurn = 0) {
+        unsigned long long nodes = 0;
+
+        std::vector<Move> moves = movegen::generateLegalMoves(this,
+                                                              attackTables.get(),
+                                                              whosTurn,
+                                                              currentPosition.get());
+        if (depth == 1) return moves.size();
+        for (auto &move : moves) {
+            currentPosition->makeMove(move);
+            nodes += perft_(depth - 1, (whosTurn + 1) % numPlayers);
+            currentPosition->unmakeMove(move);
+        }
+        return nodes;
+    }
+
+    unsigned long long ProtochessEngine::perft_divide_(int depth, int whosTurn) {
+
+        unsigned long long nodes = 0;
+
+        std::vector<Move> moves = movegen::generateLegalMoves(this,
+                                                              attackTables.get(),
+                                                              whosTurn,
+                                                              currentPosition.get());
+        for (auto &move : moves) {
+            currentPosition->makeMove(move);
+            unsigned long long additional = perft_(depth - 1, (whosTurn + 1) % numPlayers);
+
+            Location from = bitboardutil::getLoc(8, move.getFrom());
+            Location to = bitboardutil::getLoc(8, move.getTo());
+            std::cout << currentPosition->pieceAt(from.x, from.y).charType;
+            std::cout << rankfile::toRankFile(from);
+            std::cout << "-";
+            std::cout << rankfile::toRankFile(to);
+            std::cout << " :";
+            std::cout << additional;
+            std::cout << "\n";
+            nodes += additional;
+            currentPosition->unmakeMove(move);
+
+        }
+        return nodes;
     }
 
 
+    unsigned long long ProtochessEngine::perft(int depth) {
+        return perft_fast_(depth, 1);
+    }
+
+    unsigned long long ProtochessEngine::perft_divide(int depth) {
+        return perft_divide_(depth, 1);
+    }
 }

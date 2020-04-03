@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/gmp.hpp>
 #include <boost/functional/hash.hpp>
 #include <unordered_set>
 namespace protochess_engine {
@@ -37,13 +38,14 @@ namespace std {
     };
 }
 
-namespace protochess_engine{
-    struct Dimensions{
+namespace protochess_engine {
+    struct Dimensions {
         int width;
         int height;
     };
-    using boost::multiprecision::uint1024_t;
-    typedef uint1024_t bitboard;
+    using boost::multiprecision::uint256_t;
+    typedef uint256_t bitboard;
+
 
     struct MovementPattern {
         bool north;
@@ -54,7 +56,8 @@ namespace protochess_engine{
         bool northWest;
         bool southEast;
         bool southWest;
-        ::std::unordered_set<Location> deltas;
+        ::std::unordered_set<Location> deltas; //For jumping
+        ::std::vector<Location> slideDeltas; //For pieces that require consecutive changes (ex pawn needs to go 1 square before 2)
     };
 
     enum Direction {

@@ -16,10 +16,11 @@ namespace protochess_engine::piecerules {
                           false,
                           false,
                           false,
-                          std::unordered_set<Location>({
-                                                               {0, -1},
-                                                               {0, -2}
-                                                       })
+                          std::unordered_set<Location>(),
+                          std::vector<Location>({
+                                                        {0, -1},
+                                                        {0, -2}
+                                                })
                   }
             },
             //black pawn that moved
@@ -33,7 +34,8 @@ namespace protochess_engine::piecerules {
                           false,
                           std::unordered_set<Location>({
                                                                {0, -1}
-                                                       })
+                                                       }),
+                          std::vector<Location>()
                   }
             },
 
@@ -55,7 +57,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -2},
                                           {-1, 2},
                                           {-1, -2}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -77,7 +80,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -1},
                                           {-1, 1},
                                           {-1, -1}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -89,7 +93,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -101,7 +106,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -113,7 +119,8 @@ namespace protochess_engine::piecerules {
                           false,
                           false,
                           false,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
             //WHITE PIECES
@@ -125,10 +132,11 @@ namespace protochess_engine::piecerules {
                           false,
                           false,
                           false,
-                          std::unordered_set<Location>({
-                                                               {0, 1},
-                                                               {0, 2}
-                                                       })
+                          std::unordered_set<Location>(),
+                          std::vector<Location>({
+                                                        {0, 1},
+                                                        {0, 2}
+                                                })
                   }
             },
 
@@ -144,7 +152,8 @@ namespace protochess_engine::piecerules {
                           false,
                           std::unordered_set<Location>({
                                                                {0, 1}
-                                                       })
+                                                       }),
+                          std::vector<Location>()
                   }
             },
 
@@ -166,7 +175,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -2},
                                           {-1, 2},
                                           {-1, -2}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -188,7 +198,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -1},
                                           {-1, 1},
                                           {-1, -1}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -200,7 +211,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -212,7 +224,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -224,7 +237,8 @@ namespace protochess_engine::piecerules {
                           false,
                           false,
                           false,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             }
     };
@@ -244,7 +258,8 @@ namespace protochess_engine::piecerules {
                           std::unordered_set<Location>({
                                                                {-1, -1},
                                                                {1,  -1}
-                                                       })
+                                                       }),
+                          std::vector<Location>()
                   }
             },
 
@@ -266,7 +281,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -2},
                                           {-1, 2},
                                           {-1, -2}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -288,7 +304,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -1},
                                           {-1, 1},
                                           {-1, -1}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -300,7 +317,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -312,7 +330,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -324,7 +343,8 @@ namespace protochess_engine::piecerules {
                           false,
                           false,
                           false,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
             //WHITE PIECES
@@ -339,7 +359,8 @@ namespace protochess_engine::piecerules {
                           std::unordered_set<Location>({
                                                                {-1, 1},
                                                                {1,  1}
-                                                       })
+                                                       }),
+                          std::vector<Location>()
                   }
             },
 
@@ -361,7 +382,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -2},
                                           {-1, 2},
                                           {-1, -2}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -383,7 +405,8 @@ namespace protochess_engine::piecerules {
                                           {1,  -1},
                                           {-1, 1},
                                           {-1, -1}
-                                  })
+                                  }),
+                          std::vector<Location>()
                   }
             },
 
@@ -395,7 +418,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -407,7 +431,8 @@ namespace protochess_engine::piecerules {
                           true,
                           true,
                           true,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             },
 
@@ -419,7 +444,8 @@ namespace protochess_engine::piecerules {
                           false,
                           false,
                           false,
-                          std::unordered_set<Location>()
+                          std::unordered_set<Location>(),
+                          std::vector<Location>()
                   }
             }
     };
