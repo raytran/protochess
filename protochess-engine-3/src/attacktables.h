@@ -7,10 +7,12 @@
 #include <vector>
 #include <map>
 #include "types.h"
-namespace protochess_engine{
-    class AttackTables{
-        bitboard zero = 0;
-        bitboard boundaryMask = 0;
+#include "bitboard.h"
+
+namespace protochess_engine {
+    class AttackTables {
+        bitboard zero;
+        bitboard boundaryMask;
         int numBits = 0;
         std::vector<bitboard> northAttacks;
         std::vector<bitboard> southAttacks;

@@ -8,9 +8,10 @@
 #include "position.h"
 #include "../include/protochess_engine.h"
 
-namespace protochess_engine::movegen{
+namespace protochess_engine::movegen {
     std::vector<Move>
-    generateLegalMoves(const ProtochessEngine *engine, const AttackTables *tables, int whosTurn, Position *position);
+    generateLegalMoves(const ProtochessEngine *engine, const AttackTables *tables, const Rulebook *rulebook,
+                       int whosTurn, Position *position);
 
 };
 

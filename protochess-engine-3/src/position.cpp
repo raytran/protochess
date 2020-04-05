@@ -8,11 +8,11 @@
 #include "types.h"
 #include "bitboardutil.h"
 
-namespace protochess_engine{
-    Position::Position(Dimensions dimensions, std::vector<std::unordered_map<char, bitboard>> startingPieces):
+namespace protochess_engine {
+    Position::Position(Dimensions dimensions, std::vector<std::unordered_map<char, bitboard>> startingPieces) :
             playerPiecesMap(std::move(startingPieces)),
-            playerAllPieces(playerPiecesMap.size(), 0),
-            dimensions({dimensions.width,dimensions.height}) {
+            playerAllPieces(playerPiecesMap.size(), bitboard()),
+            dimensions({dimensions.width, dimensions.height}) {
         //Update the internal definitions
         update();
     }
@@ -23,7 +23,7 @@ namespace protochess_engine{
         int height = dimensions.height;
         for (int y = height - 1; y >= 0; y--) {
             for (int x = 0; x < width; x++) {
-                Piece piece = pieceAt(x,y);
+                Piece piece = pieceAt(x, y);
                 if (piece.charType != ' ') {
                     returnString += piece.charType;
                     returnString += " ";
@@ -38,11 +38,12 @@ namespace protochess_engine{
     }
 
 
-    void Position::update(){
-        allPieces = 0;
-        for (int i=0; i < playerPiecesMap.size(); i++){
-            playerAllPieces[i] = 0;
-            for (auto &z:playerPiecesMap[i]){
+    void Position::update() {
+        reset(allPieces);
+
+        for (int i = 0; i < playerPiecesMap.size(); i++) {
+            reset(playerAllPieces[i]);
+            for (auto &z:playerPiecesMap[i]) {
                 playerAllPieces[i] |= z.second;
                 allPieces |= z.second;
             }
@@ -50,16 +51,19 @@ namespace protochess_engine{
     };
 
 
-    const Dimensions &Position::getDimensions() const{
+    const Dimensions &Position::getDimensions() const {
         return dimensions;
     }
-    const std::vector<std::unordered_map<char,bitboard>> &Position::getPlayerPiecesMap() const{
+
+    const std::vector<std::unordered_map<char, bitboard>> &Position::getPlayerPiecesMap() const {
         return playerPiecesMap;
     }
-    const std::vector<bitboard> &Position::getPlayerAllPieces() const{
+
+    const std::vector<bitboard> &Position::getPlayerAllPieces() const {
         return playerAllPieces;
     }
-    const bitboard &Position::getAllPieces() const{
+
+    const bitboard &Position::getAllPieces() const {
         return allPieces;
     }
 
@@ -67,8 +71,8 @@ namespace protochess_engine{
         if (!bit_test(allPieces, index)) {
             return {-1, ' '};
         }
-        for (int i=0;i<playerPiecesMap.size();i++){
-            for (auto &z:playerPiecesMap[i]){
+        for (int i = 0; i < playerPiecesMap.size(); i++) {
+            for (auto &z:playerPiecesMap[i]) {
                 if (bit_test(z.second, index)) {
                     return {i, z.first};
                 }
@@ -79,70 +83,70 @@ namespace protochess_engine{
 
 
     Piece Position::pieceAt(int x, int y) const {
-        return pieceAt(bitboardutil::getIndex(dimensions.width,x,y));
+        return pieceAt(bitboardutil::getIndex(dimensions.width, x, y));
     }
 
-    void Position::makeMove(Move &move) {
+    void Position::makeMove(const Move &move) {
         int fromIndex = move.getFrom();
         int toIndex = move.getTo();
         Piece sourcePiece = pieceAt(fromIndex);
-        if (sourcePiece.owner != -1){
-            if (move.getIsCapture()){
+        if (sourcePiece.owner != -1) {
+            if (move.getIsCapture()) {
                 //Handle capture
                 Piece capturedPiece = move.getCapturedPiece();
                 bitboard &captured = playerPiecesMap[capturedPiece.owner].at(capturedPiece.charType);
-                bit_unset(captured,toIndex);
+                bit_unset(captured, toIndex);
             }
 
             //Move the piece
             bitboard &pieces = playerPiecesMap[sourcePiece.owner].at(sourcePiece.charType);
-            bit_unset(pieces,fromIndex);
-            bit_set(pieces,toIndex);
+            bit_unset(pieces, fromIndex);
+            bit_set(pieces, toIndex);
 
-        }else{
-            Location from = bitboardutil::getLoc(8,fromIndex);
-            Location to = bitboardutil::getLoc(8,toIndex);
-            std::cerr<<from.x;
-            std::cerr<<from.y;
-            std::cerr<<'-';
-            std::cerr<<to.x;
-            std::cerr<<to.y;
-            std::cerr<<"MAKEMOVE No piece here.\n";
+        } else {
+            Location from = bitboardutil::getLoc(8, fromIndex);
+            Location to = bitboardutil::getLoc(8, toIndex);
+            std::cerr << from.x;
+            std::cerr << from.y;
+            std::cerr << '-';
+            std::cerr << to.x;
+            std::cerr << to.y;
+            std::cerr << "MAKEMOVE No piece here.\n";
         }
 
         update();
     }
 
-    void Position::unmakeMove(Move &move) {
+    void Position::unmakeMove(const Move &move) {
         //Swap from and no
         int fromIndex = move.getTo();
         int toIndex = move.getFrom();
         Piece sourcePiece = pieceAt(fromIndex);
-        if (sourcePiece.owner != -1){
+        if (sourcePiece.owner != -1) {
             //Move the piece
             bitboard &pieces = playerPiecesMap[sourcePiece.owner].at(sourcePiece.charType);
-            bit_unset(pieces,fromIndex);
-            bit_set(pieces,toIndex);
+            bit_unset(pieces, fromIndex);
+            bit_set(pieces, toIndex);
 
-            if (move.getIsCapture()){
+            if (move.getIsCapture()) {
                 //Undo capture
                 Piece capturedPiece = move.getCapturedPiece();
                 bitboard &captured = playerPiecesMap[capturedPiece.owner].at(capturedPiece.charType);
 
                 //Remember: fromIndex is relative to source piece
-                bit_set(captured,fromIndex);
+                bit_set(captured, fromIndex);
 
             }
 
-        }else{
-            Location from = bitboardutil::getLoc(8,fromIndex);
-            Location to = bitboardutil::getLoc(8,toIndex);
-            std::cerr<<from.x;
-            std::cerr<<from.y;
-            std::cerr<<'-';
-            std::cerr<<to.x;
-            std::cerr<<to.y;
-            std::cerr<<"UNMAKE No piece here.\n";
+        } else {
+            Location from = bitboardutil::getLoc(8, fromIndex);
+            Location to = bitboardutil::getLoc(8, toIndex);
+            std::cerr << from.x;
+            std::cerr << from.y;
+            std::cerr << '-';
+            std::cerr << to.x;
+            std::cerr << to.y;
+            std::cerr << "UNMAKE No piece here.\n";
         }
 
         update();

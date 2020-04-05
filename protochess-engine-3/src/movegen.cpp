@@ -6,12 +6,9 @@
 #include "types.h"
 #include "attacktables.h"
 #include "bitboardutil.h"
-using boost::multiprecision::msb;
-using boost::multiprecision::lsb;
-using boost::multiprecision::bit_set;
-using boost::multiprecision::bit_unset;
+#include "bitboard.h"
 
-namespace protochess_engine::movegen{
+namespace protochess_engine::movegen {
     namespace {
         bitboard calculatePositiveAttack(const Direction &dir,
                                          const AttackTables *attackTables,
@@ -46,8 +43,8 @@ namespace protochess_engine::movegen{
             //Determine which movement pattern to use
 
             //Squares that the piece can move to, including captures
-            bitboard validSquares = 0;
-            int locIndex = boost::multiprecision::msb(singlePiece);
+            bitboard validSquares;
+            int locIndex = lsb(singlePiece);
             //SLIDING MOVES:
             //POSITIVE ATTACKS
             if (thisMP->north) {
@@ -134,6 +131,7 @@ namespace protochess_engine::movegen{
                                       const ProtochessEngine *engine,
                                       int whosTurn,
                                       const AttackTables *tables,
+                                      const Rulebook *rulebook,
                                       const Position *position) {
 
 
@@ -147,14 +145,14 @@ namespace protochess_engine::movegen{
             for (const auto &x : position->getPlayerPiecesMap()[whosTurn]) {
                 //Char type
                 const char &c = x.first; //char
-                const MovementPattern *CP = engine->getCapturePattern(c);
-                const MovementPattern *TP = engine->getTranslatePattern(c);
+                const MovementPattern *CP = rulebook->getCapturePattern(c);
+                const MovementPattern *TP = rulebook->getTranslatePattern(c);
                 //This bitboard contains many bits for each piece
                 //Make a copy of it to modify
                 bitboard bits = x.second;
                 while (bits) {
-                    uint32_t fromIndex = msb(bits);
-                    bitboard singlePiece = 0;
+                    uint32_t fromIndex = lsb(bits);
+                    bitboard singlePiece;
                     bit_set(singlePiece, fromIndex);
 
 
@@ -164,16 +162,16 @@ namespace protochess_engine::movegen{
                         Location loc = bitboardutil::getLoc(position->getDimensions().width, fromIndex);
                         if (c == 'P') {
                             if (loc.y != 1) {
-                                TP = engine->getTranslatePattern('.');
+                                TP = rulebook->getTranslatePattern('.');
                             } else {
                                 //Reset for initial pawns
-                                TP = engine->getTranslatePattern(c);
+                                TP = rulebook->getTranslatePattern(c);
                             }
                         } else {
                             if (loc.y != position->getDimensions().height - 2) {
-                                TP = engine->getTranslatePattern(',');
+                                TP = rulebook->getTranslatePattern(',');
                             } else {
-                                TP = engine->getTranslatePattern(c);
+                                TP = rulebook->getTranslatePattern(c);
                             }
                         }
                     }
@@ -184,7 +182,7 @@ namespace protochess_engine::movegen{
                     validTranslates &= ~enemies;
 
                     while (validTranslates) {
-                        uint32_t toIndex = msb(validTranslates);
+                        uint32_t toIndex = lsb(validTranslates);
                         returnMoves.push_back(Move(fromIndex, toIndex, ' ', false, {-1, ' '}));
                         bit_unset(validTranslates, toIndex);
                     }
@@ -194,7 +192,7 @@ namespace protochess_engine::movegen{
                     validCaptures &= enemies;
 
                     while (validCaptures) {
-                        int toIndex = msb(validCaptures);
+                        int toIndex = lsb(validCaptures);
                         returnMoves.push_back(Move(fromIndex, toIndex, ' ', true, position->pieceAt(toIndex)));
                         bit_unset(validCaptures, toIndex);
                     }
@@ -209,9 +207,10 @@ namespace protochess_engine::movegen{
         bitboard getDangerMap(int playerNum,
                               const ProtochessEngine *engine,
                               const AttackTables *tables,
+                              const Rulebook *rulebook,
                               const Position *position) {
 
-            bitboard dangerSquares = 0;
+            bitboard dangerSquares;
             const bitboard &allPieces = position->getAllPieces();
             //CAPTURES
             for (int i = 0; i < position->getPlayerPiecesMap().size(); i++) {
@@ -219,13 +218,13 @@ namespace protochess_engine::movegen{
                 //Recalculate thisPlayerPieces (relative to this player)
                 const bitboard &thisPlayerPieces = position->getPlayerAllPieces()[i];
                 for (const auto &x : position->getPlayerPiecesMap()[i]) {
-                    const MovementPattern *CP = engine->getCapturePattern(x.first);
+                    const MovementPattern *CP = rulebook->getCapturePattern(x.first);
                     //This bitboard contains many bits for each piece
                     //Make a copy of it to modify
                     bitboard bits = x.second;
                     while (bits) {
-                        uint32_t fromIndex = msb(bits);
-                        bitboard singlePiece = 0;
+                        uint32_t fromIndex = lsb(bits);
+                        bitboard singlePiece;
                         bit_set(singlePiece, fromIndex);
 
                         //CAPTURES
@@ -247,6 +246,7 @@ namespace protochess_engine::movegen{
         //Given: a well formed pseudo move
         //Returns: whether or not this move would put the player in check
         bool isMoveLegal(int whosTurn, Move &move, const ProtochessEngine *engine, const AttackTables *tables,
+                         const Rulebook *rulebook,
                          Position *position) {
             //Position copy = *position;
             position->makeMove(move);
@@ -254,12 +254,12 @@ namespace protochess_engine::movegen{
             int kingIndex = 0;
             for (const auto &x : position->getPlayerPiecesMap()[whosTurn]) {
                 if (x.first == 'k' || x.first == 'K') {
-                    kingIndex = msb(x.second);
+                    kingIndex = lsb(x.second);
                     break;
                 }
             }
             //Calculate the dangerMap
-            bitboard dangerMap = getDangerMap(whosTurn, engine, tables, position);
+            bitboard dangerMap = getDangerMap(whosTurn, engine, tables, rulebook, position);
             position->unmakeMove(move);
 
             //assert(copy == *position);
@@ -268,13 +268,14 @@ namespace protochess_engine::movegen{
     }
 
     std::vector<Move>
-    generateLegalMoves(const ProtochessEngine *engine, const AttackTables *tables, int whosTurn, Position *position) {
+    generateLegalMoves(const ProtochessEngine *engine, const AttackTables *tables, const Rulebook *rulebook,
+                       int whosTurn, Position *position) {
         std::vector<Move> pseudoMoves;
-        generatePseudoLegalMoves(pseudoMoves, engine, whosTurn, tables, position);
+        generatePseudoLegalMoves(pseudoMoves, engine, whosTurn, tables, rulebook, position);
 
         std::vector<Move> returnMoves;
         for (int i = 0; i < pseudoMoves.size(); i++) {
-            if (isMoveLegal(whosTurn, pseudoMoves[i], engine, tables, position)) {
+            if (isMoveLegal(whosTurn, pseudoMoves[i], engine, tables, rulebook, position)) {
 
                 returnMoves.push_back(pseudoMoves[i]);
             }

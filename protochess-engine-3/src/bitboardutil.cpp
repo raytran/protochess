@@ -4,6 +4,7 @@
 
 #include "bitboardutil.h"
 #include "types.h"
+
 namespace protochess_engine::bitboardutil {
     std::string bitsetToString(bitboard bitboard, const Dimensions &dimensions) {
         std::string returnString;

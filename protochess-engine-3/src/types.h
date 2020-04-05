@@ -2,16 +2,20 @@
 // Created by raytran on 4/1/20.
 //
 #pragma once
+
+#include <immintrin.h>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/gmp.hpp>
 #include <boost/functional/hash.hpp>
 #include <unordered_set>
+
 namespace protochess_engine {
     struct Location {
         int x;
         int y;
 
     };
+
     inline bool operator==(const Location &lhs, const Location &rhs) {
         return lhs.x == rhs.x && lhs.y == rhs.y;
     }
@@ -43,8 +47,6 @@ namespace protochess_engine {
         int width;
         int height;
     };
-    using boost::multiprecision::uint256_t;
-    typedef uint256_t bitboard;
 
 
     struct MovementPattern {
@@ -71,35 +73,40 @@ namespace protochess_engine {
         SOUTHWEST
     };
 
-    struct Piece{
+    struct Piece {
         int owner;
         char charType;
     };
 
-    struct Move{
+    struct Move {
         int fromIndex;
         int toIndex;
         bool isCapture;
         Piece captured;
         char promoteTo;
+
         //indicies must be 0<=index<1024
-        Move(uint32_t fromIndx, uint32_t toIndx, char promotionType, bool isCapt, Piece capturedPiece){
+        Move(uint32_t fromIndx, uint32_t toIndx, char promotionType, bool isCapt, Piece capturedPiece) {
             captured = capturedPiece;
             isCapture = isCapt;
             promoteTo = promotionType;
             fromIndex = fromIndx;
             toIndex = toIndx;
         }
-        bool getIsCapture(){
+
+        bool getIsCapture() const {
             return isCapture;
         }
-        Piece getCapturedPiece(){
+
+        Piece getCapturedPiece() const {
             return captured;
         }
-        int getFrom(){
+
+        int getFrom() const {
             return fromIndex;
         }
-        int getTo(){
+
+        int getTo() const {
             return toIndex;
         }
     };

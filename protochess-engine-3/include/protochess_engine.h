@@ -6,13 +6,16 @@
 #include <string>
 #include "../src/position.h"
 #include "../src/attacktables.h"
+#include "../src/rulebook.h"
 
 namespace protochess_engine{
     class ProtochessEngine {
     private:
         Dimensions dimensions;
+        int whosTurn = 0;
         std::unique_ptr<Position> currentPosition;
         std::unique_ptr<AttackTables> attackTables;
+        std::unique_ptr<Rulebook> pieceRulebook;
         int numPlayers = 2;
 
         unsigned long long perft_(int depth, int whosTurn);
@@ -32,14 +35,12 @@ namespace protochess_engine{
 
         unsigned long long perft_divide(int depth);
 
+        bool makeMove(std::string from, std::string to);
 
-        void makeMove(Move m);
+        int getWhosTurn();
 
-        void unmakeMove(Move m);
+        int getNumPlayers();
 
-        const MovementPattern *getTranslatePattern(char c) const;
-
-        const MovementPattern *getCapturePattern(char c) const;
 
 
         std::string toString();
