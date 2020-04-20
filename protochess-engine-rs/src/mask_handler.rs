@@ -1,6 +1,8 @@
 use crate::types::bitboard::Bitboard;
 use arrayvec::ArrayVec;
-use crate::types::{Dimensions, bitboard, Direction};
+use crate::types::{Dimensions, bitboard, AttackDirection};
+
+use bitboard::to_index;
 
 pub struct MaskHandler {
     dimensions: Dimensions,
@@ -13,6 +15,8 @@ pub struct MaskHandler {
     northwest: ArrayVec<[Bitboard;256]>,
     southeast: ArrayVec<[Bitboard;256]>,
     southwest: ArrayVec<[Bitboard;256]>,
+    knight: ArrayVec<[Bitboard;256]>,
+    king: ArrayVec<[Bitboard;256]>,
     left_masks: ArrayVec<[Bitboard;16]>,
     right_masks: ArrayVec<[Bitboard;16]>,
     zero: Bitboard
@@ -54,9 +58,13 @@ impl MaskHandler {
         let mut northwest = ArrayVec::<[Bitboard;256]>::new();
         let mut southeast = ArrayVec::<[Bitboard;256]>::new();
         let mut southwest = ArrayVec::<[Bitboard;256]>::new();
+        let mut knight = ArrayVec::<[Bitboard;256]>::new();
+        let mut king = ArrayVec::<[Bitboard;256]>::new();
         let mut bounds = Bitboard::zero();
 
         for i in 0..256 {
+            knight.push(Bitboard::zero());
+            king.push(Bitboard::zero());
             north.push(Bitboard::zero());
             east.push(Bitboard::zero());
             west.push(Bitboard::zero());
@@ -69,30 +77,57 @@ impl MaskHandler {
 
         for x in 0..dims.width as i8 {
             for y in 0..dims.height as i8 {
-                let index:usize = bitboard::to_index(x as u8, y as u8, dims.width) as usize;
+                let index:usize = to_index(x as u8, y as u8, dims.width) as usize;
+
+
+                //KING LOOKUP TABLE
+                let king_deltas = [(0,  1), (0,  -1), (-1, 0), (1,  0),
+                    (1,  1), (1,  -1), (-1, 1), (-1, -1)];
+
+                for &delta in &king_deltas {
+                    let x2 = delta.0 + x;
+                    let y2 = delta.1 + y;
+                    if x2 >= 0 && x2 < dims.width as i8 && y2 >=0 && y2 < dims.height as i8 {
+                        king[index].set_bit(to_index(x2 as u8, y2 as u8, dims.width),true);
+                    }
+                }
+
+
+                //KNIGHT LOOKUP TABLE
+                let knight_deltas = [(2,  1), (2,  -1), (-2, 1), (-2, -1),
+                    (1,  2), (1,  -2), (-1, 2), (-1, -2)];
+
+                for &delta in &knight_deltas {
+                    let x2 = delta.0 + x;
+                    let y2 = delta.1 + y;
+                    if x2 >= 0 && x2 < dims.width as i8 && y2 >=0 && y2 < dims.height as i8 {
+                        knight[index].set_bit(to_index(x2 as u8, y2 as u8, dims.width),true);
+                    }
+                }
+
                 bounds.set_bit(index as usize, true);
 
                 //NORTH LOOKUP TABLE
                 for j in y + 1..dims.height as i8 {
-                    north[index].set_bit(bitboard::to_index(x as u8, j as u8, dims.width), true);
+                    north[index].set_bit(to_index(x as u8, j as u8, dims.width), true);
                 }
                 //SOUTH LOOKUP TABLE
                 for j in 0..y {
-                    south[index].set_bit(bitboard::to_index(x as u8, j as u8, dims.width), true);
+                    south[index].set_bit(to_index(x as u8, j as u8, dims.width), true);
                 }
                 //EAST LOOKUP TABLE
                 for j in x + 1..dims.width as i8 {
-                    east[index].set_bit(bitboard::to_index(j as u8, y as u8, dims.width), true);
+                    east[index].set_bit(to_index(j as u8, y as u8, dims.width), true);
                 }
                 //WEST LOOKUP TABLE
                 for j in 0..x {
-                    west[index].set_bit(bitboard::to_index(j as u8, y as u8, dims.width), true);
+                    west[index].set_bit(to_index(j as u8, y as u8, dims.width), true);
                 }
                 //NORTHEAST LOOKUP TABLE
                 let mut x2:i8 = (x + 1) as i8;
                 let mut y2:i8 = (y + 1) as i8;
                 while x2 < dims.width as i8 && y2 < dims.height as i8 {
-                    northeast[index].set_bit(bitboard::to_index(x2 as u8, y2 as u8, dims.width), true);
+                    northeast[index].set_bit(to_index(x2 as u8, y2 as u8, dims.width), true);
                     x2 +=1;
                     y2 +=1;
                 }
@@ -101,7 +136,7 @@ impl MaskHandler {
                 x2 = (x - 1) as i8;
                 y2 = (y + 1) as i8;
                 while x2 >= 0 && y2 < dims.height as i8 {
-                    northwest[index].set_bit(bitboard::to_index(x2 as u8, y2 as u8, dims.width), true);
+                    northwest[index].set_bit(to_index(x2 as u8, y2 as u8, dims.width), true);
                     x2 -= 1;
                     y2 += 1;
                 }
@@ -109,7 +144,7 @@ impl MaskHandler {
                 x2 = (x + 1) as i8;
                 y2 = (y - 1) as i8;
                 while x2 < dims.width as i8 && y2 >= 0 {
-                    southeast[index].set_bit(bitboard::to_index(x2 as u8, y2 as u8, dims.width), true);
+                    southeast[index].set_bit(to_index(x2 as u8, y2 as u8, dims.width), true);
                     x2 += 1;
                     y2 -= 1;
                 }
@@ -117,7 +152,7 @@ impl MaskHandler {
                 x2 = (x - 1) as i8;
                 y2 = (y - 1) as i8;
                 while x2 >= 0 && y2 >= 0 {
-                    southwest[index].set_bit(bitboard::to_index(x2 as u8, y2 as u8, dims.width), true);
+                    southwest[index].set_bit(to_index(x2 as u8, y2 as u8, dims.width), true);
                     x2 -= 1;
                     y2 -= 1;
                 }
@@ -127,8 +162,10 @@ impl MaskHandler {
         MaskHandler{
             dimensions: Dimensions{width: dims.width, height:dims.height},
             boundary: bounds,
+            knight,
             north,
             east,
+            king,
             south,
             west,
             northeast,
@@ -141,16 +178,18 @@ impl MaskHandler {
         }
     }
 
-    pub fn get_attack(&self, dir:&Direction, index:usize) -> &Bitboard {
+    pub fn get_attack(&self, dir:&AttackDirection, index:usize) -> &Bitboard {
         match dir {
-            Direction::NORTH => &self.north[index],
-            Direction::EAST => &self.east[index],
-            Direction::SOUTH => &self.south[index],
-            Direction::WEST => &self.west[index],
-            Direction::NORTHEAST => &self.northeast[index],
-            Direction::NORTHWEST => &self.northwest[index],
-            Direction::SOUTHEAST => &self.southeast[index],
-            Direction::SOUTHWEST => &self.southwest[index],
+            AttackDirection::NORTH => &self.north[index],
+            AttackDirection::EAST => &self.east[index],
+            AttackDirection::SOUTH => &self.south[index],
+            AttackDirection::WEST => &self.west[index],
+            AttackDirection::NORTHEAST => &self.northeast[index],
+            AttackDirection::NORTHWEST => &self.northwest[index],
+            AttackDirection::SOUTHEAST => &self.southeast[index],
+            AttackDirection::SOUTHWEST => &self.southwest[index],
+            AttackDirection::KNIGHT => &self.knight[index],
+            AttackDirection::KING => &self.king[index],
         }
     }
 
@@ -178,10 +217,10 @@ impl MaskHandler {
     }
 
     pub fn shift_east(&self, amt:u8, bitboard: &Bitboard) -> Bitboard {
-        (bitboard << amt) & (!MaskHandler::get_left_mask(self, amt as usize))
+        (bitboard << amt) & (!self.get_left_mask(amt as usize))
     }
 
     pub fn shift_west(&self, amt:u8, bitboard: &Bitboard) -> Bitboard {
-        (bitboard >> amt) & (!MaskHandler::get_right_mask(self,amt as usize))
+        (bitboard >> amt) & (!self.get_right_mask(amt as usize))
     }
 }

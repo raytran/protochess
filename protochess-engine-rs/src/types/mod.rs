@@ -23,7 +23,7 @@ pub fn get_capture(move_: &Move) -> bool{
 }
 
 //Direction for an attack
-pub enum Direction {
+pub enum AttackDirection {
     NORTH,
     EAST,
     SOUTH,
@@ -32,32 +32,44 @@ pub enum Direction {
     NORTHWEST,
     SOUTHEAST,
     SOUTHWEST,
+    KNIGHT,
+    KING,
 }
 
 //Upper, lower
-pub enum LineType{
+pub enum LineAttackType {
     DIAGONAL,
     ANTIDIAGONAL,
     RANK,
     FILE,
 }
 
-impl LineType {
-    pub fn get_upper(&self) -> Direction{
+pub enum PieceType {
+    KING,
+    QUEEN,
+    KNIGHT,
+    BISHOP,
+    ROOK,
+    PAWN,
+    CUSTOM
+}
+
+impl LineAttackType {
+    pub fn get_upper(&self) -> AttackDirection {
         match self{
-            LineType::DIAGONAL => Direction::NORTHEAST,
-            LineType::ANTIDIAGONAL => Direction::NORTHWEST,
-            LineType::RANK => Direction::EAST,
-            LineType::FILE => Direction::NORTH,
+            LineAttackType::DIAGONAL => AttackDirection::NORTHEAST,
+            LineAttackType::ANTIDIAGONAL => AttackDirection::NORTHWEST,
+            LineAttackType::RANK => AttackDirection::EAST,
+            LineAttackType::FILE => AttackDirection::NORTH,
         }
     }
 
-    pub fn get_lower(&self) -> Direction {
+    pub fn get_lower(&self) -> AttackDirection {
         match self {
-            LineType::DIAGONAL => Direction::SOUTHWEST,
-            LineType::ANTIDIAGONAL => Direction::SOUTHEAST,
-            LineType::RANK => Direction::WEST,
-            LineType::FILE => Direction::SOUTH,
+            LineAttackType::DIAGONAL => AttackDirection::SOUTHWEST,
+            LineAttackType::ANTIDIAGONAL => AttackDirection::SOUTHEAST,
+            LineAttackType::RANK => AttackDirection::WEST,
+            LineAttackType::FILE => AttackDirection::SOUTH,
         }
     }
 }

@@ -1,4 +1,3 @@
-use crate::types::bitboard::{Bitboard};
 use crate::types::{Dimensions, bitboard, get_from, get_to, get_capture};
 use crate::position::Position;
 use crate::mask_handler::MaskHandler;
