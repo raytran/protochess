@@ -1,6 +1,7 @@
 //Pieces that a player has
 use crate::types::bitboard::Bitboard;
 pub struct PieceSet {
+    pub occupied: Bitboard,
     pub king: Bitboard,
     pub queen: Bitboard,
     pub bishop: Bitboard,
@@ -13,36 +14,37 @@ pub struct PieceSet {
 impl PieceSet {
     pub fn new() -> PieceSet {
         PieceSet {
-            king: Bitboard::new(),
-            queen: Bitboard::new(),
-            bishop: Bitboard::new(),
-            knight: Bitboard::new(),
-            rook: Bitboard::new(),
-            pawn: Bitboard::new(),
+            occupied: Bitboard::zero(),
+            king: Bitboard::zero(),
+            queen: Bitboard::zero(),
+            bishop: Bitboard::zero(),
+            knight: Bitboard::zero(),
+            rook: Bitboard::zero(),
+            pawn: Bitboard::zero(),
             custom: Vec::new(),
         }
     }
 
-    pub fn char_at(&self, index: u8) -> char{
-        if self.king.bit_test(index){
-            'k'
-        }else if self.queen.bit_test(index){
-            'q'
-        }else if self.bishop.bit_test(index){
-            'b'
-        }else if self.knight.bit_test(index){
-            'n'
-        }else if self.rook.bit_test(index){
-            'r'
-        }else if self.pawn.bit_test(index){
-            'p'
+    pub fn piece_at(&self, index: usize) -> Option<char>{
+        if self.king.bit(index).unwrap(){
+            Some('k')
+        }else if self.queen.bit(index).unwrap(){
+            Some('q')
+        }else if self.bishop.bit(index).unwrap(){
+            Some('b')
+        }else if self.knight.bit(index).unwrap(){
+            Some('n')
+        }else if self.rook.bit(index).unwrap(){
+            Some('r')
+        }else if self.pawn.bit(index).unwrap(){
+            Some('p')
         }else{
             for (c, b) in self.custom.iter(){
-                if b.bit_test(index){
-                    return *c
+                if b.bit(index).unwrap(){
+                    return Some(*c);
                 }
             }
-            '.'
+            None
         }
     }
 }

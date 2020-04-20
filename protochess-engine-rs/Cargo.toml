@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 arrayvec = "0.5.1"
+numext-fixed-uint = "0.1.4"

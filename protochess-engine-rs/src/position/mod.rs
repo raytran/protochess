@@ -4,12 +4,13 @@ use crate::fen;
 use crate::position::piece_set::PieceSet;
 use crate::types::bitboard::Bitboard;
 
-mod piece_set;
+pub mod piece_set;
 
 pub struct Position{
-    dimensions: Dimensions,
-    whos_turn: u8,
-    pieces:ArrayVec<[PieceSet;4]>, //pieces[0] = white's pieces, pieces[1] black etc
+    pub dimensions: Dimensions,
+    pub whos_turn: u8,
+    pub pieces:ArrayVec<[PieceSet;4]>, //pieces[0] = white's pieces, pieces[1] black etc
+    pub occupied: Bitboard,
 }
 
 impl Position {
@@ -21,14 +22,13 @@ impl Position {
         let mut return_str= String::new();
         for y in (0..self.dimensions.height).rev() {
             for x in 0..self.dimensions.width {
-                let mut c = '.';
-                for piece_set in &self.pieces {
-                    c = piece_set.char_at(bitboard::to_index(x,y,self.dimensions.width));
-                    if c != '.'{
-                        break;
-                    }
+
+                if let Some(c) = self.piece_at(bitboard::to_index(x,y,self.dimensions.width)){
+                    return_str.push(c);
+                }else{
+                    return_str.push('.');
                 }
-                return_str.push(c);
+                return_str.push(' ');
             }
             return_str.push('\n');
         }
@@ -46,7 +46,6 @@ impl Position {
         let mut y :u8 = 7;
         let mut field = 0;
 
-        println!("{}",fen);
         for c in fen.chars(){
             if c == ' ' {
                 field += 1;
@@ -85,15 +84,31 @@ impl Position {
                         _ => continue,
                     };
 
-                    bitboard.bit_set(index);
+                    bitboard.set_bit(index, true);
+                    if c.is_uppercase() {w_pieces.occupied.set_bit(index,true)} else {b_pieces.occupied.set_bit(index, true)};
                     x += 1;
                 }
                 _ => continue,
             }
         }
+
+        let mut occupied = Bitboard::zero();
+        occupied |= &w_pieces.occupied;
+        occupied |= &b_pieces.occupied;
+
         wb_pieces.push(w_pieces);
         wb_pieces.push(b_pieces);
-        Position{whos_turn: 0, dimensions: dims, pieces: wb_pieces}
+
+        Position{whos_turn: 0, dimensions: dims, pieces: wb_pieces, occupied}
+    }
+
+    pub fn piece_at(&self,index:usize) -> Option<char> {
+        for ps in &self.pieces {
+            if let Some(c) = ps.piece_at(index) {
+                return Some(c);
+            }
+        }
+        None
     }
 }
 

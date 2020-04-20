@@ -3,7 +3,10 @@ extern crate protochess_engine_rs;
 mod tests {
     #[test]
     fn it_works() {
-        protochess_engine_rs::example();
-        assert_eq!(2 + 2, 4);
+        let engine = protochess_engine_rs::Engine::from_fen("8/8/8/1q1Q2b1/8/8/8/8 w - - 0 1".parse().unwrap());
+
+        println!("{}",engine.perft(0));
+
+
     }
 }
