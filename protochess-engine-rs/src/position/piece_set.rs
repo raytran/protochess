@@ -1,5 +1,7 @@
 //Pieces that a player has
 use crate::types::bitboard::Bitboard;
+use crate::types::PieceType;
+
 pub struct PieceSet {
     pub occupied: Bitboard,
     pub king: Bitboard,
@@ -25,26 +27,63 @@ impl PieceSet {
         }
     }
 
-    pub fn piece_at(&self, index: usize) -> Option<char>{
+    pub fn piece_bb_at(&mut self, index: usize) -> Option<&mut Bitboard>{
         if self.king.bit(index).unwrap(){
-            Some('k')
+            Some(&mut self.king)
         }else if self.queen.bit(index).unwrap(){
-            Some('q')
+            Some(&mut self.queen)
         }else if self.bishop.bit(index).unwrap(){
-            Some('b')
+            Some(&mut self.bishop)
         }else if self.knight.bit(index).unwrap(){
-            Some('n')
+            Some(&mut self.knight)
         }else if self.rook.bit(index).unwrap(){
-            Some('r')
+            Some(&mut self.rook)
         }else if self.pawn.bit(index).unwrap(){
-            Some('p')
+            Some(&mut self.pawn)
         }else{
-            for (c, b) in self.custom.iter(){
+            for (c, b) in self.custom.iter_mut(){
                 if b.bit(index).unwrap(){
-                    return Some(*c);
+                    return Some(b);
                 }
             }
             None
+        }
+    }
+
+    pub fn piecetype_at(&self, index: usize) -> Option<PieceType>{
+        if self.king.bit(index).unwrap(){
+            Some(PieceType::KING)
+        }else if self.queen.bit(index).unwrap(){
+            Some(PieceType::QUEEN)
+        }else if self.bishop.bit(index).unwrap(){
+            Some(PieceType::BISHOP)
+        }else if self.knight.bit(index).unwrap(){
+            Some(PieceType::KNIGHT)
+        }else if self.rook.bit(index).unwrap(){
+            Some(PieceType::ROOK)
+        }else if self.pawn.bit(index).unwrap(){
+            Some(PieceType::PAWN)
+        }else{
+            for (c, b) in self.custom.iter(){
+                if b.bit(index).unwrap(){
+                    return Some(PieceType::CUSTOM(*c));
+                }
+            }
+            None
+        }
+    }
+
+    //Recomputes occupied bb
+    pub fn update_occupied(&mut self){
+        self.occupied = Bitboard::zero();
+        self.occupied |= &self.king;
+        self.occupied |= &self.queen;
+        self.occupied |= &self.bishop;
+        self.occupied |= &self.knight;
+        self.occupied |= &self.rook;
+        self.occupied |= &self.pawn;
+        for (c, bb) in &self.custom {
+            self.occupied |= bb;
         }
     }
 }

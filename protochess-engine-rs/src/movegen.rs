@@ -1,4 +1,4 @@
-use crate::types::{new_move, Move, LineAttackType, Dimensions, bitboard, AttackDirection, PieceType};
+use crate::types::{Move, LineAttackType, AttackDirection };
 use crate::types::bitboard::Bitboard;
 use crate::Engine;
 use crate::position::Position;
@@ -167,13 +167,13 @@ impl Engine {
             while !ne_attacks.is_zero() {
                 let to = ne_attacks.lowest_one().unwrap() as u8;
                 let from = to - position.dimensions.width - 1;
-                movelist.push(new_move(from, to,true));
+                movelist.push(Move::new(from, to,true));
                 ne_attacks.set_bit(to as usize, false);
             }
             while !nw_attacks.is_zero() {
                 let to = nw_attacks.lowest_one().unwrap() as u8;
                 let from = to - position.dimensions.width + 1;
-                movelist.push(new_move(from, to,true));
+                movelist.push(Move::new(from, to,true));
                 nw_attacks.set_bit(to as usize, false);
             }
         }else{
@@ -184,13 +184,13 @@ impl Engine {
             while !se_attacks.is_zero() {
                 let to = se_attacks.lowest_one().unwrap() as u8;
                 let from = to + position.dimensions.width - 1;
-                movelist.push(new_move(from, to,true));
+                movelist.push(Move::new(from, to,true));
                 se_attacks.set_bit(to as usize, false);
             }
             while !sw_attacks.is_zero() {
                 let to = sw_attacks.lowest_one().unwrap() as u8;
                 let from = to + position.dimensions.width + 1;
-                movelist.push(new_move(from, to,true));
+                movelist.push(Move::new(from, to,true));
                 sw_attacks.set_bit(to as usize, false);
             }
         }
@@ -208,14 +208,14 @@ impl Engine {
             while !north_one.is_zero() {
                 let to = north_one.lowest_one().unwrap() as u8;
                 let from = to - position.dimensions.width;
-                movelist.push(new_move(from, to,false));
+                movelist.push(Move::new(from, to,false));
                 north_one.set_bit(to as usize, false);
             }
 
             while !north_two.is_zero() {
                 let to = north_two.lowest_one().unwrap() as u8;
                 let from = to - 2 * position.dimensions.width;
-                movelist.push(new_move(from, to,false));
+                movelist.push(Move::new(from, to,false));
                 north_two.set_bit(to as usize, false);
             }
         }else{
@@ -227,14 +227,14 @@ impl Engine {
             while !south_one.is_zero() {
                 let to = south_one.lowest_one().unwrap() as u8;
                 let from = to + position.dimensions.width;
-                movelist.push(new_move(from, to,false));
+                movelist.push(Move::new(from, to,false));
                 south_one.set_bit(to as usize, false);
             }
 
             while !south_two.is_zero() {
                 let to = south_two.lowest_one().unwrap() as u8;
                 let from = to + 2 * position.dimensions.width;
-                movelist.push(new_move(from, to,false));
+                movelist.push(Move::new(from, to,false));
                 south_two.set_bit(to as usize, false);
             }
         }
@@ -245,9 +245,9 @@ impl Engine {
         while !moves.is_zero() {
             let to = moves.lowest_one().unwrap();
             if enemies.bit(to).unwrap() {
-                movelist.push(new_move(source_index as u8, to as u8,true));
+                movelist.push(Move::new(source_index as u8, to as u8,true));
             }else{
-                movelist.push(new_move(source_index as u8, to as u8,false));
+                movelist.push(Move::new(source_index as u8, to as u8,false));
             }
             moves.set_bit(to, false);
         }
