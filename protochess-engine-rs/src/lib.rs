@@ -26,10 +26,13 @@ impl Engine {
     }
 
     pub fn make_move(&mut self, x1:u8, y1:u8, x2:u8, y2: u8, whos_turn:u8) -> bool{
+        if whos_turn != self.current_position.whos_turn {
+            return false
+        }
         let from = bitboard::to_index(x1,y1,self.current_position.dimensions.width) as u8;
         let to = bitboard::to_index(x2,y2,self.current_position.dimensions.width) as u8;
 
-        let moves = self.move_generator.generate_moves(&self.current_position, whos_turn);
+        let moves = self.move_generator.generate_moves(&self.current_position);
         for move_ in moves {
             if move_.get_from() == from && move_.get_to() == to {
                 self.current_position.make_move(move_);
@@ -56,20 +59,19 @@ impl Engine {
         }
     }
 
-    pub fn perft(&self,depth:u8) -> u64 {
-        let moves = self.move_generator.generate_moves(&self.current_position, 0);
-        for move_ in &moves{
+    pub fn perft(&mut self,depth:u8) -> u64 {
+        let mut nodes = 0u64;
 
-            let (x1, y1) = bitboard::from_index(move_.get_from() as usize, self.dimensions.width);
-            let (x2, y2) = bitboard::from_index(move_.get_to() as usize, self.dimensions.width);
-            println!("from: {}, {} , to: {},{}",x1,y1,x2,y2);
-
-            if move_.get_capture(){
-                println!("CAPTURE!");
-            }
-
+        let moves = self.move_generator.generate_moves(&self.current_position);
+        if depth == 1 {
+            return moves.len() as u64;
         }
-        moves.len() as u64
+        for move_ in moves{
+            self.current_position.make_move(move_);
+            nodes += self.perft(depth - 1);
+            self.current_position.unmake_move();
+        }
+        nodes
     }
 }
 

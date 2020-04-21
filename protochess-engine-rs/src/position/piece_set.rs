@@ -1,6 +1,6 @@
 //Pieces that a player has
 use crate::types::bitboard::Bitboard;
-use crate::types::PieceType;
+use crate::types::{PieceType, bitboard, Dimensions};
 
 pub struct PieceSet {
     pub occupied: Bitboard,

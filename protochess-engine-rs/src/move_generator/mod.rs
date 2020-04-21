@@ -1,4 +1,4 @@
-use crate::types::Dimensions;
+use crate::types::{Dimensions, bitboard};
 use crate::types::{Move, LineAttackType, AttackDirection };
 use crate::types::bitboard::Bitboard;
 use crate::position::Position;
@@ -18,7 +18,8 @@ impl MoveGenerator {
         }
     }
 
-    pub(crate) fn generate_moves(&self, position: &Position, whos_turn:u8) -> Vec<Move> {
+    pub(crate) fn generate_moves(&self, position: &Position) -> Vec<Move> {
+        let whos_turn = position.whos_turn;
         let mut moves = Vec::new();
         self.generate_all_pawn_moves(position, &mut moves, whos_turn);
         self.generate_all_queen_moves(position,&mut moves, whos_turn);
@@ -215,8 +216,12 @@ impl MoveGenerator {
             //Single pawn moves
             let empty:Bitboard = !&position.occupied;
             let mut north_one = self.masks.shift_north(1, pawns) & &empty;
+
+
             //Double pawn moves
-            let mut north_two = self.masks.shift_north(1, &north_one) & &empty;
+            let mut double_push_pawns = pawns & self.masks.get_pawn_mask(true);
+            double_push_pawns = self.masks.shift_north(1, &double_push_pawns) & &empty;
+            let mut north_two = self.masks.shift_north(1, &double_push_pawns) & &empty;
             while !north_one.is_zero() {
                 let to = north_one.lowest_one().unwrap() as u8;
                 let from = to - position.dimensions.width;
@@ -235,7 +240,11 @@ impl MoveGenerator {
             let empty:Bitboard = !&position.occupied;
             let mut south_one = self.masks.shift_south(1, pawns) & &empty;
             //Double pawn moves
-            let mut south_two = self.masks.shift_south(1, &south_one) & &empty;
+
+            let mut double_push_pawns = pawns & self.masks.get_pawn_mask(false);
+            double_push_pawns = self.masks.shift_south(1, &double_push_pawns) & &empty;
+            let mut south_two = self.masks.shift_south(1, &double_push_pawns) & &empty;
+
             while !south_one.is_zero() {
                 let to = south_one.lowest_one().unwrap() as u8;
                 let from = to + position.dimensions.width;

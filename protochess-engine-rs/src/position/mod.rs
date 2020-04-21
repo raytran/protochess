@@ -56,7 +56,12 @@ impl Position {
 
     //Undo the most recent move
     pub fn unmake_move(&mut self) {
-        self.whos_turn = (self.whos_turn - 1) % self.num_players;
+
+        if self.whos_turn == 0{
+            self.whos_turn = self.num_players -1;
+        }else{
+            self.whos_turn = (self.whos_turn - 1) % self.num_players;
+        }
 
         let move_ = self.properties.move_played.unwrap();
         let from:usize = move_.get_from() as usize;

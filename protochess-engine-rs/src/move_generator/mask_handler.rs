@@ -19,7 +19,10 @@ pub struct MaskHandler {
     king: ArrayVec<[Bitboard;256]>,
     left_masks: ArrayVec<[Bitboard;16]>,
     right_masks: ArrayVec<[Bitboard;16]>,
-    zero: Bitboard
+    zero: Bitboard,
+    rank_2: Bitboard,
+    rank_height_minus_2:Bitboard,
+
 }
 
 impl MaskHandler {
@@ -33,6 +36,7 @@ impl MaskHandler {
         //Initialize left & right file masks
         let mut cumulative_left = Bitboard::zero();
         let mut cumulative_right = Bitboard::zero();
+
         for i in 0..dims.width {
             let mut new_left = Bitboard::zero();
             let mut new_right = Bitboard::zero();
@@ -61,6 +65,8 @@ impl MaskHandler {
         let mut knight = ArrayVec::<[Bitboard;256]>::new();
         let mut king = ArrayVec::<[Bitboard;256]>::new();
         let mut bounds = Bitboard::zero();
+        let mut rank_2 = Bitboard::zero();
+        let mut rank_height_minus_2 = Bitboard::zero();
 
         for i in 0..256 {
             knight.push(Bitboard::zero());
@@ -78,6 +84,15 @@ impl MaskHandler {
         for x in 0..dims.width as i8 {
             for y in 0..dims.height as i8 {
                 let index:usize = to_index(x as u8, y as u8, dims.width) as usize;
+
+
+                if y == 1 {
+                    rank_2.set_bit(index,true);
+                }
+
+                if y == dims.height as i8 -2 {
+                    rank_height_minus_2.set_bit(index,true);
+                }
 
 
                 //KING LOOKUP TABLE
@@ -174,7 +189,17 @@ impl MaskHandler {
             southwest,
             left_masks,
             right_masks,
+            rank_2,
+            rank_height_minus_2,
             zero: Bitboard::zero()
+        }
+    }
+
+    pub fn get_pawn_mask(&self,northfacing:bool) -> &Bitboard{
+        if northfacing {
+            return &self.rank_2;
+        }else{
+            return &self.rank_height_minus_2;
         }
     }
 
