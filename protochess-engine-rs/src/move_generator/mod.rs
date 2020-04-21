@@ -139,10 +139,11 @@ impl MoveGenerator {
                     whos_turn:u8, source_index:usize, line_type:&LineAttackType) {
         let occ = &position.occupied;
 
-        let full_mask = self.masks.get_attack(&line_type.get_lower(), source_index)
-            | self.masks.get_attack(&line_type.get_upper(), source_index);
-        let occ_lower = self.masks.get_attack(&line_type.get_lower(), source_index) & occ;
-        let occ_upper = self.masks.get_attack(&line_type.get_upper(), source_index) & occ;
+        let lower = self.masks.get_attack(&line_type.get_lower(), source_index);
+        let upper = self.masks.get_attack(&line_type.get_upper(), source_index);
+        let full_mask = upper | lower;
+        let occ_lower = lower & occ;
+        let occ_upper = upper & occ;
 
         let mut lsb_upper = Bitboard::zero();
         if let Some(i) = &occ_upper.lowest_one() {
