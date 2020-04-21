@@ -1,9 +1,23 @@
+use crate::types::Dimensions;
 use crate::types::{Move, LineAttackType, AttackDirection };
 use crate::types::bitboard::Bitboard;
-use crate::Engine;
 use crate::position::Position;
+use crate::move_generator::mask_handler::MaskHandler;
 
-impl Engine {
+mod mask_handler;
+pub struct MoveGenerator {
+    masks: MaskHandler,
+    dimensions: Dimensions,
+}
+
+impl MoveGenerator {
+    pub(crate) fn new(dimensions:&Dimensions) -> MoveGenerator{
+        MoveGenerator {
+            masks: MaskHandler::new(&dimensions),
+            dimensions: Dimensions{width: dimensions.width, height:dimensions.height},
+        }
+    }
+
     pub(crate) fn generate_moves(&self, position: &Position, whos_turn:u8) -> Vec<Move> {
         let mut moves = Vec::new();
         self.generate_all_pawn_moves(position, &mut moves, whos_turn);
@@ -16,7 +30,6 @@ impl Engine {
         moves
     }
 
-
     //generate_all_* methods:
     //Applies generate_*_move for every * in position
     //Applies generate_queen_move for every queen in the position
@@ -24,14 +37,14 @@ impl Engine {
         let pieces = &position.pieces[whos_turn as usize];
         let q_copy = (&pieces.queen).to_owned();
         self.generate_all_piece_moves(position,movelist,whos_turn,q_copy,
-                                      Engine::generate_queen_moves);
+                                      MoveGenerator::generate_queen_moves);
     }
 
     fn generate_all_rook_moves(&self, position: &Position, movelist:&mut Vec<Move>, whos_turn:u8){
         let pieces = &position.pieces[whos_turn as usize];
         let r_copy = (&pieces.rook).to_owned();
         self.generate_all_piece_moves(position,movelist,whos_turn,r_copy,
-                                      Engine::generate_rook_moves);
+                                      MoveGenerator::generate_rook_moves);
     }
 
     fn generate_all_bishop_moves(&self, position: &Position, movelist: &mut Vec<Move>, whos_turn:u8){
@@ -39,27 +52,27 @@ impl Engine {
         let b_copy = (&pieces.bishop).to_owned();
 
         self.generate_all_piece_moves(position,movelist,whos_turn,b_copy,
-                                      Engine::generate_bishop_moves);
+                                      MoveGenerator::generate_bishop_moves);
     }
 
     fn generate_all_knight_moves(&self, position: &Position, movelist: &mut Vec<Move>, whos_turn:u8){
         let pieces = &position.pieces[whos_turn as usize];
         let n_copy = (&pieces.knight).to_owned();
         self.generate_all_piece_moves(position,movelist,whos_turn,n_copy,
-                                      Engine::generate_knight_moves);
+                                      MoveGenerator::generate_knight_moves);
     }
 
     fn generate_all_king_moves(&self, position: &Position, movelist: &mut Vec<Move>, whos_turn:u8){
         let pieces = &position.pieces[whos_turn as usize];
         let k_copy = (&pieces.king).to_owned();
         self.generate_all_piece_moves(position,movelist,whos_turn,k_copy,
-                                      Engine::generate_king_moves);
+                                      MoveGenerator::generate_king_moves);
     }
 
     //Generates all moves for a given piece bitboard using a generate function
     fn generate_all_piece_moves(&self, position: &Position, movelist: &mut Vec<Move>, whos_turn:u8,
                                 mut all_pieces_of_type: Bitboard,
-                                generate_func: fn(&Engine, &Position,&mut Vec<Move>, u8, usize)){
+                                generate_func: fn(&MoveGenerator, &Position,&mut Vec<Move>, u8, usize)){
         //Bishop moves:
         while !all_pieces_of_type.is_zero(){
             let index = all_pieces_of_type.lowest_one().unwrap();
@@ -87,7 +100,7 @@ impl Engine {
         let mut moves = self.masks.get_attack(&AttackDirection::KNIGHT,source_index).to_owned();
         //Don't attack ourselves
         moves &= !&position.pieces[whos_turn as usize].occupied;
-        Engine::bitboard_to_moves(movelist, moves, &enemies, source_index);
+        MoveGenerator::bitboard_to_moves(movelist, moves, &enemies, source_index);
     }
 
     fn generate_king_moves(&self, position: &Position, movelist: &mut Vec<Move>,
@@ -96,7 +109,7 @@ impl Engine {
         let mut moves = self.masks.get_attack(&AttackDirection::KING,source_index).to_owned();
         //Don't attack ourselves
         moves &= !&position.pieces[whos_turn as usize].occupied;
-        Engine::bitboard_to_moves(movelist, moves, &enemies, source_index);
+        MoveGenerator::bitboard_to_moves(movelist, moves, &enemies, source_index);
     }
 
     //Appends to movelist moves for a queen at source_index
@@ -105,7 +118,6 @@ impl Engine {
         self.generate_rook_moves(position ,movelist, whos_turn, source_index);
         self.generate_bishop_moves(position, movelist, whos_turn, source_index);
     }
-
 
     //Appends to movelist moves for a rook at source_index
     fn generate_rook_moves(&self, position: &Position, movelist: &mut Vec<Move>,
@@ -151,7 +163,7 @@ impl Engine {
         attacks &= !&position.pieces[whos_turn as usize].occupied;
 
         let enemies = &position.occupied & !&position.pieces[whos_turn as usize].occupied;
-        Engine::bitboard_to_moves(movelist, attacks, &enemies, source_index);
+        MoveGenerator::bitboard_to_moves(movelist, attacks, &enemies, source_index);
     }
 
     fn generate_all_pawn_captures(&self, position: &Position, movelist: &mut Vec<Move>,

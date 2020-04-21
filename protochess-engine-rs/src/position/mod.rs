@@ -1,6 +1,6 @@
 use arrayvec::ArrayVec;
 use crate::types::*;
-use crate::fen;
+use crate::constants::fen;
 use crate::position::piece_set::PieceSet;
 use crate::types::bitboard::Bitboard;
 use std::sync::Arc;
@@ -54,7 +54,6 @@ impl Position {
         self.update_occupied();
     }
 
-
     //Undo the most recent move
     pub fn unmake_move(&mut self) {
         self.whos_turn = (self.whos_turn - 1) % self.num_players;
@@ -97,8 +96,6 @@ impl Position {
         //Update occupied bbs for future calculations
         self.update_occupied();
     }
-
-
 
     pub fn to_string(&self) -> String {
         let mut return_str= String::new();
@@ -208,7 +205,6 @@ impl Position {
         }
         None
     }
-
 
     //Returns bitoard of piece at index
     pub fn piece_bb_at(&mut self,index:usize) -> Option<&mut Bitboard> {

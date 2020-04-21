@@ -11,7 +11,5 @@ mod tests {
         engine.undo();
         println!("{}",engine.to_string());
         println!("{}",engine.perft(0));
-
-
     }
 }

@@ -1,20 +1,17 @@
 use crate::types::{Dimensions, bitboard, Move};
 use crate::position::Position;
-use crate::mask_handler::MaskHandler;
-
-
+use crate::move_generator::MoveGenerator;
 //Private modules
-mod mask_handler;
-mod movegen;
+mod constants;
+
+mod move_generator;
 mod types;
 mod position;
-mod fen;
 mod rankfile;
-
 
 pub struct Engine {
     dimensions: Dimensions,
-    masks: MaskHandler,
+    move_generator: MoveGenerator,
     current_position: Position,
 }
 
@@ -22,7 +19,7 @@ impl Engine {
     pub fn default() -> Engine{
         let dims = Dimensions{width:8,height:8};
         Engine{
-            masks:MaskHandler::new(&dims),
+            move_generator: MoveGenerator::new(&dims),
             dimensions:dims,
             current_position: Position::default(),
         }
@@ -32,7 +29,7 @@ impl Engine {
         let from = bitboard::to_index(x1,y1,self.current_position.dimensions.width) as u8;
         let to = bitboard::to_index(x2,y2,self.current_position.dimensions.width) as u8;
 
-        let moves = self.generate_moves(&self.current_position, whos_turn);
+        let moves = self.move_generator.generate_moves(&self.current_position, whos_turn);
         for move_ in moves {
             if move_.get_from() == from && move_.get_to() == to {
                 self.current_position.make_move(move_);
@@ -53,14 +50,14 @@ impl Engine {
     pub fn from_fen(fen:String) -> Engine{
         let dims = Dimensions{width:8,height:8};
         Engine{
-            masks:MaskHandler::new(&dims),
+            move_generator:MoveGenerator::new(&dims),
             dimensions:dims,
             current_position: Position::from_fen(fen),
         }
     }
 
     pub fn perft(&self,depth:u8) -> u64 {
-        let moves = self.generate_moves(&self.current_position, 0);
+        let moves = self.move_generator.generate_moves(&self.current_position, 0);
         for move_ in &moves{
 
             let (x1, y1) = bitboard::from_index(move_.get_from() as usize, self.dimensions.width);
@@ -72,7 +69,6 @@ impl Engine {
             }
 
         }
-
         moves.len() as u64
     }
 }
