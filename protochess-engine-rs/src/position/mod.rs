@@ -2,7 +2,7 @@ use arrayvec::ArrayVec;
 use crate::types::*;
 use crate::constants::fen;
 use crate::position::piece_set::PieceSet;
-use crate::types::bitboard::Bitboard;
+use crate::types::bitboard::{Bitboard, to_index};
 use std::sync::Arc;
 
 use position_properties::PositionProperties;
@@ -11,6 +11,7 @@ pub mod piece_set;
 
 pub struct Position {
     pub dimensions: Dimensions,
+    pub bounds: Bitboard, //Bitboard representing the boundaries
     pub num_players: u8,
     pub whos_turn: u8,
     pub pieces:ArrayVec<[PieceSet;4]>, //pieces[0] = white's pieces, pieces[1] black etc
@@ -36,7 +37,7 @@ impl Position {
         let mut new_props:PositionProperties = (*self.properties).clone();
         //Remove captured piece, if any
         if move_.get_capture() {
-            new_props.captured_piece = (self.piece_at(to));
+            new_props.captured_piece = self.piece_at(to);
 
             let capd_bb:&mut Bitboard = self.piece_bb_at(to).unwrap();
             capd_bb.set_bit(to, false);
@@ -107,7 +108,7 @@ impl Position {
         for y in (0..self.dimensions.height).rev() {
             for x in 0..self.dimensions.width {
 
-                if let Some((i, pt)) = self.piece_at(bitboard::to_index(x,y,self.dimensions.width)){
+                if let Some((i, pt)) = self.piece_at(bitboard::to_index(x,y)){
                     match pt {
                         PieceType::KING => if i == 0 {return_str.push('K')} else {return_str.push('k')},
                         PieceType::QUEEN => if i == 0 {return_str.push('Q')} else {return_str.push('q')},
@@ -153,7 +154,7 @@ impl Position {
                         continue;
                     }
 
-                    let index = bitboard::to_index(x, y, dims.width);
+                    let index = bitboard::to_index(x, y);
                     let bitboard: &mut Bitboard = match c.to_ascii_lowercase() {
                         'k' => {
                             if c.is_uppercase() { &mut w_pieces.king } else { &mut b_pieces.king }
@@ -191,12 +192,19 @@ impl Position {
         wb_pieces.push(w_pieces);
         wb_pieces.push(b_pieces);
 
+        let mut bounds = Bitboard::zero();
+        for x in 0..8{
+            for y in 0..8{
+                bounds.set_bit(to_index(x,y),true);
+            }
+        }
         Position{
             whos_turn: 0,
             num_players: 2,
             dimensions: dims,
             pieces: wb_pieces,
             occupied,
+            bounds,
             properties: Arc::new(PositionProperties::default())
         }
     }

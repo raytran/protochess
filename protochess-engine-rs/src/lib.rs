@@ -11,16 +11,16 @@ mod rankfile;
 
 pub struct Engine {
     dimensions: Dimensions,
-    move_generator: MoveGenerator,
     current_position: Position,
+    move_generator: MoveGenerator,
 }
 
 impl Engine {
     pub fn default() -> Engine{
         let dims = Dimensions{width:8,height:8};
         Engine{
-            move_generator: MoveGenerator::new(&dims),
             dimensions:dims,
+            move_generator: MoveGenerator::new(),
             current_position: Position::default(),
         }
     }
@@ -29,16 +29,16 @@ impl Engine {
         if whos_turn != self.current_position.whos_turn {
             return false
         }
-        let from = bitboard::to_index(x1,y1,self.current_position.dimensions.width) as u8;
-        let to = bitboard::to_index(x2,y2,self.current_position.dimensions.width) as u8;
+        let from = bitboard::to_index(x1,y1) as u8;
+        let to = bitboard::to_index(x2,y2) as u8;
 
-        let moves = self.move_generator.generate_moves(&self.current_position);
-        for move_ in moves {
-            if move_.get_from() == from && move_.get_to() == to {
-                self.current_position.make_move(move_);
-                return true
-            }
-        }
+        //let moves = self.move_generator.generate_moves(&self.current_position);
+        //for move_ in moves {
+        //    if move_.get_from() == from && move_.get_to() == to {
+        //        self.current_position.make_move(move_);
+        //        return true
+        //    }
+        //}
         false
     }
 
@@ -53,8 +53,8 @@ impl Engine {
     pub fn from_fen(fen:String) -> Engine{
         let dims = Dimensions{width:8,height:8};
         Engine{
-            move_generator:MoveGenerator::new(&dims),
             dimensions:dims,
+            move_generator: MoveGenerator::new(),
             current_position: Position::from_fen(fen),
         }
     }
@@ -62,11 +62,14 @@ impl Engine {
     pub fn perft(&mut self,depth:u8) -> u64 {
         let mut nodes = 0u64;
 
-        let moves = self.move_generator.generate_moves(&self.current_position);
+        let moves = self.move_generator.get_moves(&self.current_position);
         if depth == 1 {
             return moves.len() as u64;
         }
         for move_ in moves{
+
+            let (x,y) = bitboard::from_index(move_.get_from() as usize);
+
             self.current_position.make_move(move_);
             nodes += self.perft(depth - 1);
             self.current_position.unmake_move();
