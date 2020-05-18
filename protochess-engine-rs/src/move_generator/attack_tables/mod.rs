@@ -212,7 +212,6 @@ impl AttackTables {
         return_bb.overflowing_mul(self.masks.get_file(0)).0 & self.masks.get_antidiagonal(loc_index)
     }
 
-
     pub fn get_knight_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         (&self.knight_attacks[loc_index as usize]).to_owned()
     }
@@ -245,7 +244,6 @@ impl AttackTables {
         return_bb ^ (&self.south_pawn_attacks[loc_index as usize] & enemies)
     }
 
-
     pub fn get_rook_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         self.get_file_attack(loc_index, occ)
             ^ self.get_rank_attack(loc_index, occ)
@@ -260,7 +258,6 @@ impl AttackTables {
         self.get_rook_attack(loc_index, occ, enemies)
             ^ self.get_bishop_attack(loc_index, occ, enemies)
     }
-
 }
 
 #[cfg(test)]
