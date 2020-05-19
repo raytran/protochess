@@ -1,6 +1,6 @@
 pub mod bitboard;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum PieceType {
     KING,
     QUEEN,

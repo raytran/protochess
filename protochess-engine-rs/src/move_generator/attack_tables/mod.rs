@@ -5,6 +5,7 @@ use crate::types::bitboard::{Bitboard, to_index, from_index, to_string};
 use crate::move_generator::attack_tables::mask_handler::MaskHandler;
 
 //Holds pre-calculated attack tables for the pieces, assuming a 16x16 size board
+//Only for classical set
 pub struct AttackTables {
     slider_attacks: Vec<Vec<u16>>,
     knight_attacks: ArrayVec<[Bitboard;256]>,
@@ -172,7 +173,7 @@ impl AttackTables {
         //Lookup the attack in our table
         let occ_index = (first_rank.byte(0).unwrap() as u16) ^ ((first_rank.byte(1).unwrap() as u16) << 8);
         let rank_index = 15 - y;
-        let mut attack = self.slider_attacks[rank_index as usize][occ_index as usize];
+        let attack = self.slider_attacks[rank_index as usize][occ_index as usize];
         //Map the attable back into the file
         let mut return_bb = Bitboard::zero();
         return_bb ^= attack;
@@ -222,27 +223,38 @@ impl AttackTables {
 
     pub fn get_north_pawn_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         let (x, y) = from_index(loc_index as usize);
-        let mut return_bb = Bitboard::zero();
-        //Double push
-        if y == 1 && !occ.bit(to_index(x, y+1)).unwrap() {
-            return_bb ^= &self.north_pawn_double_push[loc_index as usize] & !occ;
-        }else{
-            return_bb ^= &self.north_pawn_single_push[loc_index as usize] & !occ;
-        }
+        let mut return_bb = {
+            //Double push
+            if y == 1 && !occ.bit(to_index(x, y+1)).unwrap() {
+                &self.north_pawn_double_push[loc_index as usize] & !occ
+            }else{
+                &self.north_pawn_single_push[loc_index as usize] & !occ
+            }
+        };
         return_bb ^ (&self.north_pawn_attacks[loc_index as usize] & enemies)
     }
 
     pub fn get_south_pawn_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         let (x, y) = from_index(loc_index as usize);
-        let mut return_bb = Bitboard::zero();
-        //Double push
-        if y == 6 && !occ.bit(to_index(x, y-1)).unwrap() {
-            return_bb ^= &self.south_pawn_double_push[loc_index as usize] & !occ;
-        }else{
-            return_bb ^= &self.south_pawn_single_push[loc_index as usize] & !occ;
-        }
+        let return_bb = {
+            //Double push
+            if y == 6 && !occ.bit(to_index(x, y-1)).unwrap() {
+                &self.south_pawn_double_push[loc_index as usize] & !occ
+            }else{
+                &self.south_pawn_single_push[loc_index as usize] & !occ
+            }
+        };
         return_bb ^ (&self.south_pawn_attacks[loc_index as usize] & enemies)
     }
+
+    pub fn get_south_pawn_attack_only(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+        (&self.south_pawn_attacks[loc_index as usize] & enemies)
+    }
+
+    pub fn get_north_pawn_attack_only(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+        (&self.north_pawn_attacks[loc_index as usize] & enemies)
+    }
+
 
     pub fn get_rook_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         self.get_file_attack(loc_index, occ)
