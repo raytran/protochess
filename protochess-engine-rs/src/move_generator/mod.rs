@@ -1,14 +1,15 @@
 use crate::types::{Dimensions, bitboard, PieceType};
 use crate::types::{Move, LineAttackType, AttackDirection };
-use crate::types::bitboard::{Bitboard, to_string};
+use crate::types::bitboard::{Bitboard, to_string, from_index, to_index};
 use crate::position::Position;
 use crate::position::piece_set::PieceSet;
 use crate::move_generator::attack_tables::AttackTables;
 use crate::move_generator::bitboard_moves::BitboardMoves;
+use std::iter;
 
 mod attack_tables;
 mod bitboard_moves;
-//Iterator that yields possible moves from a position
+//Iterator that yields pseudo-legal moves from a position
 pub(crate) struct MoveGenerator {
     attack_tables: AttackTables,
 }
@@ -19,25 +20,12 @@ impl MoveGenerator {
         }
     }
 
-    //Generates pseudo-legal moves
-    pub fn get_moves(&self, position:&mut Position) -> Vec<Move> {
-        let mut return_vec = Vec::with_capacity(250);
-        let pseudo = self.get_pseudo_moves(position);
-        for m in pseudo {
-            if self.is_move_legal(&m, position){
-                return_vec.push(m);
-            }
-        }
-        return_vec
-    }
-
-    pub fn get_pseudo_moves(&self, position:&Position) -> Vec<Move> {
+    pub fn get_psuedo_moves(&self, position:&Position) -> impl Iterator<Item=Move> {
         let my_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
         let enemies = &position.occupied & !&my_pieces.occupied;
 
         //create a vector of iterators
-        let mut movelist:Vec<Move> = Vec::with_capacity(250);
-
+        let mut iters:Vec<BitboardMoves> = Vec::with_capacity(6);
 
         let mut apply_to_each = |mut pieceset:Bitboard, func: fn(&AttackTables, u8, &Bitboard, &Bitboard)-> Bitboard| {
             while !pieceset.is_zero() {
@@ -47,17 +35,11 @@ impl MoveGenerator {
                 raw_attacks &= !&my_pieces.occupied;
                 //Keep only in bounds
                 raw_attacks &= &position.bounds;
-
-                while !raw_attacks.is_zero() {
-                    let to = raw_attacks.lowest_one().unwrap();
-                    raw_attacks.set_bit(to, false);
-                    if enemies.bit(to).unwrap() {
-                        movelist.push(Move::new(index, to as u8,true));
-                    }else{
-                        movelist.push(Move::new(index, to as u8,false));
-                    }
-                }
-
+                iters.push(BitboardMoves{
+                    enemies: (&enemies).to_owned(),
+                    moves: raw_attacks,
+                    source_index: index,
+                });
                 pieceset.set_bit(index as usize, false);
             }
         };
@@ -67,13 +49,63 @@ impl MoveGenerator {
         apply_to_each((&my_pieces.rook).to_owned(), AttackTables::get_rook_attack);
         apply_to_each((&my_pieces.bishop).to_owned(), AttackTables::get_bishop_attack);
         apply_to_each((&my_pieces.knight).to_owned(), AttackTables::get_knight_attack);
-        if position.whos_turn == 0 {
-            apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_north_pawn_attack);
-        }else{
-            apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_south_pawn_attack);
+
+
+        //Pawns are special due to En Passant squares
+        //if position.whos_turn == 0 {
+        //    apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_north_pawn_attack);
+        //}else{
+        //    apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_south_pawn_attack);
+        //}
+        //Do pawns seperately
+        let mut ep_moves = Vec::new();
+        let mut p_copy = (&my_pieces.pawn).to_owned();
+        while !p_copy.is_zero() {
+            let index = p_copy.lowest_one().unwrap() as u8;
+            let mut raw_attacks = {
+                if position.whos_turn == 0 {
+                    self.attack_tables.get_north_pawn_attack(index, &position.occupied, &enemies)
+                } else {
+                    self.attack_tables.get_south_pawn_attack(index, &position.occupied, &enemies)
+                }
+            };
+            //Do not attack ourselves
+            raw_attacks &= !&my_pieces.occupied;
+            //Keep only in bounds
+            raw_attacks &= &position.bounds;
+            iters.push(BitboardMoves{
+                enemies: (&enemies).to_owned(),
+                moves: raw_attacks,
+                source_index: index,
+            });
+            //Check EP
+            if let Some(ep_sq) = position.properties.ep_square {
+                let mut attack_only = {
+                    if position.whos_turn == 0 {
+                        self.attack_tables.get_north_pawn_attack_raw(index) & !(&my_pieces.occupied)
+                    } else {
+                        self.attack_tables.get_south_pawn_attack_raw(index) & !(&my_pieces.occupied)
+                    }
+                };
+                if attack_only.bit(ep_sq as usize).unwrap() {
+                    if position.whos_turn == 0 {
+                        let (mut cap_x, mut cap_y) = from_index(ep_sq as usize);
+
+                        if position.whos_turn == 0 {
+                            cap_y -= 1;
+                        } else {
+                            cap_y += 1;
+                        }
+                        let move_ = Move::new(index, ep_sq, true, to_index(cap_x,cap_y) as u8);
+                        ep_moves.push(move_);
+                    }
+                }
+            }
+            p_copy.set_bit(index as usize, false);
         }
 
-        movelist
+        //Flatten our vector of iterators
+        iters.into_iter().flatten().chain(ep_moves.into_iter())
     }
 
     //Checks if a move is legal
@@ -99,9 +131,9 @@ impl MoveGenerator {
         //Pawn
         let patt = {
             if my_player_num == 0 {
-                self.attack_tables.get_north_pawn_attack_only(loc_index, &position.occupied, &enemies)
+                self.attack_tables.get_north_pawn_attack_masked(loc_index, &position.occupied, &enemies)
             }else{
-                self.attack_tables.get_south_pawn_attack_only(loc_index, &position.occupied, &enemies)
+                self.attack_tables.get_south_pawn_attack_masked(loc_index, &position.occupied, &enemies)
             }
         };
 
@@ -133,46 +165,5 @@ impl MoveGenerator {
         position.unmake_move();
         legality
     }
-    /*
-    pub fn get_moves(&self, position:&Position) -> impl Iterator<Item=Move> {
-        let my_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
-        let enemies = &position.occupied & !&my_pieces.occupied;
-
-        //create a vector of iterators
-        let mut iters:Vec<BitboardMoves> = Vec::new();
-
-
-        let mut apply_to_each = |mut pieceset:Bitboard, func: fn(&AttackTables, u8, &Bitboard, &Bitboard)-> Bitboard| {
-            while !pieceset.is_zero() {
-                let index = pieceset.lowest_one().unwrap() as u8;
-                let mut raw_attacks = func(&self.attack_tables,index, &position.occupied, &enemies);
-                //Do not attack ourselves
-                raw_attacks &= !&my_pieces.occupied;
-                //Keep only in bounds
-                raw_attacks &= &position.bounds;
-                iters.push(BitboardMoves{
-                    enemies: (&enemies).to_owned(),
-                    moves: raw_attacks,
-                    source_index: index,
-                });
-                pieceset.set_bit(index as usize, false);
-            }
-        };
-
-        apply_to_each((&my_pieces.king).to_owned(), AttackTables::get_king_attack);
-        apply_to_each((&my_pieces.queen).to_owned(), AttackTables::get_queen_attack);
-        apply_to_each((&my_pieces.rook).to_owned(), AttackTables::get_rook_attack);
-        apply_to_each((&my_pieces.bishop).to_owned(), AttackTables::get_bishop_attack);
-        apply_to_each((&my_pieces.knight).to_owned(), AttackTables::get_knight_attack);
-        if position.whos_turn == 0 {
-            apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_north_pawn_attack);
-        }else{
-            apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_south_pawn_attack);
-        }
-
-        //Flatten our vector of iterators
-        iters.into_iter().flatten()
-    }
-     */
 }
 

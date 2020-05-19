@@ -11,16 +11,15 @@ impl Iterator for BitboardMoves {
     type Item = Move;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.moves.is_zero() {
-            None
-        }else{
-            let to = self.moves.lowest_one().unwrap();
+        if let Some(to) = self.moves.lowest_one(){
             self.moves.set_bit(to, false);
             if self.enemies.bit(to).unwrap() {
-                Some(Move::new(self.source_index as u8, to as u8,true))
+                Some(Move::new(self.source_index as u8, to as u8,true, to as u8))
             }else{
-                Some(Move::new(self.source_index as u8, to as u8,false))
+                Some(Move::new(self.source_index as u8, to as u8,false, 0))
             }
+        } else {
+            None
         }
     }
 }

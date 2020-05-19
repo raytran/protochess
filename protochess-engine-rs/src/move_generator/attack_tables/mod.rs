@@ -16,7 +16,7 @@ pub struct AttackTables {
     south_pawn_attacks: ArrayVec<[Bitboard;256]>,
     south_pawn_single_push: ArrayVec<[Bitboard;256]>,
     south_pawn_double_push: ArrayVec<[Bitboard;256]>,
-    masks: MaskHandler
+    pub masks: MaskHandler
 }
 
 impl AttackTables {
@@ -247,13 +247,23 @@ impl AttackTables {
         return_bb ^ (&self.south_pawn_attacks[loc_index as usize] & enemies)
     }
 
-    pub fn get_south_pawn_attack_only(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+    pub fn get_south_pawn_attack_masked(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         (&self.south_pawn_attacks[loc_index as usize] & enemies)
     }
 
-    pub fn get_north_pawn_attack_only(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+    pub fn get_north_pawn_attack_masked(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         (&self.north_pawn_attacks[loc_index as usize] & enemies)
     }
+
+    pub fn get_north_pawn_attack_raw(&self, loc_index:u8) -> &Bitboard {
+        &self.north_pawn_attacks[loc_index as usize]
+    }
+
+    pub fn get_south_pawn_attack_raw(&self, loc_index:u8) -> &Bitboard {
+        &self.south_pawn_attacks[loc_index as usize]
+    }
+
+
 
 
     pub fn get_rook_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {

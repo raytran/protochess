@@ -63,11 +63,15 @@ impl Engine {
     pub fn perft(&mut self,depth:u8) -> u64 {
         let mut nodes = 0u64;
 
-        let moves = self.move_generator.get_moves(&mut self.current_position);
+        let moves = self.move_generator.get_psuedo_moves(&mut self.current_position);
+
         if depth == 1 {
-            return moves.len() as u64;
+            return self.count_legal_moves(moves);
         }
         for move_ in moves{
+            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
+                continue;
+            }
             self.current_position.make_move(move_);
             nodes += self.perft(depth - 1);
             self.current_position.unmake_move();
@@ -78,9 +82,9 @@ impl Engine {
     pub fn perft_divide(&mut self,depth:u8) -> u64 {
         let mut nodes = 0u64;
 
-        let moves = self.move_generator.get_moves(&mut self.current_position);
+        let moves = self.move_generator.get_psuedo_moves(&mut self.current_position);
         if depth == 1 {
-            return moves.len() as u64;
+            return self.count_legal_moves(moves);
         }
         let mut printing = Vec::new();
         for move_ in moves{
@@ -96,6 +100,17 @@ impl Engine {
         printing.sort();
         for s in printing {
             println!("{}",s);
+        }
+        nodes
+    }
+
+    fn count_legal_moves(&mut self, moves:impl Iterator<Item=Move>) -> u64{
+        let mut nodes = 0u64;
+        for move_ in moves {
+            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
+                continue;
+            }
+            nodes += 1;
         }
         nodes
     }

@@ -8,6 +8,8 @@ pub struct PositionProperties {
     pub move_played: Option<Move>,
     castling_rights:u8,
     pub in_check: bool,
+    //EP square (square behind a double pawn push)
+    pub ep_square: Option<u8>,
     //Tuple (owner, PieceType) of the last piece captured, if any
     pub captured_piece: Option<(u8, PieceType)>,
     pub prev_properties: Option<Arc<PositionProperties>>,
@@ -20,6 +22,7 @@ impl PositionProperties {
             move_played: None,
             prev_properties: None,
             in_check: false,
+            ep_square: None,
             captured_piece: None,
         }
     }

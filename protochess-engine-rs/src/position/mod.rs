@@ -2,7 +2,7 @@ use arrayvec::ArrayVec;
 use crate::types::*;
 use crate::constants::fen;
 use crate::position::piece_set::PieceSet;
-use crate::types::bitboard::{Bitboard, to_index};
+use crate::types::bitboard::{Bitboard, to_index, from_index};
 use std::sync::Arc;
 
 use position_properties::PositionProperties;
@@ -30,22 +30,40 @@ impl Position {
     //Modifies the position to make the move
     pub fn make_move(&mut self, move_: Move) {
         self.whos_turn = (self.whos_turn + 1) % self.num_players;
-        let from:usize = move_.get_from() as usize;
-        let to:usize = move_.get_to() as usize;
-
 
         let mut new_props:PositionProperties = (*self.properties).clone();
         //Remove captured piece, if any
-        if move_.get_capture() {
-            new_props.captured_piece = self.piece_at(to);
+        if move_.get_is_capture() {
+            let capt_index = move_.get_capture() as usize;
+            new_props.captured_piece = self.piece_at(capt_index);
 
-            let capd_bb:&mut Bitboard = self.piece_bb_at(to).unwrap();
-            capd_bb.set_bit(to, false);
+            let capd_bb:&mut Bitboard = self.piece_bb_at(capt_index).unwrap();
+            capd_bb.set_bit(capt_index, false);
         }
+
+        let from= move_.get_from();
+        let to = move_.get_to();
+        //Check for a pawn double push to set ep square
+        let (x1, y1) = from_index(from as usize);
+        let (x2, y2) = from_index(to as usize);
+        if self.piece_at(from as usize).unwrap().1 == PieceType::PAWN
+            && (y2 as i8 - y1 as i8).abs() == 2
+            && x1 == x2 {
+            new_props.ep_square = Some(
+                if y2 > y1 {
+                    to_index(x1, y2 - 1) as u8
+                } else {
+                    to_index(x1, y2 + 1) as u8
+                }
+            );
+        } else {
+            new_props.ep_square = None;
+        }
+
+
+
         //Move piece to location
-        let source_bb = self.piece_bb_at(from).unwrap();
-        source_bb.set_bit(from, false);
-        source_bb.set_bit(to, true);
+        self.move_piece(from, to);
 
         //Update props
         new_props.move_played = Some(move_);
@@ -58,36 +76,35 @@ impl Position {
     //Undo the most recent move
     pub fn unmake_move(&mut self) {
 
-        if self.whos_turn == 0{
+        if self.whos_turn == 0 {
             self.whos_turn = self.num_players -1;
         }else{
             self.whos_turn = (self.whos_turn - 1) % self.num_players;
         }
 
         let move_ = self.properties.move_played.unwrap();
-        let from:usize = move_.get_from() as usize;
-        let to:usize = move_.get_to() as usize;
+        let from = move_.get_from();
+        let to= move_.get_to();
 
         //Undo move piece to location
         //Remove piece here
-        let source_bb = self.piece_bb_at(to).unwrap();
-        source_bb.set_bit(to, false);
-        source_bb.set_bit(from, true);
+        self.move_piece(to, from);
 
         //Undo move capture
-        if move_.get_capture() {
+        if move_.get_is_capture() {
+            let capt = move_.get_capture();
             let (owner, pt) = self.properties.captured_piece.as_ref().unwrap();
             match pt {
-                PieceType::KING => {self.pieces[*owner as usize].king.set_bit(to, true);},
-                PieceType::QUEEN => {self.pieces[*owner as usize].queen.set_bit(to, true);},
-                PieceType::ROOK => {self.pieces[*owner as usize].rook.set_bit(to,true);},
-                PieceType::BISHOP => {self.pieces[*owner as usize].bishop.set_bit(to,true);},
-                PieceType::KNIGHT => {self.pieces[*owner as usize].knight.set_bit(to,true);},
-                PieceType::PAWN => {self.pieces[*owner as usize].pawn.set_bit(to,true);},
+                PieceType::KING => {self.pieces[*owner as usize].king.set_bit(capt as usize, true);},
+                PieceType::QUEEN => {self.pieces[*owner as usize].queen.set_bit(capt as usize, true);},
+                PieceType::ROOK => {self.pieces[*owner as usize].rook.set_bit(capt as usize, true);},
+                PieceType::BISHOP => {self.pieces[*owner as usize].bishop.set_bit(capt as usize, true);},
+                PieceType::KNIGHT => {self.pieces[*owner as usize].knight.set_bit(capt as usize, true);},
+                PieceType::PAWN => {self.pieces[*owner as usize].pawn.set_bit(capt as usize, true);},
                 PieceType::CUSTOM(ptc) => {
                     for (c, bb) in self.pieces[*owner as usize].custom.iter_mut() {
                         if *ptc == *c {
-                            bb.set_bit(to,true);
+                            bb.set_bit(to as usize,true);
                             break;
                         }
                     }
@@ -236,5 +253,18 @@ impl Position {
             self.occupied |= &ps.occupied;
         }
     }
+
+    fn move_piece(&mut self, from:u8, to:u8){
+        if let Some(source_bb) = self.piece_bb_at(from as usize){
+            source_bb.set_bit(from as usize, false);
+            source_bb.set_bit(to as usize, true);
+        }else{
+            println!("nothing to move??");
+            println!("from {} {}", from_index(from as usize).0, from_index(from as usize).1);
+            println!("to {} {}", from_index(to as usize).0, from_index(to as usize).1);
+            println!("==");
+        }
+    }
+
 }
 
