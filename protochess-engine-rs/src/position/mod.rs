@@ -32,24 +32,27 @@ impl Position {
 
     //Modifies the position to make the move
     pub fn make_move(&mut self, move_: Move) {
+        let my_player_num = self.whos_turn;
         self.whos_turn = (self.whos_turn + 1) % self.num_players;
 
         let mut new_props:PositionProperties = (*self.properties).clone();
         //Remove captured piece, if any
         if move_.get_is_capture() {
-            let capt_index = move_.get_capture() as usize;
+            let capt_index = move_.get_target() as usize;
             new_props.captured_piece = self.piece_at(capt_index);
-
             let capd_bb:&mut Bitboard = self.piece_bb_at(capt_index).unwrap();
             capd_bb.set_bit(capt_index, false);
         }
 
         let from= move_.get_from();
         let to = move_.get_to();
+        let from_piece_type = self.piece_at(from as usize).unwrap().1;
+
+        //Pawn en-passant
         //Check for a pawn double push to set ep square
         let (x1, y1) = from_index(from as usize);
         let (x2, y2) = from_index(to as usize);
-        if self.piece_at(from as usize).unwrap().1 == PieceType::PAWN
+        if from_piece_type == PieceType::PAWN
             && (y2 as i8 - y1 as i8).abs() == 2
             && x1 == x2 {
             new_props.ep_square = Some(
@@ -61,6 +64,23 @@ impl Position {
             );
         } else {
             new_props.ep_square = None;
+        }
+
+
+        //Castling
+        //Disable rights if applicable
+        if new_props.castling_rights.can_player_castle(my_player_num) {
+            if from_piece_type == PieceType::KING {
+                new_props.castling_rights.disable_kingside_castle(my_player_num);
+                new_props.castling_rights.disable_queenside_castle(my_player_num);
+            }else if from_piece_type == PieceType::ROOK {
+                //King side
+                if x1 >= self.dimensions.width/2 {
+                    new_props.castling_rights.disable_kingside_castle(my_player_num);
+                }else{
+                    new_props.castling_rights.disable_queenside_castle(my_player_num);
+                }
+            }
         }
 
         //Move piece to location
@@ -93,7 +113,7 @@ impl Position {
 
         //Undo move capture
         if move_.get_is_capture() {
-            let capt = move_.get_capture();
+            let capt = move_.get_target();
             let (owner, pt) = self.properties.captured_piece.as_ref().unwrap();
             match pt {
                 PieceType::KING => {self.pieces[*owner as usize].king.set_bit(capt as usize, true);},

@@ -51,14 +51,6 @@ impl MoveGenerator {
         apply_to_each((&my_pieces.bishop).to_owned(), AttackTables::get_bishop_attack);
         apply_to_each((&my_pieces.knight).to_owned(), AttackTables::get_knight_attack);
 
-
-        //Pawns are special due to En Passant squares
-        //if position.whos_turn == 0 {
-        //    apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_north_pawn_attack);
-        //}else{
-        //    apply_to_each((&my_pieces.pawn).to_owned(), AttackTables::get_south_pawn_attack);
-        //}
-        //Do pawns seperately
         let mut ep_moves = Vec::new();
         let mut p_copy = (&my_pieces.pawn).to_owned();
         while !p_copy.is_zero() {
@@ -103,6 +95,13 @@ impl MoveGenerator {
             p_copy.set_bit(index as usize, false);
         }
 
+        //Castling
+        if let Some(king_index) = my_pieces.king.lowest_one() {
+            if position.properties.castling_rights.can_player_castle_kingside(position.whos_turn) {
+            }
+            if position.properties.castling_rights.can_player_castle_queenside(position.whos_turn) {
+            }
+        }
         //Flatten our vector of iterators and combine with ep moves
         iters.into_iter().flatten().chain(ep_moves.into_iter())
     }

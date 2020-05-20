@@ -26,8 +26,6 @@ pub enum AttackDirection {
     NORTHWEST,
     SOUTHEAST,
     SOUTHWEST,
-    KNIGHT,
-    KING,
 }
 
 //Upper, lower

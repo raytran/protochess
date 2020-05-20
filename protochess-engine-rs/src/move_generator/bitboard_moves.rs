@@ -7,11 +7,12 @@ pub struct BitboardMoves {
     pub(crate) moves:Bitboard,        //moveset for source piece
     pub(crate) source_index: u8       //Source piece index
 }
+
 impl Iterator for BitboardMoves {
     type Item = Move;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(to) = self.moves.lowest_one(){
+        if let Some(to) = self.moves.lowest_one() {
             self.moves.set_bit(to, false);
             if self.enemies.bit(to).unwrap() {
                 Some(Move::new(self.source_index as u8, to as u8, to as u8, MoveType::CAPTURE))

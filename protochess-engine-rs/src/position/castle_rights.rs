@@ -25,11 +25,27 @@ impl CastleRights {
     }
 
     pub fn disable_kingside_castle(&mut self, playernum: u8) {
-        self.0 |= 1u8 << playernum
+        self.0 &= !(1u8 << playernum)
     }
 
     pub fn disable_queenside_castle(&mut self, playernum: u8) {
-        self.1 |= 1u8 << playernum
+        self.1 &= !(1u8 << playernum)
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::position::castle_rights::CastleRights;
+
+    #[test]
+    fn test() {
+        let mut test_rights = CastleRights::new();
+        println!("{}",test_rights.can_player_castle_queenside(0));
+        test_rights.disable_queenside_castle(0);
+        println!("{}",test_rights.can_player_castle_queenside(0));
+        println!("{}",test_rights.can_player_castle_kingside(0));
+        test_rights.disable_kingside_castle(0);
+        println!("{}",test_rights.can_player_castle_kingside(0));
+
+    }
+}

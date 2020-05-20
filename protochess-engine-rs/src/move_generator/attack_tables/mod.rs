@@ -263,9 +263,6 @@ impl AttackTables {
         &self.south_pawn_attacks[loc_index as usize]
     }
 
-
-
-
     pub fn get_rook_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         self.get_file_attack(loc_index, occ)
             ^ self.get_rank_attack(loc_index, occ)
@@ -301,8 +298,6 @@ mod tests {
         //let rankatt = attacktb.get_rank_attack(2,&bb);
         //println!("{}", to_string(&rankatt));
 
-        let rank = attacktb.get_queen_attack(38,&bb);
-        println!("{}", to_string(&rank));
 
     }
 }

@@ -8,7 +8,7 @@ use crate::types::chess_move::Move;
 #[derive(Clone)]
 pub struct PositionProperties {
     pub move_played: Option<Move>,
-    castling_rights: CastleRights,
+    pub castling_rights: CastleRights,
     pub in_check: bool,
     //EP square (square behind a double pawn push)
     pub ep_square: Option<u8>,

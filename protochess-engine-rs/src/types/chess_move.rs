@@ -44,7 +44,7 @@ impl Move {
         ((self.0 >> 24) & 1u32) != 0u32
     }
 
-    pub fn get_capture(&self) -> u8 {
+    pub fn get_target(&self) -> u8 {
         ((self.0 >> 16) & 255u32) as u8
     }
 }
