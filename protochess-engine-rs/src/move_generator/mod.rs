@@ -88,23 +88,21 @@ impl MoveGenerator {
                     }
                 };
                 if attack_only.bit(ep_sq as usize).unwrap() {
-                    if position.whos_turn == 0 {
-                        let (mut cap_x, mut cap_y) = from_index(ep_sq as usize);
+                    let (mut cap_x, mut cap_y) = from_index(ep_sq as usize);
 
-                        if position.whos_turn == 0 {
-                            cap_y -= 1;
-                        } else {
-                            cap_y += 1;
-                        }
-                        let move_ = Move::new(index, ep_sq, true, to_index(cap_x,cap_y) as u8);
-                        ep_moves.push(move_);
+                    if position.whos_turn == 0 {
+                        cap_y -= 1;
+                    } else {
+                        cap_y += 1;
                     }
+                    let move_ = Move::new(index, ep_sq, true, to_index(cap_x,cap_y) as u8);
+                    ep_moves.push(move_);
                 }
             }
             p_copy.set_bit(index as usize, false);
         }
 
-        //Flatten our vector of iterators
+        //Flatten our vector of iterators and combine with ep moves
         iters.into_iter().flatten().chain(ep_moves.into_iter())
     }
 

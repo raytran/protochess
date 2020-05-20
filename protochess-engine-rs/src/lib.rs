@@ -88,6 +88,10 @@ impl Engine {
         }
         let mut printing = Vec::new();
         for move_ in moves{
+            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
+                continue;
+            }
+
             let (x,y) = bitboard::from_index(move_.get_from() as usize);
             let (x2,y2) = bitboard::from_index(move_.get_to() as usize);
             self.current_position.make_move(move_);

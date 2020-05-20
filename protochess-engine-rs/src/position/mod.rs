@@ -2,10 +2,11 @@ use arrayvec::ArrayVec;
 use crate::types::*;
 use crate::constants::fen;
 use crate::position::piece_set::PieceSet;
-use crate::types::bitboard::{Bitboard, to_index, from_index};
+use crate::types::bitboard::{Bitboard, to_index, from_index, to_string};
 use std::sync::Arc;
 
 use position_properties::PositionProperties;
+
 mod position_properties;
 pub mod piece_set;
 
@@ -60,14 +61,12 @@ impl Position {
             new_props.ep_square = None;
         }
 
-
-
         //Move piece to location
         self.move_piece(from, to);
 
         //Update props
         new_props.move_played = Some(move_);
-        new_props.prev_properties = Some(self.properties.clone());
+        new_props.prev_properties = Some(Arc::clone(&self.properties));
         self.properties = Arc::new(new_props);
         //Update occupied bbs for future calculations
         self.update_occupied();
