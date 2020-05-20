@@ -1,7 +1,9 @@
-use crate::types::{Dimensions, bitboard, Move};
+use crate::types::{Dimensions, bitboard};
 use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
+use crate::types::chess_move::Move;
+
 //Private modules
 mod constants;
 

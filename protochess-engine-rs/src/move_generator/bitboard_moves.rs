@@ -1,5 +1,5 @@
 use crate::types::bitboard::Bitboard;
-use crate::types::Move;
+use crate::types::chess_move::Move;
 
 //Iterator that converts a Bitboard to Moves
 pub struct BitboardMoves {

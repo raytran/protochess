@@ -6,8 +6,10 @@ use crate::types::bitboard::{Bitboard, to_index, from_index, to_string};
 use std::sync::Arc;
 
 use position_properties::PositionProperties;
+use crate::types::chess_move::Move;
 
 mod position_properties;
+mod castle_rights;
 pub mod piece_set;
 
 pub struct Position {

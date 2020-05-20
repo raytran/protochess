@@ -1,11 +1,12 @@
 use crate::types::{Dimensions, bitboard, PieceType};
-use crate::types::{Move, LineAttackType, AttackDirection };
+use crate::types::{LineAttackType, AttackDirection };
 use crate::types::bitboard::{Bitboard, to_string, from_index, to_index};
 use crate::position::Position;
 use crate::position::piece_set::PieceSet;
 use crate::move_generator::attack_tables::AttackTables;
 use crate::move_generator::bitboard_moves::BitboardMoves;
 use std::iter;
+use crate::types::chess_move::Move;
 
 mod attack_tables;
 mod bitboard_moves;
