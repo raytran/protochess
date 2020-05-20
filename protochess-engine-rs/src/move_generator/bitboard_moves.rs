@@ -1,5 +1,5 @@
 use crate::types::bitboard::Bitboard;
-use crate::types::chess_move::Move;
+use crate::types::chess_move::{Move, MoveType};
 
 //Iterator that converts a Bitboard to Moves
 pub struct BitboardMoves {
@@ -14,9 +14,9 @@ impl Iterator for BitboardMoves {
         if let Some(to) = self.moves.lowest_one(){
             self.moves.set_bit(to, false);
             if self.enemies.bit(to).unwrap() {
-                Some(Move::new(self.source_index as u8, to as u8,true, to as u8))
+                Some(Move::new(self.source_index as u8, to as u8, to as u8, MoveType::CAPTURE))
             }else{
-                Some(Move::new(self.source_index as u8, to as u8,false, 0))
+                Some(Move::new(self.source_index as u8, to as u8,0, MoveType::QUIET))
             }
         } else {
             None

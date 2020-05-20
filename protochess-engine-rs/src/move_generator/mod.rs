@@ -6,7 +6,7 @@ use crate::position::piece_set::PieceSet;
 use crate::move_generator::attack_tables::AttackTables;
 use crate::move_generator::bitboard_moves::BitboardMoves;
 use std::iter;
-use crate::types::chess_move::Move;
+use crate::types::chess_move::{Move, MoveType};
 
 mod attack_tables;
 mod bitboard_moves;
@@ -96,7 +96,7 @@ impl MoveGenerator {
                     } else {
                         cap_y += 1;
                     }
-                    let move_ = Move::new(index, ep_sq, true, to_index(cap_x,cap_y) as u8);
+                    let move_ = Move::new(index, ep_sq,  to_index(cap_x,cap_y) as u8, MoveType::CAPTURE);
                     ep_moves.push(move_);
                 }
             }

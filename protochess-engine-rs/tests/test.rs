@@ -12,6 +12,6 @@ mod tests {
         //let mut engine = protochess_engine_rs::Engine::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ".parse().unwrap());
         //let mut engine = protochess_engine_rs::Engine::from_fen("k7/8/8/2p5/8/8/3P4/7K w - - 0 1".parse().unwrap());
 
-        println!("{}",engine.perft(2));
+        println!("{}",engine.perft(6));
     }
 }
