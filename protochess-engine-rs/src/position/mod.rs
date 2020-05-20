@@ -6,7 +6,7 @@ use crate::types::bitboard::{Bitboard, to_index, from_index, to_string};
 use std::sync::Arc;
 
 use position_properties::PositionProperties;
-use crate::types::chess_move::Move;
+use crate::types::chess_move::{Move, MoveType};
 
 mod position_properties;
 mod castle_rights;
@@ -36,12 +36,27 @@ impl Position {
         self.whos_turn = (self.whos_turn + 1) % self.num_players;
 
         let mut new_props:PositionProperties = (*self.properties).clone();
-        //Remove captured piece, if any
-        if move_.get_is_capture() {
-            let capt_index = move_.get_target() as usize;
-            new_props.captured_piece = self.piece_at(capt_index);
-            let capd_bb:&mut Bitboard = self.piece_bb_at(capt_index).unwrap();
-            capd_bb.set_bit(capt_index, false);
+        //Special moves
+        match move_.get_move_type() {
+            MoveType::Capture => {
+                let capt_index = move_.get_target() as usize;
+                new_props.captured_piece = self.piece_at(capt_index);
+                let capd_bb:&mut Bitboard = self.piece_bb_at(capt_index).unwrap();
+                capd_bb.set_bit(capt_index, false);
+            },
+            MoveType::KingsideCastle => {
+                let rook_from = move_.get_target();
+                let (x, y) = from_index(move_.get_to() as usize);
+                let rook_to = to_index(x - 1, y) as u8;
+                self.move_piece(rook_from,rook_to);
+            },
+            MoveType::QueensideCastle => {
+                let rook_from = move_.get_target();
+                let (x, y) = from_index(move_.get_to() as usize);
+                let rook_to = to_index(x + 1, y) as u8;
+                self.move_piece(rook_from,rook_to);
+            }
+            _ => {}
         }
 
         let from= move_.get_from();
@@ -52,7 +67,7 @@ impl Position {
         //Check for a pawn double push to set ep square
         let (x1, y1) = from_index(from as usize);
         let (x2, y2) = from_index(to as usize);
-        if from_piece_type == PieceType::PAWN
+        if from_piece_type == PieceType::Pawn
             && (y2 as i8 - y1 as i8).abs() == 2
             && x1 == x2 {
             new_props.ep_square = Some(
@@ -70,10 +85,10 @@ impl Position {
         //Castling
         //Disable rights if applicable
         if new_props.castling_rights.can_player_castle(my_player_num) {
-            if from_piece_type == PieceType::KING {
+            if from_piece_type == PieceType::King {
                 new_props.castling_rights.disable_kingside_castle(my_player_num);
                 new_props.castling_rights.disable_queenside_castle(my_player_num);
-            }else if from_piece_type == PieceType::ROOK {
+            }else if from_piece_type == PieceType::Rook {
                 //King side
                 if x1 >= self.dimensions.width/2 {
                     new_props.castling_rights.disable_kingside_castle(my_player_num);
@@ -111,26 +126,42 @@ impl Position {
         //Remove piece here
         self.move_piece(to, from);
 
-        //Undo move capture
-        if move_.get_is_capture() {
-            let capt = move_.get_target();
-            let (owner, pt) = self.properties.captured_piece.as_ref().unwrap();
-            match pt {
-                PieceType::KING => {self.pieces[*owner as usize].king.set_bit(capt as usize, true);},
-                PieceType::QUEEN => {self.pieces[*owner as usize].queen.set_bit(capt as usize, true);},
-                PieceType::ROOK => {self.pieces[*owner as usize].rook.set_bit(capt as usize, true);},
-                PieceType::BISHOP => {self.pieces[*owner as usize].bishop.set_bit(capt as usize, true);},
-                PieceType::KNIGHT => {self.pieces[*owner as usize].knight.set_bit(capt as usize, true);},
-                PieceType::PAWN => {self.pieces[*owner as usize].pawn.set_bit(capt as usize, true);},
-                PieceType::CUSTOM(ptc) => {
-                    for (c, bb) in self.pieces[*owner as usize].custom.iter_mut() {
-                        if *ptc == *c {
-                            bb.set_bit(to as usize,true);
-                            break;
+        //Undo special moves
+        //Special moves
+        match move_.get_move_type() {
+            MoveType::Capture => {
+                let capt = move_.get_target();
+                let (owner, pt) = self.properties.captured_piece.as_ref().unwrap();
+                match pt {
+                    PieceType::King => {self.pieces[*owner as usize].king.set_bit(capt as usize, true);},
+                    PieceType::Queen => {self.pieces[*owner as usize].queen.set_bit(capt as usize, true);},
+                    PieceType::Rook => {self.pieces[*owner as usize].rook.set_bit(capt as usize, true);},
+                    PieceType::Bishop => {self.pieces[*owner as usize].bishop.set_bit(capt as usize, true);},
+                    PieceType::Knight => {self.pieces[*owner as usize].knight.set_bit(capt as usize, true);},
+                    PieceType::Pawn => {self.pieces[*owner as usize].pawn.set_bit(capt as usize, true);},
+                    PieceType::Custom(ptc) => {
+                        for (c, bb) in self.pieces[*owner as usize].custom.iter_mut() {
+                            if *ptc == *c {
+                                bb.set_bit(to as usize,true);
+                                break;
+                            }
                         }
-                    }
-                },
+                    },
+                }
+            },
+            MoveType::KingsideCastle => {
+                let rook_from = move_.get_target();
+                let (x, y) = from_index(move_.get_to() as usize);
+                let rook_to = to_index(x - 1, y) as u8;
+                self.move_piece(rook_to,rook_from);
+            },
+            MoveType::QueensideCastle => {
+                let rook_from = move_.get_target();
+                let (x, y) = from_index(move_.get_to() as usize);
+                let rook_to = to_index(x + 1, y) as u8;
+                self.move_piece(rook_to,rook_from);
             }
+            _ => {}
         }
 
         //Update props
@@ -148,13 +179,13 @@ impl Position {
 
                 if let Some((i, pt)) = self.piece_at(bitboard::to_index(x,y)){
                     match pt {
-                        PieceType::KING => if i == 0 {return_str.push('K')} else {return_str.push('k')},
-                        PieceType::QUEEN => if i == 0 {return_str.push('Q')} else {return_str.push('q')},
-                        PieceType::ROOK => if i == 0 {return_str.push('R')} else {return_str.push('r')},
-                        PieceType::BISHOP => if i == 0 {return_str.push('B')} else {return_str.push('b')},
-                        PieceType::KNIGHT => if i == 0 {return_str.push('N')} else {return_str.push('n')},
-                        PieceType::PAWN => if i == 0 {return_str.push('P')} else {return_str.push('p')},
-                        PieceType::CUSTOM(c) => return_str.push(c),
+                        PieceType::King => if i == 0 {return_str.push('K')} else {return_str.push('k')},
+                        PieceType::Queen => if i == 0 {return_str.push('Q')} else {return_str.push('q')},
+                        PieceType::Rook => if i == 0 {return_str.push('R')} else {return_str.push('r')},
+                        PieceType::Bishop => if i == 0 {return_str.push('B')} else {return_str.push('b')},
+                        PieceType::Knight => if i == 0 {return_str.push('N')} else {return_str.push('n')},
+                        PieceType::Pawn => if i == 0 {return_str.push('P')} else {return_str.push('p')},
+                        PieceType::Custom(c) => return_str.push(c),
                     }
                 }else{
                     return_str.push('.');

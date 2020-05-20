@@ -21,7 +21,7 @@ impl MoveGenerator {
         }
     }
 
-    pub fn get_psuedo_moves(&self, position:&Position) -> impl Iterator<Item=Move> {
+    pub fn get_psuedo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
         let my_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
         let enemies = &position.occupied & !&my_pieces.occupied;
 
@@ -51,7 +51,7 @@ impl MoveGenerator {
         apply_to_each((&my_pieces.bishop).to_owned(), AttackTables::get_bishop_attack);
         apply_to_each((&my_pieces.knight).to_owned(), AttackTables::get_knight_attack);
 
-        let mut ep_moves = Vec::new();
+        let mut extra_moves = Vec::new();
         let mut p_copy = (&my_pieces.pawn).to_owned();
         while !p_copy.is_zero() {
             let index = p_copy.lowest_one().unwrap() as u8;
@@ -88,22 +88,70 @@ impl MoveGenerator {
                     } else {
                         cap_y += 1;
                     }
-                    let move_ = Move::new(index, ep_sq,  to_index(cap_x,cap_y) as u8, MoveType::CAPTURE);
-                    ep_moves.push(move_);
+                    let move_ = Move::new(index, ep_sq,  to_index(cap_x,cap_y) as u8, MoveType::Capture);
+                    extra_moves.push(move_);
                 }
             }
             p_copy.set_bit(index as usize, false);
         }
-
         //Castling
         if let Some(king_index) = my_pieces.king.lowest_one() {
+            let (mut kx, mut ky) = from_index(king_index);
             if position.properties.castling_rights.can_player_castle_kingside(position.whos_turn) {
+                let rook_index = to_index(position.dimensions.width - 1,ky) as u8;
+                if let Some((owner, pt)) = position.piece_at(rook_index as usize) {
+                    if owner == position.whos_turn && pt == PieceType::Rook {
+                        //See if the space between is clear
+                        let east = self.attack_tables.masks.get_east(king_index as u8);
+                        let mut occ = east & &position.occupied;
+                        occ.set_bit(rook_index as usize, false);
+                        if occ.is_zero() {
+                            //See if we can move the king one step east without stepping into check
+                            let king_one_step_indx = to_index(kx + 1, ky) as u8;
+                            if self.is_move_legal(
+                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet),
+                                position
+                            ){
+                                let to_index = to_index(kx + 2, ky) as u8;
+                                extra_moves.push(Move::new(king_index as u8,
+                                                           to_index,
+                                                           rook_index,
+                                                           MoveType::KingsideCastle));
+                            }
+                        }
+                    }
+                }
             }
             if position.properties.castling_rights.can_player_castle_queenside(position.whos_turn) {
+                let rook_index = to_index(0 ,ky) as u8;
+                if let Some((owner, pt)) = position.piece_at(rook_index as usize) {
+                    if owner == position.whos_turn && pt == PieceType::Rook {
+                        let west = self.attack_tables.masks.get_west(king_index as u8);
+                        let mut occ = west & &position.occupied;
+                        occ.set_bit(rook_index as usize, false);
+
+                        if occ.is_zero() {
+                            //See if we can move the king one step east without stepping into check
+                            let king_one_step_indx = to_index(kx - 1, ky) as u8;
+                            if self.is_move_legal(
+                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet),
+                                position
+                            ){
+                                let to_index = to_index(kx - 2, ky) as u8;
+                                extra_moves.push(Move::new(king_index as u8,
+                                                           to_index,
+                                                           rook_index,
+                                                           MoveType::QueensideCastle));
+                            }
+                        }
+                    }
+                }
             }
         }
+
+
         //Flatten our vector of iterators and combine with ep moves
-        iters.into_iter().flatten().chain(ep_moves.into_iter())
+        iters.into_iter().flatten().chain(extra_moves.into_iter())
     }
 
     //Checks if a move is legal

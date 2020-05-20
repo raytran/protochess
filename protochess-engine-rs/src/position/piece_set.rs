@@ -52,21 +52,21 @@ impl PieceSet {
 
     pub fn piecetype_at(&self, index: usize) -> Option<PieceType>{
         if self.king.bit(index).unwrap(){
-            Some(PieceType::KING)
+            Some(PieceType::King)
         }else if self.queen.bit(index).unwrap(){
-            Some(PieceType::QUEEN)
+            Some(PieceType::Queen)
         }else if self.bishop.bit(index).unwrap(){
-            Some(PieceType::BISHOP)
+            Some(PieceType::Bishop)
         }else if self.knight.bit(index).unwrap(){
-            Some(PieceType::KNIGHT)
+            Some(PieceType::Knight)
         }else if self.rook.bit(index).unwrap(){
-            Some(PieceType::ROOK)
+            Some(PieceType::Rook)
         }else if self.pawn.bit(index).unwrap(){
-            Some(PieceType::PAWN)
+            Some(PieceType::Pawn)
         }else{
             for (c, b) in self.custom.iter(){
                 if b.bit(index).unwrap(){
-                    return Some(PieceType::CUSTOM(*c));
+                    return Some(PieceType::Custom(*c));
                 }
             }
             None

@@ -15,9 +15,9 @@ impl Iterator for BitboardMoves {
         if let Some(to) = self.moves.lowest_one() {
             self.moves.set_bit(to, false);
             if self.enemies.bit(to).unwrap() {
-                Some(Move::new(self.source_index as u8, to as u8, to as u8, MoveType::CAPTURE))
+                Some(Move::new(self.source_index as u8, to as u8, to as u8, MoveType::Capture))
             }else{
-                Some(Move::new(self.source_index as u8, to as u8,0, MoveType::QUIET))
+                Some(Move::new(self.source_index as u8, to as u8,0, MoveType::Quiet))
             }
         } else {
             None

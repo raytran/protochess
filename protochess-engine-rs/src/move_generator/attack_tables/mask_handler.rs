@@ -192,6 +192,38 @@ impl MaskHandler {
         &self.diagonals[index as usize]
     }
 
+    pub fn get_north(&self, index:u8) -> &Bitboard{
+        &self.north[index as usize]
+    }
+
+    pub fn get_south(&self, index:u8) -> &Bitboard{
+        &self.south[index as usize]
+    }
+
+    pub fn get_east(&self, index:u8) -> &Bitboard{
+        &self.east[index as usize]
+    }
+
+    pub fn get_west(&self, index:u8) -> &Bitboard{
+        &self.west[index as usize]
+    }
+
+    pub fn get_northwest(&self, index:u8) -> &Bitboard{
+        &self.northwest[index as usize]
+    }
+
+    pub fn get_northeast(&self, index:u8) -> &Bitboard{
+        &self.northeast[index as usize]
+    }
+
+    pub fn get_southeast(&self, index:u8) -> &Bitboard{
+        &self.southeast[index as usize]
+    }
+
+    pub fn get_southwest(&self, index:u8) -> &Bitboard{
+        &self.southwest[index as usize]
+    }
+
     pub fn get_antidiagonal(&self, index:u8) -> &Bitboard{
         &self.antidiagonals[index as usize]
     }

@@ -3,13 +3,13 @@ pub mod chess_move;
 
 #[derive(Clone, PartialEq)]
 pub enum PieceType {
-    KING,
-    QUEEN,
-    ROOK,
-    BISHOP,
-    KNIGHT,
-    PAWN,
-    CUSTOM(char),
+    King,
+    Queen,
+    Rook,
+    Bishop,
+    Knight,
+    Pawn,
+    Custom(char),
 }
 pub struct Dimensions {
     pub width:u8,

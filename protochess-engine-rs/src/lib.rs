@@ -28,20 +28,20 @@ impl Engine {
         }
     }
 
-    pub fn make_move(&mut self, x1:u8, y1:u8, x2:u8, y2: u8, whos_turn:u8) -> bool{
-        if whos_turn != self.current_position.whos_turn {
-            return false
-        }
+    pub fn make_move(&mut self, x1:u8, y1:u8, x2:u8, y2: u8) -> bool{
         let from = bitboard::to_index(x1,y1) as u8;
         let to = bitboard::to_index(x2,y2) as u8;
 
-        //let moves = self.move_generator.generate_moves(&self.current_position);
-        //for move_ in moves {
-        //    if move_.get_from() == from && move_.get_to() == to {
-        //        self.current_position.make_move(move_);
-        //        return true
-        //    }
-        //}
+        let moves = self.move_generator.get_psuedo_moves(&mut self.current_position);
+        for move_ in moves {
+            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
+                continue;
+            }
+            if move_.get_from() == from && move_.get_to() == to {
+                self.current_position.make_move(move_);
+                return true
+            }
+        }
         false
     }
 
