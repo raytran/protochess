@@ -12,6 +12,7 @@ mod position_properties;
 mod castle_rights;
 pub mod piece_set;
 
+/// Represents a single position in chess
 pub struct Position {
     pub dimensions: Dimensions,
     pub bounds: Bitboard, //Bitboard representing the boundaries
@@ -30,7 +31,7 @@ impl Position {
         Position::from_fen(String::from(fen::STARTING_POS))
     }
 
-    //Modifies the position to make the move
+    /// Modifies the position to make the move
     pub fn make_move(&mut self, move_: Move) {
         let my_player_num = self.whos_turn;
         self.whos_turn = (self.whos_turn + 1) % self.num_players;
@@ -126,7 +127,7 @@ impl Position {
         self.update_occupied();
     }
 
-    //Undo the most recent move
+    /// Undo the most recent move
     pub fn unmake_move(&mut self) {
 
         if self.whos_turn == 0 {
@@ -357,7 +358,7 @@ impl Position {
         pos
     }
 
-    //Returns tuple (player_num, PieceType)
+    /// Returns tuple (player_num, PieceType)
     pub fn piece_at(&self,index:usize) -> Option<(u8, PieceType)> {
         for (i, ps) in self.pieces.iter().enumerate() {
             if let Some(c) = ps.piecetype_at(index) {
@@ -367,7 +368,7 @@ impl Position {
         None
     }
 
-    //Returns bitoard of piece at index
+    /// Returns bitoard of piece at index
     pub fn piece_bb_at(&mut self,index:usize) -> Option<&mut Bitboard> {
         for (i, ps) in self.pieces.iter_mut().enumerate() {
             if let Some(b) = ps.piece_bb_at(index) {

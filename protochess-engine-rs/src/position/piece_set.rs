@@ -2,6 +2,9 @@
 use crate::types::bitboard::Bitboard;
 use crate::types::{PieceType, bitboard, Dimensions};
 
+/// Represents a set of pieces for a player
+/// custom is a vec holding tuples mapping Bitboards to their char representation
+/// chars should not contain k, q, r, p, or n
 pub struct PieceSet {
     pub occupied: Bitboard,
     pub king: Bitboard,

@@ -6,12 +6,12 @@ use crate::types::chess_move::Move;
 
 //Private modules
 mod constants;
-
 mod move_generator;
 mod types;
 mod position;
 mod rankfile;
 
+/// Starting point for the engine
 pub struct Engine {
     dimensions: Dimensions,
     current_position: Position,

@@ -1,11 +1,11 @@
 #[derive(Clone)]
 pub struct CastleRights(u8, u8);
 
-//Castling rights for up to 8 players
-//CastleRights.0 -- kingside rights
-//CastleRights.1 -- Queenside rights
-//Where each bit in the u8 represents the castling right for the player at that index
-//Ex if CastleRights.0 == 1u8 then the 0th player can castle kingside
+/// Castling rights for up to 8 players
+/// CastleRights.0 -- kingside rights
+/// CastleRights.1 -- Queenside rights
+/// Where each bit in the u8 represents the castling right for the player at that index
+/// Ex if CastleRights.0 == 1u8 then the 0th player can castle kingside
 impl CastleRights {
     pub fn new() -> CastleRights {
         CastleRights(255u8, 255u8)

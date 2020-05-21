@@ -10,7 +10,6 @@ use crate::types::chess_move::{Move, MoveType};
 
 mod attack_tables;
 mod bitboard_moves;
-//Iterator that yields pseudo-legal moves from a position
 pub(crate) struct MoveGenerator {
     attack_tables: AttackTables,
 }
@@ -21,6 +20,7 @@ impl MoveGenerator {
         }
     }
 
+    /// Iterator that yields pseudo-legal moves from a position
     pub fn get_psuedo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
         let my_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
         let enemies = &position.occupied & !&my_pieces.occupied;
@@ -170,17 +170,8 @@ impl MoveGenerator {
         iters.into_iter().flatten().chain(extra_moves.into_iter())
     }
 
-    //Checks if a move is legal
-    pub fn is_move_legal(&self, move_:&Move, position:&mut Position) -> bool{
-        //You cannot capture kings
-        if move_.get_move_type() == MoveType::PromotionCapture || move_.get_move_type() == MoveType::Capture {
-            if position.piece_at(move_.get_target() as usize).unwrap().1 == PieceType::King {
-                return false;
-            }
-        }
-
-        let my_player_num = position.whos_turn;
-        position.make_move(move_.to_owned());
+    /// Returns whether or not a player is in check for a given position
+    pub fn is_in_check(&self, position: &Position, my_player_num: u8) -> bool {
         let my_pieces: &PieceSet = &position.pieces[my_player_num as usize];
         let enemies = &position.occupied & !&my_pieces.occupied;
 
@@ -196,7 +187,6 @@ impl MoveGenerator {
 
         let loc_index = my_pieces.king.lowest_one().unwrap() as u8;
 
-        let mut legality = true;
         //Pawn
         let patt = {
             if my_player_num == 0 {
@@ -206,31 +196,49 @@ impl MoveGenerator {
             }
         };
 
-        if legality && !(patt & enemy_pawns).is_zero() {
-            legality = false;
+        if !(patt & enemy_pawns).is_zero() {
+            return true;
         };
 
         //Knight
         let natt = self.attack_tables.get_knight_attack(loc_index, &position.occupied, &enemies);
-        if legality && !(natt & enemy_knights).is_zero() {
-            legality = false;
+        if !(natt & enemy_knights).is_zero() {
+            return true;
         };
         //King
         let katt = self.attack_tables.get_king_attack(loc_index, &position.occupied, &enemies);
-        if legality && !(katt & enemy_kings).is_zero() {
-            legality = false;
+        if !(katt & enemy_kings).is_zero() {
+            return true;
         };
 
         //Rook & Queen
         let ratt = self.attack_tables.get_rook_attack(loc_index, &position.occupied, &enemies);
-        if legality && (!(&ratt & enemy_queens).is_zero() || !(&ratt & enemy_rooks).is_zero()){
-            legality = false;
+        if (!(&ratt & enemy_queens).is_zero() || !(&ratt & enemy_rooks).is_zero()){
+            return true;
         };
         //Bishop & Queen
         let batt = self.attack_tables.get_bishop_attack(loc_index, &position.occupied, &enemies);
-        if legality && (!(&batt & enemy_queens).is_zero() || !(&batt & enemy_bishops).is_zero()) {
-            legality = false;
+        if (!(&batt & enemy_queens).is_zero() || !(&batt & enemy_bishops).is_zero()) {
+            return true;
         };
+
+        false
+    }
+
+    ///Checks if a move is legal
+    pub fn is_move_legal(&self, move_:&Move, position:&mut Position) -> bool{
+        //You cannot capture kings
+        if move_.get_move_type() == MoveType::PromotionCapture || move_.get_move_type() == MoveType::Capture {
+            if position.piece_at(move_.get_target() as usize).unwrap().1 == PieceType::King {
+                return false;
+            }
+        }
+        let my_player_num = position.whos_turn;
+        let mut legality = true;
+        position.make_move(move_.to_owned());
+        if self.is_in_check(position, my_player_num) {
+            legality = false;
+        }
         position.unmake_move();
         legality
     }

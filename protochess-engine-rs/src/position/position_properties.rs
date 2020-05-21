@@ -4,7 +4,7 @@ use crate::types::bitboard::Bitboard;
 use crate::position::castle_rights::CastleRights;
 use crate::types::chess_move::Move;
 
-//Properties that are hard to recover from a Move
+/// Properties that are hard to recover from a Move
 #[derive(Clone)]
 pub struct PositionProperties {
     pub move_played: Option<Move>,
