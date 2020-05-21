@@ -36,11 +36,13 @@ impl MoveGenerator {
                 raw_attacks &= !&my_pieces.occupied;
                 //Keep only in bounds
                 raw_attacks &= &position.bounds;
-                iters.push(BitboardMoves{
-                    enemies: (&enemies).to_owned(),
-                    moves: raw_attacks,
-                    source_index: index,
-                });
+                iters.push(BitboardMoves::new(
+                    (&enemies).to_owned(),
+                    raw_attacks,
+                    index,
+                    None,
+                    None,
+                ));
                 pieceset.set_bit(index as usize, false);
             }
         };
@@ -66,11 +68,21 @@ impl MoveGenerator {
             raw_attacks &= !&my_pieces.occupied;
             //Keep only in bounds
             raw_attacks &= &position.bounds;
-            iters.push(BitboardMoves{
-                enemies: (&enemies).to_owned(),
-                moves: raw_attacks,
-                source_index: index,
-            });
+            let promotion_squares = {
+                if position.whos_turn == 0 {
+                    Some(self.attack_tables.masks.get_rank(position.dimensions.height - 1).to_owned())
+                } else {
+                    Some(self.attack_tables.masks.get_rank(0).to_owned())
+                }
+            };
+            let promo_vals = Some(vec!['r', 'b', 'n', 'q']);
+            iters.push(BitboardMoves::new(
+                (&enemies).to_owned(),
+                raw_attacks,
+                index,
+                promotion_squares,
+                promo_vals
+            ));
             //Check EP
             if let Some(ep_sq) = position.properties.ep_square {
                 let mut attack_only = {
@@ -88,7 +100,7 @@ impl MoveGenerator {
                     } else {
                         cap_y += 1;
                     }
-                    let move_ = Move::new(index, ep_sq,  to_index(cap_x,cap_y) as u8, MoveType::Capture);
+                    let move_ = Move::new(index, ep_sq,  to_index(cap_x,cap_y) as u8, MoveType::Capture, None);
                     extra_moves.push(move_);
                 }
             }
@@ -108,15 +120,17 @@ impl MoveGenerator {
                         if occ.is_zero() {
                             //See if we can move the king one step east without stepping into check
                             let king_one_step_indx = to_index(kx + 1, ky) as u8;
-                            if self.is_move_legal(
-                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet),
+                            if self.is_move_legal(&Move::null(), position)
+                                && self.is_move_legal(
+                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet, None),
                                 position
                             ){
                                 let to_index = to_index(kx + 2, ky) as u8;
                                 extra_moves.push(Move::new(king_index as u8,
                                                            to_index,
                                                            rook_index,
-                                                           MoveType::KingsideCastle));
+                                                           MoveType::KingsideCastle,
+                                                           None));
                             }
                         }
                     }
@@ -133,15 +147,17 @@ impl MoveGenerator {
                         if occ.is_zero() {
                             //See if we can move the king one step east without stepping into check
                             let king_one_step_indx = to_index(kx - 1, ky) as u8;
-                            if self.is_move_legal(
-                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet),
+                            if self.is_move_legal(&Move::null(), position)
+                                && self.is_move_legal(
+                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet, None),
                                 position
                             ){
                                 let to_index = to_index(kx - 2, ky) as u8;
                                 extra_moves.push(Move::new(king_index as u8,
                                                            to_index,
                                                            rook_index,
-                                                           MoveType::QueensideCastle));
+                                                           MoveType::QueensideCastle,
+                                                           None));
                             }
                         }
                     }
@@ -156,6 +172,13 @@ impl MoveGenerator {
 
     //Checks if a move is legal
     pub fn is_move_legal(&self, move_:&Move, position:&mut Position) -> bool{
+        //You cannot capture kings
+        if move_.get_move_type() == MoveType::PromotionCapture || move_.get_move_type() == MoveType::Capture {
+            if position.piece_at(move_.get_target() as usize).unwrap().1 == PieceType::King {
+                return false;
+            }
+        }
+
         let my_player_num = position.whos_turn;
         position.make_move(move_.to_owned());
         let my_pieces: &PieceSet = &position.pieces[my_player_num as usize];

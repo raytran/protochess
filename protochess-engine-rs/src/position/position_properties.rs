@@ -8,8 +8,9 @@ use crate::types::chess_move::Move;
 #[derive(Clone)]
 pub struct PositionProperties {
     pub move_played: Option<Move>,
+    //If the last move was a promotion, promote_from is the previous piecetype
+    pub promote_from: Option<PieceType>,
     pub castling_rights: CastleRights,
-    pub in_check: bool,
     //EP square (square behind a double pawn push)
     pub ep_square: Option<u8>,
     //Tuple (owner, PieceType) of the last piece captured, if any
@@ -23,7 +24,7 @@ impl PositionProperties {
             castling_rights: CastleRights::new(),
             move_played: None,
             prev_properties: None,
-            in_check: false,
+            promote_from: None,
             ep_square: None,
             captured_piece: None,
         }

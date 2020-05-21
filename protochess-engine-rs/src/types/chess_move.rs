@@ -1,3 +1,4 @@
+#[derive(PartialEq)]
 pub enum MoveType {
     Quiet,
     Capture,
@@ -5,9 +6,10 @@ pub enum MoveType {
     KingsideCastle,
     Promotion,
     PromotionCapture,
+    Null,
 }
 #[derive(Copy, Clone)]
-pub struct Move(u32);
+pub struct Move(u32, Option<char>);
 
 //Stores a move in a u32
 //0-7:   from index:u8
@@ -21,7 +23,7 @@ pub struct Move(u32);
 // 100 = promotion-capture
 
 impl Move {
-    pub fn new(from:u8, to:u8, target_loc: u8, move_type:MoveType) -> Move{
+    pub fn new(from:u8, to:u8, target_loc: u8, move_type:MoveType, promo:Option<char>) -> Move{
         Move(
             (from as u32)
                 | (to as u32) << 8u32
@@ -33,8 +35,13 @@ impl Move {
                 MoveType::QueensideCastle => {3u32 << 24}
                 MoveType::Promotion => {4u32 << 24}
                 MoveType::PromotionCapture => {5u32 << 24}
-            }
+                MoveType::Null => {6u32 << 24}
+            }, promo
         )
+    }
+
+    pub fn null() -> Move {
+        Move::new(0,0,0,MoveType::Null, None)
     }
 
     pub fn get_from(&self) -> u8{
@@ -57,8 +64,13 @@ impl Move {
             3 => { MoveType::QueensideCastle }
             4 => { MoveType::Promotion }
             5 => { MoveType::PromotionCapture }
+            6 => { MoveType::Null }
             _ => { MoveType::Quiet }
         }
+    }
+
+    pub fn get_promotion_char(&self) -> Option<char> {
+        self.1
     }
 
     pub fn get_target(&self) -> u8 {

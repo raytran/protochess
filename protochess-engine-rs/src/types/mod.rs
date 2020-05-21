@@ -11,6 +11,20 @@ pub enum PieceType {
     Pawn,
     Custom(char),
 }
+
+impl PieceType {
+    pub fn from_char(c:char) -> PieceType {
+        match c {
+            'k' =>{PieceType::King}
+            'q' =>{PieceType::Queen}
+            'r' =>{PieceType::Rook}
+            'b' =>{PieceType::Bishop}
+            'n' =>{PieceType::Knight}
+            'p' =>{PieceType::Pawn}
+            _ => {PieceType::Custom(c)}
+        }
+    }
+}
 pub struct Dimensions {
     pub width:u8,
     pub height:u8,
