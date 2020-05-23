@@ -428,7 +428,9 @@ impl Position {
         }
     }
 
-    fn update_occupied(&mut self){
+    /// Updates the occupied bitboard
+    /// Must be called after every position update/modification
+    pub fn update_occupied(&mut self){
         self.occupied = Bitboard::zero();
         for (i, ps) in self.pieces.iter_mut().enumerate() {
             ps.update_occupied();

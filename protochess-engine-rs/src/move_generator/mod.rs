@@ -343,6 +343,7 @@ impl MoveGenerator {
         if (!(&batt & enemy_queens).is_zero() || !(&batt & enemy_bishops).is_zero()) {
             return true;
         };
+        //TODO Add custom pieces
 
         false
     }

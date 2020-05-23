@@ -3,6 +3,8 @@ use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
 use crate::types::chess_move::Move;
+use crate::position::piece_set::movement_pattern::MovementPattern;
+use crate::types::bitboard::to_index;
 
 //Private modules
 mod constants;
@@ -26,6 +28,29 @@ impl Engine {
             move_generator: MoveGenerator::new(),
             current_position: Position::default(),
         }
+    }
+
+    pub fn custom_pieces() -> Engine {
+        let mut eng = Engine::default();
+        eng.current_position.register_piecetype(0,'@',MovementPattern{
+            north: false,
+            south: false,
+            east: true,
+            west: false,
+            northeast: false,
+            northwest: true,
+            southeast: false,
+            southwest: false,
+            promotion_squares: None,
+            promo_vals: None,
+            attack_sliding_deltas: vec![],
+            attack_jump_deltas: vec![],
+            move_jump_deltas: vec![],
+            move_sliding_deltas: vec![]
+        });
+        eng.current_position.add_piece(0, PieceType::Custom('@'), to_index(0,3) as u8);
+        eng.current_position.update_occupied();
+        eng
     }
 
     pub fn make_move(&mut self, x1:u8, y1:u8, x2:u8, y2: u8) -> bool{
