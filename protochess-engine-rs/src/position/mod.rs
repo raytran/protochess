@@ -1,6 +1,6 @@
 use arrayvec::ArrayVec;
 use crate::types::*;
-use crate::constants::fen;
+use crate::constants::{fen, DEFAULT_WIDTH, DEFAULT_HEIGHT};
 use crate::position::piece_set::PieceSet;
 use crate::types::bitboard::{Bitboard, to_index, from_index, to_string};
 use std::sync::Arc;
@@ -11,7 +11,7 @@ use crate::types::chess_move::{Move, MoveType};
 mod position_properties;
 mod castle_rights;
 pub mod piece_set;
-
+use crate::position::piece_set::movement_pattern::MovementPattern;
 /// Represents a single position in chess
 pub struct Position {
     pub dimensions: Dimensions,
@@ -29,6 +29,11 @@ pub struct Position {
 impl Position {
     pub fn default() -> Position{
         Position::from_fen(String::from(fen::STARTING_POS))
+    }
+
+    /// Registers a new piece type for this position
+    pub fn register_piecetype(&mut self, player_num: usize, char_rep: char, mp: MovementPattern) {
+        self.pieces[player_num].custom.push((char_rep, Bitboard::zero(),mp));
     }
 
     /// Modifies the position to make the move
@@ -217,7 +222,7 @@ impl Position {
     }
 
     pub fn from_fen(fen: String) -> Position{
-        let dims = Dimensions{width:8,height:8};
+        let dims = Dimensions{width:DEFAULT_WIDTH,height:DEFAULT_HEIGHT};
 
         let mut wb_pieces = ArrayVec::<[_;4]>::new();
         let mut w_pieces = PieceSet::new();
@@ -378,15 +383,13 @@ impl Position {
         None
     }
 
-    fn update_occupied(&mut self){
-        self.occupied = Bitboard::zero();
-        for (i, ps) in self.pieces.iter_mut().enumerate() {
-            ps.update_occupied();
-            self.occupied |= &ps.occupied;
-        }
+    /// Returns if the point is in bounds
+    pub fn xy_in_bounds(&self, x:u8, y:u8) -> bool {
+        self.bounds.bit(to_index(x, y)).unwrap()
     }
 
-    fn move_piece(&mut self, from:u8, to:u8){
+
+    pub fn move_piece(&mut self, from:u8, to:u8){
         if let Some(source_bb) = self.piece_bb_at(from as usize){
             source_bb.set_bit(from as usize, false);
             source_bb.set_bit(to as usize, true);
@@ -398,12 +401,15 @@ impl Position {
         }
     }
 
-    fn remove_piece(&mut self, index:u8) {
+    /// Removes a piece from the position, assuming the piece is there
+    pub fn remove_piece(&mut self, index:u8) {
         let capd_bb:&mut Bitboard = self.piece_bb_at(index as usize).unwrap();
         capd_bb.set_bit(index as usize, false);
     }
 
-    fn add_piece(&mut self, owner:u8, pt: PieceType, index:u8){
+    /// Adds a piece to the position, assuming the piecetype already exists
+    /// Panics if the piecetype isn't registered already
+    pub fn add_piece(&mut self, owner:u8, pt: PieceType, index:u8){
         match pt {
             PieceType::King => {self.pieces[owner as usize].king.set_bit(index as usize, true);},
             PieceType::Queen => {self.pieces[owner as usize].queen.set_bit(index as usize, true);},
@@ -412,7 +418,7 @@ impl Position {
             PieceType::Knight => {self.pieces[owner as usize].knight.set_bit(index as usize, true);},
             PieceType::Pawn => {self.pieces[owner as usize].pawn.set_bit(index as usize, true);},
             PieceType::Custom(ptc) => {
-                for (c, bb) in self.pieces[owner as usize].custom.iter_mut() {
+                for (c, bb, mP) in self.pieces[owner as usize].custom.iter_mut() {
                     if ptc == *c {
                         bb.set_bit(index as usize,true);
                         break;
@@ -422,5 +428,12 @@ impl Position {
         }
     }
 
+    fn update_occupied(&mut self){
+        self.occupied = Bitboard::zero();
+        for (i, ps) in self.pieces.iter_mut().enumerate() {
+            ps.update_occupied();
+            self.occupied |= &ps.occupied;
+        }
+    }
 }
 

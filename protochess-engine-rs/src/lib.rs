@@ -1,4 +1,4 @@
-use crate::types::{Dimensions, bitboard};
+use crate::types::{Dimensions, bitboard, PieceType};
 use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
@@ -32,7 +32,7 @@ impl Engine {
         let from = bitboard::to_index(x1,y1) as u8;
         let to = bitboard::to_index(x2,y2) as u8;
 
-        let moves = self.move_generator.get_psuedo_moves(&mut self.current_position);
+        let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
         for move_ in moves {
             if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
                 continue;
@@ -65,7 +65,7 @@ impl Engine {
     pub fn perft(&mut self,depth:u8) -> u64 {
         let mut nodes = 0u64;
 
-        let moves = self.move_generator.get_psuedo_moves(&mut self.current_position);
+        let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
 
         if depth == 1 {
             return self.count_legal_moves(moves);
@@ -84,7 +84,7 @@ impl Engine {
     pub fn perft_divide(&mut self,depth:u8) -> u64 {
         let mut nodes = 0u64;
 
-        let moves = self.move_generator.get_psuedo_moves(&mut self.current_position);
+        let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
         if depth == 1 {
             return self.count_legal_moves(moves);
         }

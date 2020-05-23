@@ -1,9 +1,12 @@
 //Pieces that a player has
+pub mod movement_pattern;
 use crate::types::bitboard::Bitboard;
 use crate::types::{PieceType, bitboard, Dimensions};
+use crate::position::piece_set::movement_pattern::MovementPattern;
 
 /// Represents a set of pieces for a player
-/// custom is a vec holding tuples mapping Bitboards to their char representation
+/// custom is a vec of custom piece types
+/// holding tuples mapping Bitboards to their char representation and MovementPattern
 /// chars should not contain k, q, r, p, or n
 pub struct PieceSet {
     pub occupied: Bitboard,
@@ -13,7 +16,7 @@ pub struct PieceSet {
     pub knight: Bitboard,
     pub rook: Bitboard,
     pub pawn: Bitboard,
-    pub custom: Vec<(char,Bitboard)>,
+    pub custom: Vec<(char, Bitboard, MovementPattern)>,
 }
 
 impl PieceSet {
@@ -44,7 +47,7 @@ impl PieceSet {
         }else if self.pawn.bit(index).unwrap(){
             Some(&mut self.pawn)
         }else{
-            for (c, b) in self.custom.iter_mut(){
+            for (c, b, mP) in self.custom.iter_mut(){
                 if b.bit(index).unwrap(){
                     return Some(b);
                 }
@@ -67,7 +70,7 @@ impl PieceSet {
         }else if self.pawn.bit(index).unwrap(){
             Some(PieceType::Pawn)
         }else{
-            for (c, b) in self.custom.iter(){
+            for (c, b, mP) in self.custom.iter(){
                 if b.bit(index).unwrap(){
                     return Some(PieceType::Custom(*c));
                 }
@@ -85,7 +88,7 @@ impl PieceSet {
         self.occupied |= &self.knight;
         self.occupied |= &self.rook;
         self.occupied |= &self.pawn;
-        for (c, bb) in &self.custom {
+        for (c, bb, mP) in &self.custom {
             self.occupied |= bb;
         }
     }

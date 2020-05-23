@@ -23,7 +23,7 @@ impl BitboardMoves {
             source_index,
             promotion_squares,
             promo_vals,
-            current_promo_vals:None
+            current_promo_vals:None,
         }
     }
 }
@@ -72,12 +72,12 @@ impl Iterator for BitboardMoves {
                     //Unwrap intentionally here; want to panic if this goes wrong
                     Some(next_char)
                 }else{
-                    //No promotion, go to next after this
+                    //No promotion chars left, go to next after this
                     self.moves.set_bit(to, false);
                     None
                 }
             };
-            Some(Move::new(self.source_index as u8, to as u8, target as u8, move_type, promo_char))
+            Some(Move::new(self.source_index as u8, to as u8, Some(target as u8), move_type, promo_char))
         } else {
             None
         }

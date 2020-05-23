@@ -21,7 +21,14 @@ impl MoveGenerator {
     }
 
     /// Iterator that yields pseudo-legal moves from a position
-    pub fn get_psuedo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
+    pub fn get_pseudo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
+        self.get_classical_pseudo_moves(position)
+            .chain(self.get_custom_psuedo_moves(position))
+    }
+
+    /// Iterator that yields pseudo-legal moves from a position
+    /// Considering only the classical piece set
+    pub fn get_classical_pseudo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
         let my_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
         let enemies = &position.occupied & !&my_pieces.occupied;
 
@@ -100,7 +107,7 @@ impl MoveGenerator {
                     } else {
                         cap_y += 1;
                     }
-                    let move_ = Move::new(index, ep_sq,  to_index(cap_x,cap_y) as u8, MoveType::Capture, None);
+                    let move_ = Move::new(index, ep_sq,  Some(to_index(cap_x,cap_y) as u8), MoveType::Capture, None);
                     extra_moves.push(move_);
                 }
             }
@@ -122,13 +129,13 @@ impl MoveGenerator {
                             let king_one_step_indx = to_index(kx + 1, ky) as u8;
                             if self.is_move_legal(&Move::null(), position)
                                 && self.is_move_legal(
-                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet, None),
+                                &Move::new(king_index as u8, king_one_step_indx, None, MoveType::Quiet, None),
                                 position
                             ){
                                 let to_index = to_index(kx + 2, ky) as u8;
                                 extra_moves.push(Move::new(king_index as u8,
                                                            to_index,
-                                                           rook_index,
+                                                           Some(rook_index),
                                                            MoveType::KingsideCastle,
                                                            None));
                             }
@@ -149,13 +156,13 @@ impl MoveGenerator {
                             let king_one_step_indx = to_index(kx - 1, ky) as u8;
                             if self.is_move_legal(&Move::null(), position)
                                 && self.is_move_legal(
-                                &Move::new(king_index as u8, king_one_step_indx, 0, MoveType::Quiet, None),
+                                &Move::new(king_index as u8, king_one_step_indx, None, MoveType::Quiet, None),
                                 position
                             ){
                                 let to_index = to_index(kx - 2, ky) as u8;
                                 extra_moves.push(Move::new(king_index as u8,
                                                            to_index,
-                                                           rook_index,
+                                                           Some(rook_index),
                                                            MoveType::QueensideCastle,
                                                            None));
                             }
@@ -168,6 +175,121 @@ impl MoveGenerator {
 
         //Flatten our vector of iterators and combine with ep moves
         iters.into_iter().flatten().chain(extra_moves.into_iter())
+    }
+
+    /// Iterator that yields pseudo-legal moves from a positon
+    /// Considering only custom piece types
+    fn get_custom_psuedo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
+        let my_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
+        let enemies = &position.occupied & !&my_pieces.occupied;
+
+        let mut iters:Vec<BitboardMoves> = Vec::new();
+        let mut moves = Vec::new();
+
+        for (c, bb, movement) in &my_pieces.custom {
+            let mut bb_copy = bb.to_owned();
+            while !bb_copy.is_zero() {
+                let index = bb_copy.lowest_one().unwrap() as u8;
+                // Sliding moves along ranks or files
+                let mut raw_attacks = Bitboard::zero();
+                if movement.north || movement.south {
+                    raw_attacks |= self.attack_tables.get_file_attack(index, &position.occupied);
+                    if !movement.north {
+                       raw_attacks &= !self.attack_tables.masks.get_north(index);
+                    }else if !movement.south {
+                       raw_attacks &= !self.attack_tables.masks.get_south(index);
+                    }
+                }
+                if movement.east || movement.west {
+                    raw_attacks |= self.attack_tables.get_rank_attack(index, &position.occupied);
+                    if !movement.east {
+                        raw_attacks &= !self.attack_tables.masks.get_east(index);
+                    }else if !movement.west {
+                        raw_attacks &= !self.attack_tables.masks.get_west(index);
+                    }
+                }
+                if movement.northeast || movement.southwest {
+                    raw_attacks |= self.attack_tables.get_diagonal_attack(index, &position.occupied);
+                    if !movement.northeast {
+                        raw_attacks &= !self.attack_tables.masks.get_northeast(index);
+                    }else if !movement.southwest {
+                        raw_attacks &= !self.attack_tables.masks.get_southwest(index);
+                    }
+                }
+                if movement.northwest || movement.southeast {
+                    raw_attacks |= self.attack_tables.get_antidiagonal_attack(index, &position.occupied);
+                    if !movement.northwest {
+                        raw_attacks &= !self.attack_tables.masks.get_northwest(index);
+                    }else if !movement.southeast {
+                        raw_attacks &= !self.attack_tables.masks.get_southeast(index);
+                    }
+                }
+                //Do not attack ourselves
+                raw_attacks &= !&my_pieces.occupied;
+                //Keep only in bounds
+                raw_attacks &= &position.bounds;
+                iters.push(BitboardMoves::new(
+                    (&enemies).to_owned(),
+                    raw_attacks,
+                    index,
+                    movement.promotion_squares.to_owned(),
+                    movement.promo_vals.to_owned(),
+                ));
+
+                // Delta based moves (sliding, non sliding)
+                let (x, y) = from_index(index as usize);
+                for (dx, dy) in &movement.move_jump_deltas {
+                    let (x2, y2) = (x + *dx, y + *dy);
+                    let to = to_index(x2, y2);
+                    if position.xy_in_bounds(x2, y2) && !position.occupied.bit(to).unwrap() {
+                        moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
+                    }
+                }
+
+                let (x, y) = from_index(index as usize);
+                for (dx, dy) in &movement.attack_jump_deltas {
+                    let (x2, y2) = (x + *dx, y + *dy);
+                    let to = to_index(x2, y2);
+                    if enemies.bit(to).unwrap() {
+                        moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
+                    }
+                }
+
+                let (x, y) = from_index(index as usize);
+                for (dx, dy) in &movement.attack_sliding_deltas {
+                    let (x2, y2) = (x + *dx, y + *dy);
+                    let to = to_index(x2, y2);
+                    //Out of bounds, next sliding moves can be ignored
+                    if !position.xy_in_bounds(x2, y2) {
+                        break;
+                    }
+                    //If there is an enemy here, we can add an attack move
+                    if enemies.bit(to).unwrap() {
+                        moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
+                        break;
+                    }
+                    //Occupied by own team
+                    if position.occupied.bit(to).unwrap() {
+                        break;
+                    }
+                }
+
+                let (x, y) = from_index(index as usize);
+                for (dx, dy) in &movement.move_sliding_deltas {
+                    let (x2, y2) = (x + *dx, y + *dy);
+                    let to = to_index(x2, y2);
+                    //If the point is out of bounds or there is another piece here, we cannot go any
+                    //farther
+                    if !position.xy_in_bounds(x2, y2) || position.occupied.bit(to).unwrap() {
+                        break;
+                    }
+                    moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
+                }
+
+                bb_copy.set_bit(index as usize, false);
+            }
+        }
+        iters.into_iter().flatten().chain(moves.into_iter())
     }
 
     /// Returns whether or not a player is in check for a given position
