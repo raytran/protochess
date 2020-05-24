@@ -365,5 +365,18 @@ impl MoveGenerator {
         position.unmake_move();
         legality
     }
+
+
+    ///Returns the number of legal moves for a position
+    pub fn count_legal_moves(&self, position: &mut Position) -> u64{
+        let mut nodes = 0u64;
+        for move_ in self.get_pseudo_moves(position){
+            if !self.is_move_legal(&move_, position) {
+                continue;
+            }
+            nodes += 1;
+        }
+        nodes
+    }
 }
 

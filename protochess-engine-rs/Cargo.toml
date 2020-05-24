@@ -9,5 +9,6 @@ edition = "2018"
 opt-level = 3
 
 [dependencies]
+scan-rules = "0.2.0"
 arrayvec = "0.5.1"
 numext-fixed-uint = "0.1.4"
