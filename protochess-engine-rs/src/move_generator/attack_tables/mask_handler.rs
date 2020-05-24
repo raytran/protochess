@@ -57,7 +57,7 @@ impl MaskHandler {
         let mut southwest = ArrayVec::<[Bitboard;256]>::new();
         let mut diagonals = ArrayVec::<[Bitboard;256]>::new();
         let mut antidiagonals = ArrayVec::<[Bitboard;256]>::new();
-        for i in 0..256 {
+        for _i in 0..256 {
             north.push(Bitboard::zero());
             east.push(Bitboard::zero());
             west.push(Bitboard::zero());

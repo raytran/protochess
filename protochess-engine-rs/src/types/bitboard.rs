@@ -1,4 +1,4 @@
-use crate::types::Dimensions;
+
 pub type Bitboard = numext_fixed_uint::U256;
 
 pub fn to_index(x:u8, y:u8) -> usize{

@@ -1,11 +1,11 @@
-use crate::types::{Dimensions, bitboard, PieceType};
-use crate::types::{LineAttackType, AttackDirection };
-use crate::types::bitboard::{Bitboard, to_string, from_index, to_index};
+use crate::types::{PieceType};
+
+use crate::types::bitboard::{Bitboard, from_index, to_index};
 use crate::position::Position;
 use crate::position::piece_set::PieceSet;
 use crate::move_generator::attack_tables::AttackTables;
 use crate::move_generator::bitboard_moves::BitboardMoves;
-use std::iter;
+
 use crate::types::chess_move::{Move, MoveType};
 
 mod attack_tables;
@@ -92,7 +92,7 @@ impl MoveGenerator {
             ));
             //Check EP
             if let Some(ep_sq) = position.properties.ep_square {
-                let mut attack_only = {
+                let attack_only = {
                     if position.whos_turn == 0 {
                         self.attack_tables.get_north_pawn_attack_raw(index) & !(&my_pieces.occupied)
                     } else {
@@ -100,7 +100,7 @@ impl MoveGenerator {
                     }
                 };
                 if attack_only.bit(ep_sq as usize).unwrap() {
-                    let (mut cap_x, mut cap_y) = from_index(ep_sq as usize);
+                    let (cap_x, mut cap_y) = from_index(ep_sq as usize);
 
                     if position.whos_turn == 0 {
                         cap_y -= 1;
@@ -115,7 +115,7 @@ impl MoveGenerator {
         }
         //Castling
         if let Some(king_index) = my_pieces.king.lowest_one() {
-            let (mut kx, mut ky) = from_index(king_index);
+            let (kx, ky) = from_index(king_index);
             if position.properties.castling_rights.can_player_castle_kingside(position.whos_turn) {
                 let rook_index = to_index(position.dimensions.width - 1,ky) as u8;
                 if let Some((owner, pt)) = position.piece_at(rook_index as usize) {
@@ -186,7 +186,7 @@ impl MoveGenerator {
         let mut iters:Vec<BitboardMoves> = Vec::new();
         let mut moves = Vec::new();
 
-        for (c, bb, movement) in &my_pieces.custom {
+        for (_c, bb, movement) in &my_pieces.custom {
             let mut bb_copy = bb.to_owned();
             while !bb_copy.is_zero() {
                 let index = bb_copy.lowest_one().unwrap() as u8;
@@ -335,12 +335,12 @@ impl MoveGenerator {
 
         //Rook & Queen
         let ratt = self.attack_tables.get_rook_attack(loc_index, &position.occupied, &enemies);
-        if (!(&ratt & enemy_queens).is_zero() || !(&ratt & enemy_rooks).is_zero()){
+        if !(&ratt & enemy_queens).is_zero() || !(&ratt & enemy_rooks).is_zero() {
             return true;
         };
         //Bishop & Queen
         let batt = self.attack_tables.get_bishop_attack(loc_index, &position.occupied, &enemies);
-        if (!(&batt & enemy_queens).is_zero() || !(&batt & enemy_bishops).is_zero()) {
+        if !(&batt & enemy_queens).is_zero() || !(&batt & enemy_bishops).is_zero() {
             return true;
         };
         //TODO Add custom pieces

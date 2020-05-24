@@ -2,7 +2,7 @@ use crate::types::{Dimensions, bitboard, PieceType};
 use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
-use crate::types::chess_move::Move;
+
 use crate::position::piece_set::movement_pattern::MovementPattern;
 use crate::types::bitboard::{to_index, from_index};
 
@@ -145,55 +145,10 @@ impl Engine {
         nodes
     }
 
-    /// Plain negamax; no alpha-beta
-    fn negamax(&mut self, depth:u8) -> isize {
-        let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
-        if depth == 0 {
-            return self.evaluator.evaluate(&mut self.current_position, &self.move_generator);
-        }
-        let mut max_score= isize::MIN;
-        for move_ in moves{
-            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
-                continue;
-            }
-            self.current_position.make_move(move_);
-            let score = self.negamax(depth - 1).wrapping_neg();
-            if score > max_score {
-                max_score = score;
-            }
-            self.current_position.unmake_move();
-        }
-        max_score
-    }
-
-    //From (x1,y1) to (x2,y2)
-    pub fn get_best_move_negamax(&mut self, depth:u8) -> (u8, u8, u8, u8) {
-        let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
-        let mut max_score= isize::MIN;
-
-        let mut best_move = (0,0,0,0);
-        for move_ in moves{
-            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
-                continue;
-            }
-            self.current_position.make_move(move_);
-            let score = self.negamax(depth - 1).wrapping_neg();
-            if score > max_score {
-                max_score = score;
-                let (x1, y1) = from_index(move_.get_from() as usize);
-                let (x2, y2) = from_index(move_.get_to() as usize);
-                best_move = (x1, y1, x2, y2);
-            }
-            self.current_position.unmake_move();
-        }
-        println!("best score: {}", max_score);
-        best_move
-    }
-
     fn get_best_move_alphabeta_negamax(&mut self, depth: u8) -> (u8, u8, u8, u8) {
         assert!(depth > 0);
         let mut alpha = isize::MIN + 1;
-        let mut beta = isize::MAX;
+        let beta = isize::MAX;
 
         let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
 

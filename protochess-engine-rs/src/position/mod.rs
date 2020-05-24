@@ -2,7 +2,7 @@ use arrayvec::ArrayVec;
 use crate::types::*;
 use crate::constants::{fen, DEFAULT_WIDTH, DEFAULT_HEIGHT};
 use crate::position::piece_set::PieceSet;
-use crate::types::bitboard::{Bitboard, to_index, from_index, to_string};
+use crate::types::bitboard::{Bitboard, to_index, from_index};
 use std::sync::Arc;
 
 use position_properties::PositionProperties;
@@ -233,11 +233,11 @@ impl Position {
         let mut field = 0;
 
         let mut whos_turn = 0;
-        let mut ep_sq = 0;
-        let mut can_w_castleK = false;
-        let mut can_b_castleK = false;
-        let mut can_w_castleQ = false;
-        let mut can_b_castleQ = false;
+        let _ep_sq = 0;
+        let mut can_w_castle_k = false;
+        let mut can_b_castle_k = false;
+        let mut can_w_castle_q = false;
+        let mut can_b_castle_q = false;
         for c in fen.chars(){
             if c == ' ' {
                 field += 1;
@@ -350,7 +350,7 @@ impl Position {
                  properties.castling_rights.can_player_castle_queenside(1));
          */
 
-        let mut pos = Position{
+        let pos = Position{
             whos_turn,
             num_players: 2,
             dimensions: dims,
@@ -375,7 +375,7 @@ impl Position {
 
     /// Returns bitoard of piece at index
     pub fn piece_bb_at(&mut self,index:usize) -> Option<&mut Bitboard> {
-        for (i, ps) in self.pieces.iter_mut().enumerate() {
+        for (_i, ps) in self.pieces.iter_mut().enumerate() {
             if let Some(b) = ps.piece_bb_at(index) {
                 return Some(b);
             }
@@ -418,7 +418,7 @@ impl Position {
             PieceType::Knight => {self.pieces[owner as usize].knight.set_bit(index as usize, true);},
             PieceType::Pawn => {self.pieces[owner as usize].pawn.set_bit(index as usize, true);},
             PieceType::Custom(ptc) => {
-                for (c, bb, mP) in self.pieces[owner as usize].custom.iter_mut() {
+                for (c, bb, m_p) in self.pieces[owner as usize].custom.iter_mut() {
                     if ptc == *c {
                         bb.set_bit(index as usize,true);
                         break;
@@ -432,7 +432,7 @@ impl Position {
     /// Must be called after every position update/modification
     pub fn update_occupied(&mut self){
         self.occupied = Bitboard::zero();
-        for (i, ps) in self.pieces.iter_mut().enumerate() {
+        for (_i, ps) in self.pieces.iter_mut().enumerate() {
             ps.update_occupied();
             self.occupied |= &ps.occupied;
         }

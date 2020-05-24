@@ -1,7 +1,7 @@
 mod mask_handler;
-use crate::types::Dimensions;
+
 use arrayvec::ArrayVec;
-use crate::types::bitboard::{Bitboard, to_index, from_index, to_string};
+use crate::types::bitboard::{Bitboard, to_index, from_index};
 use crate::move_generator::attack_tables::mask_handler::MaskHandler;
 
 /// Holds pre-calculated attack tables for the pieces, assuming a 16x16 size board
@@ -29,7 +29,7 @@ impl AttackTables {
         let mut south_pawn_attacks = ArrayVec::<[Bitboard;256]>::new();
         let mut south_pawn_single_push = ArrayVec::<[Bitboard;256]>::new();
         let mut south_pawn_double_push = ArrayVec::<[Bitboard;256]>::new();
-        for i in 0..256 {
+        for _i in 0..256 {
             knight_attacks.push(Bitboard::zero());
             king_attacks.push(Bitboard::zero());
             north_pawn_attacks.push(Bitboard::zero());
@@ -184,7 +184,7 @@ impl AttackTables {
     }
 
     pub fn get_diagonal_attack(&self, loc_index:u8, occ: &Bitboard) -> Bitboard {
-        let (x, y) = from_index(loc_index as usize);
+        let (x, _y) = from_index(loc_index as usize);
         //Map the diagonal to the first rank
         let masked_diag = occ & self.masks.get_diagonal(loc_index);
         let last_rank_with_garbage = masked_diag.overflowing_mul(self.masks.get_file(0)).0;
@@ -199,7 +199,7 @@ impl AttackTables {
     }
 
     pub fn get_antidiagonal_attack(&self, loc_index:u8, occ: &Bitboard) -> Bitboard {
-        let (x, y) = from_index(loc_index as usize);
+        let (x, _y) = from_index(loc_index as usize);
         //Map the diagonal to the first rank
         let masked_diag = occ & self.masks.get_antidiagonal(loc_index);
         let last_rank_with_garbage = masked_diag.overflowing_mul(self.masks.get_file(0)).0;
@@ -213,17 +213,17 @@ impl AttackTables {
         return_bb.overflowing_mul(self.masks.get_file(0)).0 & self.masks.get_antidiagonal(loc_index)
     }
 
-    pub fn get_knight_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+    pub fn get_knight_attack(&self, loc_index:u8, _occ: &Bitboard, _enemies: &Bitboard) -> Bitboard {
         (&self.knight_attacks[loc_index as usize]).to_owned()
     }
 
-    pub fn get_king_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+    pub fn get_king_attack(&self, loc_index:u8, _occ: &Bitboard, _enemies: &Bitboard) -> Bitboard {
         (&self.king_attacks[loc_index as usize]).to_owned()
     }
 
     pub fn get_north_pawn_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
         let (x, y) = from_index(loc_index as usize);
-        let mut return_bb = {
+        let return_bb = {
             //Double push
             if y == 1 && !occ.bit(to_index(x, y+1)).unwrap() {
                 &self.north_pawn_double_push[loc_index as usize] & !occ
@@ -247,12 +247,12 @@ impl AttackTables {
         return_bb ^ (&self.south_pawn_attacks[loc_index as usize] & enemies)
     }
 
-    pub fn get_south_pawn_attack_masked(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
-        (&self.south_pawn_attacks[loc_index as usize] & enemies)
+    pub fn get_south_pawn_attack_masked(&self, loc_index:u8, _occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+        &self.south_pawn_attacks[loc_index as usize] & enemies
     }
 
-    pub fn get_north_pawn_attack_masked(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
-        (&self.north_pawn_attacks[loc_index as usize] & enemies)
+    pub fn get_north_pawn_attack_masked(&self, loc_index:u8, _occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+        &self.north_pawn_attacks[loc_index as usize] & enemies
     }
 
     pub fn get_north_pawn_attack_raw(&self, loc_index:u8) -> &Bitboard {
@@ -263,12 +263,12 @@ impl AttackTables {
         &self.south_pawn_attacks[loc_index as usize]
     }
 
-    pub fn get_rook_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+    pub fn get_rook_attack(&self, loc_index:u8, occ: &Bitboard, _enemies: &Bitboard) -> Bitboard {
         self.get_file_attack(loc_index, occ)
             ^ self.get_rank_attack(loc_index, occ)
     }
 
-    pub fn get_bishop_attack(&self, loc_index:u8, occ: &Bitboard, enemies: &Bitboard) -> Bitboard {
+    pub fn get_bishop_attack(&self, loc_index:u8, occ: &Bitboard, _enemies: &Bitboard) -> Bitboard {
         self.get_diagonal_attack(loc_index, occ)
             ^ self.get_antidiagonal_attack(loc_index, occ)
     }
@@ -284,11 +284,11 @@ mod tests {
     use crate::move_generator::attack_tables::AttackTables;
     use crate::types::bitboard::Bitboard;
     use crate::types::bitboard::to_string;
-    use crate::types::Dimensions;
+
 
     #[test]
     fn test() {
-        let attacktb = AttackTables::new();
+        let _attacktb = AttackTables::new();
         let mut bb = Bitboard::zero();
         bb |= 9252345218324798u64;
 

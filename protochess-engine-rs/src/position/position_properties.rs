@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::types::{PieceType};
-use crate::types::bitboard::Bitboard;
+
 use crate::position::castle_rights::CastleRights;
 use crate::types::chess_move::Move;
 

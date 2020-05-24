@@ -1,7 +1,7 @@
 //Pieces that a player has
 pub mod movement_pattern;
 use crate::types::bitboard::Bitboard;
-use crate::types::{PieceType, bitboard, Dimensions};
+use crate::types::{PieceType};
 use crate::position::piece_set::movement_pattern::MovementPattern;
 
 /// Represents a set of pieces for a player
@@ -47,7 +47,7 @@ impl PieceSet {
         }else if self.pawn.bit(index).unwrap(){
             Some(&mut self.pawn)
         }else{
-            for (c, b, mP) in self.custom.iter_mut(){
+            for (_c, b, m_p) in self.custom.iter_mut(){
                 if b.bit(index).unwrap(){
                     return Some(b);
                 }
@@ -70,7 +70,7 @@ impl PieceSet {
         }else if self.pawn.bit(index).unwrap(){
             Some(PieceType::Pawn)
         }else{
-            for (c, b, mP) in self.custom.iter(){
+            for (c, b, m_p) in self.custom.iter(){
                 if b.bit(index).unwrap(){
                     return Some(PieceType::Custom(*c));
                 }
@@ -88,7 +88,7 @@ impl PieceSet {
         self.occupied |= &self.knight;
         self.occupied |= &self.rook;
         self.occupied |= &self.pawn;
-        for (c, bb, mP) in &self.custom {
+        for (_c, bb, m_p) in &self.custom {
             self.occupied |= bb;
         }
     }

@@ -1,8 +1,8 @@
 use crate::position::Position;
 use std::collections::HashMap;
-use crate::types::PieceType;
+
 use crate::position::piece_set::PieceSet;
-use crate::Engine;
+
 use crate::move_generator::MoveGenerator;
 
 const KING_SCORE:isize = 9999;
