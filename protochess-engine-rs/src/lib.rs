@@ -160,10 +160,10 @@ impl Engine {
             }
             moves_considered += 1;
             self.current_position.make_move(move_);
-            let score = self._alphabeta_negamax( beta.wrapping_neg(), alpha.wrapping_neg(), depth - 1 ).wrapping_neg();
+            let score = self._alphabeta_negamax( alpha, beta, depth - 1 ).wrapping_neg();
             self.current_position.unmake_move();
 
-            if score > alpha {
+            if score >= alpha {
                 alpha = score; // alpha acts like max in MiniMax
 
                 let (x1, y1) = from_index(move_.get_from() as usize);

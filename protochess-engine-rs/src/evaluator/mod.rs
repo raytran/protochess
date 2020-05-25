@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use crate::position::piece_set::PieceSet;
 
 use crate::move_generator::MoveGenerator;
+use crate::types::PieceType;
 
 const KING_SCORE:isize = 9999;
 const QUEEN_SCORE:isize = 90;
@@ -16,13 +17,17 @@ const MOVE_SCORE:isize = 2;
 
 /// Assigns a score to a given position
 pub(crate) struct Evaluator {
-    scoretable: HashMap<char, usize>
+    //Piece values for pieces, generated dynamically
+    custom_score_table: HashMap<PieceType, usize>,
+    //Piece-square values for all pieces, done as a function of movement possibilities
+    piece_square_table: HashMap<PieceType, Vec<u32>>
 }
 
 impl Evaluator {
     pub fn new() -> Evaluator {
         Evaluator {
-            scoretable: HashMap::new()
+            custom_score_table: HashMap::new(),
+            piece_square_table:HashMap::new()
         }
     }
     //Retrieves the score for the player to move (position.whos_turn)

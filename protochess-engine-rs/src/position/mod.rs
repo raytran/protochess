@@ -292,10 +292,10 @@ impl Position {
                 //Castling rights
                 2 => {
                     match c {
-                        'K' => {can_w_castleK = true;}
-                        'Q' => {can_w_castleQ = true;}
-                        'k' => {can_b_castleK = true;}
-                        'q' => {can_b_castleQ = true;}
+                        'K' => {can_w_castle_k = true;}
+                        'Q' => {can_w_castle_q = true;}
+                        'k' => {can_b_castle_k = true;}
+                        'q' => {can_b_castle_q = true;}
                         _ => {}
                     }
                 }
@@ -325,19 +325,19 @@ impl Position {
 
 
         let mut properties = PositionProperties::default();
-        if !can_w_castleK {
+        if !can_w_castle_k {
             properties.castling_rights.disable_kingside_castle(0);
         }
 
-        if !can_b_castleK {
+        if !can_b_castle_k {
             properties.castling_rights.disable_kingside_castle(1);
         }
 
-        if !can_w_castleQ {
+        if !can_w_castle_q {
             properties.castling_rights.disable_queenside_castle(0);
         }
 
-        if !can_b_castleQ {
+        if !can_b_castle_q {
             properties.castling_rights.disable_queenside_castle(1);
         }
 
