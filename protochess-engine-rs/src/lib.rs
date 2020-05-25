@@ -41,23 +41,31 @@ impl Engine {
 
     pub fn custom_pieces() -> Engine {
         let mut eng = Engine::default();
-        eng.current_position.register_piecetype(0,'@',MovementPattern {
-            north: false,
-            south: false,
-            east: true,
-            west: false,
-            northeast: false,
-            northwest: true,
-            southeast: false,
-            southwest: false,
+        eng.current_position.register_piecetype(0,'a',MovementPattern {
             promotion_squares: None,
             promo_vals: None,
             attack_sliding_deltas: vec![],
             attack_jump_deltas: vec![],
+            attack_north: true,
+            attack_south: false,
+            attack_east: true,
+            attack_west: false,
+            attack_northeast: false,
+            attack_northwest: false,
+            attack_southeast: false,
+            attack_southwest: false,
             move_jump_deltas: vec![],
-            move_sliding_deltas: vec![]
+            move_sliding_deltas: vec![],
+            move_north: false,
+            move_south: false,
+            move_east: true,
+            move_west: false,
+            move_northeast: false,
+            move_northwest: false,
+            move_southeast: false,
+            move_southwest: false
         });
-        eng.current_position.add_piece(0, PieceType::Custom('@'), to_index(0,3) as u8);
+        eng.current_position.add_piece(0, PieceType::Custom('a'), to_index(0,3) as u8);
         eng.current_position.update_occupied();
         eng
     }
@@ -172,6 +180,7 @@ impl Engine {
             }
         }
         println!("moves considered: {}, best score: {}", moves_considered, alpha);
+        println!("best move: {} {} {} {}", best_move.0, best_move.1, best_move.2, best_move.3);
         best_move
     }
 

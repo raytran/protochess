@@ -5,6 +5,7 @@ use crate::position::piece_set::PieceSet;
 
 use crate::move_generator::MoveGenerator;
 use crate::types::PieceType;
+use crate::position::piece::Piece;
 
 const KING_SCORE:isize = 9999;
 const QUEEN_SCORE:isize = 90;
@@ -17,7 +18,7 @@ const MOVE_SCORE:isize = 2;
 
 /// Assigns a score to a given position
 pub(crate) struct Evaluator {
-    //Piece values for pieces, generated dynamically
+    //Piece values for pieces, generated dynamically based on the piece's movement pattern
     custom_score_table: HashMap<PieceType, usize>,
     //Piece-square values for all pieces, done as a function of movement possibilities
     piece_square_table: HashMap<PieceType, Vec<u32>>

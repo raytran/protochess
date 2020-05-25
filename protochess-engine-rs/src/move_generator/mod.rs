@@ -182,53 +182,39 @@ impl MoveGenerator {
     /// Considering only custom piece types
     fn get_custom_psuedo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
         let my_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
-        let enemies = &position.occupied & !&my_pieces.occupied;
 
         let mut iters:Vec<BitboardMoves> = Vec::new();
         let mut moves = Vec::new();
 
+        //Return early if there are no custom pieces
+        if my_pieces.custom.len() == 0 {
+            return iters.into_iter().flatten().chain(moves.into_iter());
+        }
+
+        let enemies = &position.occupied & !&my_pieces.occupied;
+
         for p in &my_pieces.custom {
-            let movement = &p.movement_pattern;
+            let movement = p.movement_pattern.as_ref().unwrap();
             let bb = &p.bitboard;
             let mut bb_copy = bb.to_owned();
             while !bb_copy.is_zero() {
                 let index = bb_copy.lowest_one().unwrap() as u8;
                 // Sliding moves along ranks or files
-                let mut raw_attacks = Bitboard::zero();
-                if movement.north || movement.south {
-                    raw_attacks |= self.attack_tables.get_file_attack(index, &position.occupied);
-                    if !movement.north {
-                       raw_attacks &= !self.attack_tables.masks.get_north(index);
-                    }else if !movement.south {
-                       raw_attacks &= !self.attack_tables.masks.get_south(index);
-                    }
-                }
-                if movement.east || movement.west {
-                    raw_attacks |= self.attack_tables.get_rank_attack(index, &position.occupied);
-                    if !movement.east {
-                        raw_attacks &= !self.attack_tables.masks.get_east(index);
-                    }else if !movement.west {
-                        raw_attacks &= !self.attack_tables.masks.get_west(index);
-                    }
-                }
-                if movement.northeast || movement.southwest {
-                    raw_attacks |= self.attack_tables.get_diagonal_attack(index, &position.occupied);
-                    if !movement.northeast {
-                        raw_attacks &= !self.attack_tables.masks.get_northeast(index);
-                    }else if !movement.southwest {
-                        raw_attacks &= !self.attack_tables.masks.get_southwest(index);
-                    }
-                }
-                if movement.northwest || movement.southeast {
-                    raw_attacks |= self.attack_tables.get_antidiagonal_attack(index, &position.occupied);
-                    if !movement.northwest {
-                        raw_attacks &= !self.attack_tables.masks.get_northwest(index);
-                    }else if !movement.southeast {
-                        raw_attacks &= !self.attack_tables.masks.get_southeast(index);
-                    }
-                }
-                //Do not attack ourselves
-                raw_attacks &= !&my_pieces.occupied;
+                //Attacks!
+                let mut raw_attacks = self.attack_tables.get_sliding_moves_bb(
+                    index,
+                    &position.occupied,
+                    movement.attack_north,
+                    movement.attack_east,
+                   movement.attack_south,
+                    movement.attack_west,
+                    movement.attack_northeast,
+                    movement.attack_northwest,
+                    movement.attack_southeast,
+                    movement.attack_southwest
+                );
+                //Attacks ONLY
+                raw_attacks &= &enemies;
                 //Keep only in bounds
                 raw_attacks &= &position.bounds;
                 iters.push(BitboardMoves::new(
@@ -238,6 +224,30 @@ impl MoveGenerator {
                     movement.promotion_squares.to_owned(),
                     movement.promo_vals.to_owned(),
                 ));
+                //Movements!
+                let mut raw_moves = self.attack_tables.get_sliding_moves_bb(index,
+                                                                          &position.occupied,
+                                                                          movement.move_north,
+                                                                          movement.move_east,
+                                                                          movement.move_south,
+                                                                          movement.move_west,
+                                                                          movement.move_northeast,
+                                                                          movement.move_northwest,
+                                                                          movement.move_southeast,
+                                                                          movement.move_southwest
+                );
+                //Non-attacks ONLY
+                raw_moves &= !&position.occupied;
+                //Keep only in bounds
+                raw_moves &= &position.bounds;
+                iters.push(BitboardMoves::new(
+                    (&enemies).to_owned(),
+                    raw_moves,
+                    index,
+                    movement.promotion_squares.to_owned(),
+                    movement.promo_vals.to_owned(),
+                ));
+
 
                 // Delta based moves (sliding, non sliding)
                 let (x, y) = from_index(index as usize);
@@ -295,8 +305,33 @@ impl MoveGenerator {
         iters.into_iter().flatten().chain(moves.into_iter())
     }
 
+    /// Returns an iterator of moves on an otherwise empty board
+    /// Useful for evaluation
+    /// //TODO add custom pieces
+    pub fn get_attack_on_empty_board(&self, index:u8, pt:PieceType, bounds: &Bitboard) -> impl Iterator<Item=Move> {
+        let zero = Bitboard::zero();
+        let mut moves = match pt {
+            PieceType::Queen => {self.attack_tables.get_queen_attack(index, &zero, &zero)}
+            PieceType::Bishop => {self.attack_tables.get_bishop_attack(index, &zero, &zero)}
+            PieceType::Rook => {self.attack_tables.get_rook_attack(index, &zero, &zero)}
+            PieceType::Knight => {self.attack_tables.get_knight_attack(index, &zero, &zero)}
+            PieceType::King => {self.attack_tables.get_king_attack(index, &zero, &zero)}
+            PieceType::Pawn => {self.attack_tables.get_north_pawn_attack(index, &zero, &zero)}
+            _ => {zero}
+        };
+        //Keep only in bounds
+        moves &= bounds;
+        BitboardMoves::new(
+            Bitboard::zero(),
+            moves,
+            index,
+            None,
+            None,
+        )
+    }
+
     /// Returns whether or not a player is in check for a given position
-    pub fn is_in_check(&self, position: &Position, my_player_num: u8) -> bool {
+    fn is_in_check_from_king(&self, position: &Position, my_player_num: u8) -> bool {
         let my_pieces: &PieceSet = &position.pieces[my_player_num as usize];
         let enemies = &position.occupied & !&my_pieces.occupied;
 
@@ -346,7 +381,6 @@ impl MoveGenerator {
         if !(&batt & enemy_queens).is_zero() || !(&batt & enemy_bishops).is_zero() {
             return true;
         };
-        //TODO Add custom pieces
 
         false
     }
@@ -362,8 +396,15 @@ impl MoveGenerator {
         let my_player_num = position.whos_turn;
         let mut legality = true;
         position.make_move(move_.to_owned());
-        if self.is_in_check(position, my_player_num) {
+        if self.is_in_check_from_king(position, my_player_num) {
             legality = false;
+        }
+        //Custom pieces
+        for move_ in self.get_custom_psuedo_moves(position)  {
+            if move_.get_is_capture() && position.piece_at(move_.get_target() as usize).unwrap().1.piece_type == PieceType::King {
+                legality = false;
+                break;
+            }
         }
         position.unmake_move();
         legality

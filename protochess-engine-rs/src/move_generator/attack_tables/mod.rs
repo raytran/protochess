@@ -3,6 +3,7 @@ mod mask_handler;
 use arrayvec::ArrayVec;
 use crate::types::bitboard::{Bitboard, to_index, from_index};
 use crate::move_generator::attack_tables::mask_handler::MaskHandler;
+use crate::position::movement_pattern::MovementPattern;
 
 /// Holds pre-calculated attack tables for the pieces, assuming a 16x16 size board
 /// Only for classical set of pieces
@@ -263,6 +264,59 @@ impl AttackTables {
         &self.south_pawn_attacks[loc_index as usize]
     }
 
+    /// Returns a bitboard of the sliding piece moves
+    pub fn get_sliding_moves_bb(&self,
+                                loc_index:u8,
+                                occ: &Bitboard,
+                                north: bool,
+                                east: bool,
+                                south: bool,
+                                west: bool,
+                                northeast: bool,
+                                northwest: bool,
+                                southeast:bool,
+                                southwest:bool,
+    ) -> Bitboard {
+        let mut raw_attacks = Bitboard::zero();
+        if north || south {
+            raw_attacks |= self.get_file_attack(loc_index, occ);
+            if !north {
+                raw_attacks &= !self.masks.get_north(loc_index);
+            }else if !south {
+                raw_attacks &= !self.masks.get_south(loc_index);
+            }
+        }
+
+        if east || west {
+            raw_attacks |= self.get_rank_attack(loc_index, occ);
+            if !east {
+                raw_attacks &= !self.masks.get_east(loc_index);
+            }else if !west {
+                raw_attacks &= !self.masks.get_west(loc_index);
+            }
+        }
+
+        if northeast || southwest {
+            raw_attacks |= self.get_diagonal_attack(loc_index, occ);
+            if !northeast {
+                raw_attacks &= !self.masks.get_northeast(loc_index);
+            }else if !southwest {
+                raw_attacks &= !self.masks.get_southwest(loc_index);
+            }
+        }
+
+        if northwest || southeast {
+            raw_attacks |= self.get_antidiagonal_attack(loc_index, occ);
+            if !northwest {
+                raw_attacks &= !self.masks.get_northwest(loc_index);
+            }else if !southeast {
+                raw_attacks &= !self.masks.get_southeast(loc_index);
+            }
+        }
+
+        raw_attacks
+    }
+
     pub fn get_rook_attack(&self, loc_index:u8, occ: &Bitboard, _enemies: &Bitboard) -> Bitboard {
         self.get_file_attack(loc_index, occ)
             ^ self.get_rank_attack(loc_index, occ)
@@ -277,6 +331,7 @@ impl AttackTables {
         self.get_rook_attack(loc_index, occ, enemies)
             ^ self.get_bishop_attack(loc_index, occ, enemies)
     }
+
 }
 
 #[cfg(test)]
