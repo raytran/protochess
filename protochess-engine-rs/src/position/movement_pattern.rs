@@ -1,6 +1,6 @@
 use crate::types::bitboard::Bitboard;
 
-/// MovementPattern describes how a custom piece type can move
+/// MovementPattern describes how a piece can move
 pub struct MovementPattern {
     pub north: bool,
     pub south: bool,
@@ -21,6 +21,27 @@ pub struct MovementPattern {
     //Ways the piece can move (but not capture)
     pub move_jump_deltas: Vec<(u8, u8)>,
     pub move_sliding_deltas: Vec<(u8, u8)>,
+}
+
+impl MovementPattern {
+    pub fn new() -> MovementPattern {
+        MovementPattern {
+            north: false,
+            south: false,
+            east: false,
+            west: false,
+            northeast: false,
+            northwest: false,
+            southeast: false,
+            southwest: false,
+            promotion_squares: None,
+            promo_vals: None,
+            attack_sliding_deltas: vec![],
+            attack_jump_deltas: vec![],
+            move_jump_deltas: vec![],
+            move_sliding_deltas: vec![]
+        }
+    }
 }
 
 

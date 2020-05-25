@@ -3,7 +3,6 @@ use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
 
-use crate::position::piece_set::movement_pattern::MovementPattern;
 use crate::types::bitboard::{to_index, from_index};
 
 //Private modules
@@ -15,6 +14,7 @@ mod evaluator;
 mod rankfile;
 
 use crate::evaluator::Evaluator;
+use crate::position::movement_pattern::MovementPattern;
 
 /// Starting point for the engine
 pub struct Engine {
@@ -41,7 +41,7 @@ impl Engine {
 
     pub fn custom_pieces() -> Engine {
         let mut eng = Engine::default();
-        eng.current_position.register_piecetype(0,'@',MovementPattern{
+        eng.current_position.register_piecetype(0,'@',MovementPattern {
             north: false,
             south: false,
             east: true,

@@ -7,11 +7,14 @@ use std::sync::Arc;
 
 use position_properties::PositionProperties;
 use crate::types::chess_move::{Move, MoveType};
+use crate::position::movement_pattern::MovementPattern;
+use crate::position::piece::Piece;
 
 mod position_properties;
 mod castle_rights;
+pub mod piece;
 pub mod piece_set;
-use crate::position::piece_set::movement_pattern::MovementPattern;
+pub mod movement_pattern;
 /// Represents a single position in chess
 pub struct Position {
     pub dimensions: Dimensions,
@@ -33,7 +36,7 @@ impl Position {
 
     /// Registers a new piece type for this position
     pub fn register_piecetype(&mut self, player_num: usize, char_rep: char, mp: MovementPattern) {
-        self.pieces[player_num].custom.push((char_rep, Bitboard::zero(),mp));
+        self.pieces[player_num].custom.push(Piece::blank_custom(char_rep, mp));
     }
 
     /// Modifies the position to make the move
@@ -257,22 +260,22 @@ impl Position {
                     let index = bitboard::to_index(x, y);
                     let bitboard: &mut Bitboard = match c.to_ascii_lowercase() {
                         'k' => {
-                            if c.is_uppercase() { &mut w_pieces.king } else { &mut b_pieces.king }
+                            if c.is_uppercase() { &mut w_pieces.king.bitboard } else { &mut b_pieces.king.bitboard }
                         },
                         'q' => {
-                            if c.is_uppercase() { &mut w_pieces.queen } else { &mut b_pieces.queen }
+                            if c.is_uppercase() { &mut w_pieces.queen.bitboard } else { &mut b_pieces.queen.bitboard }
                         },
                         'r' => {
-                            if c.is_uppercase() { &mut w_pieces.rook } else { &mut b_pieces.rook }
+                            if c.is_uppercase() { &mut w_pieces.rook.bitboard } else { &mut b_pieces.rook.bitboard }
                         },
                         'b' => {
-                            if c.is_uppercase() { &mut w_pieces.bishop } else { &mut b_pieces.bishop }
+                            if c.is_uppercase() { &mut w_pieces.bishop.bitboard } else { &mut b_pieces.bishop.bitboard }
                         },
                         'n' => {
-                            if c.is_uppercase() { &mut w_pieces.knight } else { &mut b_pieces.knight }
+                            if c.is_uppercase() { &mut w_pieces.knight.bitboard } else { &mut b_pieces.knight.bitboard }
                         },
                         'p' => {
-                            if c.is_uppercase() { &mut w_pieces.pawn } else { &mut b_pieces.pawn }
+                            if c.is_uppercase() { &mut w_pieces.pawn.bitboard } else { &mut b_pieces.pawn.bitboard }
                         },
                         _ => continue,
                     };
@@ -411,16 +414,16 @@ impl Position {
     /// Panics if the piecetype isn't registered already
     pub fn add_piece(&mut self, owner:u8, pt: PieceType, index:u8){
         match pt {
-            PieceType::King => {self.pieces[owner as usize].king.set_bit(index as usize, true);},
-            PieceType::Queen => {self.pieces[owner as usize].queen.set_bit(index as usize, true);},
-            PieceType::Rook => {self.pieces[owner as usize].rook.set_bit(index as usize, true);},
-            PieceType::Bishop => {self.pieces[owner as usize].bishop.set_bit(index as usize, true);},
-            PieceType::Knight => {self.pieces[owner as usize].knight.set_bit(index as usize, true);},
-            PieceType::Pawn => {self.pieces[owner as usize].pawn.set_bit(index as usize, true);},
+            PieceType::King => {self.pieces[owner as usize].king.bitboard.set_bit(index as usize, true);},
+            PieceType::Queen => {self.pieces[owner as usize].queen.bitboard.set_bit(index as usize, true);},
+            PieceType::Rook => {self.pieces[owner as usize].rook.bitboard.set_bit(index as usize, true);},
+            PieceType::Bishop => {self.pieces[owner as usize].bishop.bitboard.set_bit(index as usize, true);},
+            PieceType::Knight => {self.pieces[owner as usize].knight.bitboard.set_bit(index as usize, true);},
+            PieceType::Pawn => {self.pieces[owner as usize].pawn.bitboard.set_bit(index as usize, true);},
             PieceType::Custom(ptc) => {
-                for (c, bb, m_p) in self.pieces[owner as usize].custom.iter_mut() {
-                    if ptc == *c {
-                        bb.set_bit(index as usize,true);
+                for c in self.pieces[owner as usize].custom.iter_mut() {
+                    if ptc == c.char_rep {
+                        c.bitboard.set_bit(index as usize,true);
                         break;
                     }
                 }

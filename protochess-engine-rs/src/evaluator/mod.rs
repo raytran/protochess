@@ -44,12 +44,12 @@ impl Evaluator {
 
     fn get_material_score_for_pieceset(&self, piece_set:&PieceSet) -> isize{
         let mut material_score = 0;
-        material_score += piece_set.king.count_ones() as isize * KING_SCORE;
-        material_score += piece_set.queen.count_ones() as isize * QUEEN_SCORE;
-        material_score += piece_set.rook.count_ones() as isize * ROOK_SCORE;
-        material_score += piece_set.knight.count_ones() as isize * KNIGHT_SCORE;
-        material_score += piece_set.bishop.count_ones() as isize * BISHOP_SCORE;
-        material_score += piece_set.pawn.count_ones() as isize * PAWN_SCORE;
+        material_score += piece_set.king.bitboard.count_ones() as isize * KING_SCORE;
+        material_score += piece_set.queen.bitboard.count_ones() as isize * QUEEN_SCORE;
+        material_score += piece_set.rook.bitboard.count_ones() as isize * ROOK_SCORE;
+        material_score += piece_set.knight.bitboard.count_ones() as isize * KNIGHT_SCORE;
+        material_score += piece_set.bishop.bitboard.count_ones() as isize * BISHOP_SCORE;
+        material_score += piece_set.pawn.bitboard.count_ones() as isize * PAWN_SCORE;
         material_score
     }
 
