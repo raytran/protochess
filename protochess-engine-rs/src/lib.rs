@@ -83,7 +83,7 @@ impl Engine {
         self.current_position.unmake_move();
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&mut self) -> String {
         self.current_position.to_string()
     }
 

@@ -24,18 +24,6 @@ impl PieceType {
             _ => {PieceType::Custom(c)}
         }
     }
-
-    pub fn to_char(&self) -> char {
-        match self {
-            PieceType::King => {'k'}
-            PieceType::Queen => {'q'}
-            PieceType::Rook => {'r'}
-            PieceType::Bishop => {'b'}
-            PieceType::Knight => {'n'}
-            PieceType::Pawn => {'p'}
-            PieceType::Custom(c) => {*c}
-        }
-    }
 }
 pub struct Dimensions {
     pub width:u8,

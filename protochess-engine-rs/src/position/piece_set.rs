@@ -4,9 +4,7 @@ use crate::types::{PieceType};
 use crate::position::piece::Piece;
 
 /// Represents a set of pieces for a player
-/// custom is a vec of custom piece types
-/// holding tuples mapping Bitboards to their char representation and MovementPattern
-/// chars should not contain k, q, r, p, or n
+/// custom is a vec of custom piece
 pub struct PieceSet {
     pub occupied: Bitboard,
     pub king: Piece,
@@ -32,46 +30,23 @@ impl PieceSet {
         }
     }
 
-    pub fn piece_bb_at(&mut self, index: usize) -> Option<&mut Bitboard>{
+    pub fn piece_at(&mut self, index:usize) -> Option<&mut Piece> {
         if self.king.bitboard.bit(index).unwrap(){
-            Some(&mut self.king.bitboard)
+            Some(&mut self.king)
         }else if self.queen.bitboard.bit(index).unwrap(){
-            Some(&mut self.queen.bitboard)
+            Some(&mut self.queen)
         }else if self.bishop.bitboard.bit(index).unwrap(){
-            Some(&mut self.bishop.bitboard)
+            Some(&mut self.bishop)
         }else if self.knight.bitboard.bit(index).unwrap(){
-            Some(&mut self.knight.bitboard)
+            Some(&mut self.knight)
         }else if self.rook.bitboard.bit(index).unwrap(){
-            Some(&mut self.rook.bitboard)
+            Some(&mut self.rook)
         }else if self.pawn.bitboard.bit(index).unwrap(){
-            Some(&mut self.pawn.bitboard)
+            Some(&mut self.pawn)
         }else{
             for p in self.custom.iter_mut(){
                 if p.bitboard.bit(index).unwrap(){
-                    return Some(&mut p.bitboard);
-                }
-            }
-            None
-        }
-    }
-
-    pub fn piecetype_at(&self, index: usize) -> Option<PieceType>{
-        if self.king.bitboard.bit(index).unwrap(){
-            Some(PieceType::King)
-        }else if self.queen.bitboard.bit(index).unwrap(){
-            Some(PieceType::Queen)
-        }else if self.bishop.bitboard.bit(index).unwrap(){
-            Some(PieceType::Bishop)
-        }else if self.knight.bitboard.bit(index).unwrap(){
-            Some(PieceType::Knight)
-        }else if self.rook.bitboard.bit(index).unwrap(){
-            Some(PieceType::Rook)
-        }else if self.pawn.bitboard.bit(index).unwrap(){
-            Some(PieceType::Pawn)
-        }else{
-            for p in self.custom.iter(){
-                if p.bitboard.bit(index).unwrap(){
-                    return Some(p.piece_type.to_owned());
+                    return Some(p);
                 }
             }
             None

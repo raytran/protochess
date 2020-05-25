@@ -59,7 +59,8 @@ impl Position {
         match move_.get_move_type() {
             MoveType::Capture | MoveType::PromotionCapture => {
                 let capt_index = move_.get_target();
-                new_props.captured_piece = self.piece_at(capt_index as usize);
+                let (owner, captd) = self.piece_at(capt_index as usize).unwrap();
+                new_props.captured_piece = Some((owner, captd.piece_type.to_owned()));
                 self.remove_piece(capt_index);
             },
             MoveType::KingsideCastle => {
@@ -79,7 +80,7 @@ impl Position {
 
         let from= move_.get_from();
         let to = move_.get_to();
-        let from_piece_type = self.piece_at(from as usize).unwrap().1;
+        let from_piece_type = self.piece_at(from as usize).unwrap().1.piece_type.to_owned();
 
         //Move piece to location
         self.move_piece(from, to);
@@ -199,20 +200,16 @@ impl Position {
         self.update_occupied();
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&mut self) -> String {
         let mut return_str= String::new();
         for y in (0..self.dimensions.height).rev() {
             for x in 0..self.dimensions.width {
 
-                if let Some((i, pt)) = self.piece_at(bitboard::to_index(x,y)){
-                    match pt {
-                        PieceType::King => if i == 0 {return_str.push('K')} else {return_str.push('k')},
-                        PieceType::Queen => if i == 0 {return_str.push('Q')} else {return_str.push('q')},
-                        PieceType::Rook => if i == 0 {return_str.push('R')} else {return_str.push('r')},
-                        PieceType::Bishop => if i == 0 {return_str.push('B')} else {return_str.push('b')},
-                        PieceType::Knight => if i == 0 {return_str.push('N')} else {return_str.push('n')},
-                        PieceType::Pawn => if i == 0 {return_str.push('P')} else {return_str.push('p')},
-                        PieceType::Custom(c) => return_str.push(c),
+                if let Some((player_num, piece)) = self.piece_at(bitboard::to_index(x,y)){
+                    if player_num == 0 {
+                        return_str.push(piece.char_rep.to_ascii_uppercase());
+                    }else{
+                        return_str.push(piece.char_rep.to_ascii_lowercase());
                     }
                 }else{
                     return_str.push('.');
@@ -344,15 +341,6 @@ impl Position {
             properties.castling_rights.disable_queenside_castle(1);
         }
 
-        /*
-        println!("to_move: {}\nwhite: \n    K: {} Q: {} \nblack: \n    K: {} Q: {}",
-                 whos_turn,
-                 properties.castling_rights.can_player_castle_kingside(0),
-                 properties.castling_rights.can_player_castle_queenside(0),
-                 properties.castling_rights.can_player_castle_kingside(1),
-                 properties.castling_rights.can_player_castle_queenside(1));
-         */
-
         let pos = Position{
             whos_turn,
             num_players: 2,
@@ -366,10 +354,11 @@ impl Position {
         pos
     }
 
-    /// Returns tuple (player_num, PieceType)
-    pub fn piece_at(&self,index:usize) -> Option<(u8, PieceType)> {
-        for (i, ps) in self.pieces.iter().enumerate() {
-            if let Some(c) = ps.piecetype_at(index) {
+
+    /// Returns tuple (player_num, Piece)
+    pub fn piece_at(&mut self, index:usize) -> Option<(u8, &mut Piece)> {
+        for (i, ps) in self.pieces.iter_mut().enumerate() {
+            if let Some(c) = ps.piece_at(index) {
                 return Some((i as u8, c));
             }
         }
@@ -378,10 +367,8 @@ impl Position {
 
     /// Returns bitoard of piece at index
     pub fn piece_bb_at(&mut self,index:usize) -> Option<&mut Bitboard> {
-        for (_i, ps) in self.pieces.iter_mut().enumerate() {
-            if let Some(b) = ps.piece_bb_at(index) {
-                return Some(b);
-            }
+        if let Some((num, piece)) = self.piece_at(index) {
+            return Some(&mut piece.bitboard)
         }
         None
     }
@@ -390,7 +377,6 @@ impl Position {
     pub fn xy_in_bounds(&self, x:u8, y:u8) -> bool {
         self.bounds.bit(to_index(x, y)).unwrap()
     }
-
 
     pub fn move_piece(&mut self, from:u8, to:u8){
         if let Some(source_bb) = self.piece_bb_at(from as usize){

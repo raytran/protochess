@@ -116,10 +116,11 @@ impl MoveGenerator {
         //Castling
         if let Some(king_index) = my_pieces.king.bitboard.lowest_one() {
             let (kx, ky) = from_index(king_index);
+            let whos_turn = position.whos_turn;
             if position.properties.castling_rights.can_player_castle_kingside(position.whos_turn) {
                 let rook_index = to_index(position.dimensions.width - 1,ky) as u8;
-                if let Some((owner, pt)) = position.piece_at(rook_index as usize) {
-                    if owner == position.whos_turn && pt == PieceType::Rook {
+                if let Some((owner, pt )) = position.piece_at(rook_index as usize) {
+                    if owner == whos_turn && pt.piece_type == PieceType::Rook {
                         //See if the space between is clear
                         let east = self.attack_tables.masks.get_east(king_index as u8);
                         let mut occ = east & &position.occupied;
@@ -146,7 +147,7 @@ impl MoveGenerator {
             if position.properties.castling_rights.can_player_castle_queenside(position.whos_turn) {
                 let rook_index = to_index(0 ,ky) as u8;
                 if let Some((owner, pt)) = position.piece_at(rook_index as usize) {
-                    if owner == position.whos_turn && pt == PieceType::Rook {
+                    if owner == whos_turn && pt.piece_type == PieceType::Rook {
                         let west = self.attack_tables.masks.get_west(king_index as u8);
                         let mut occ = west & &position.occupied;
                         occ.set_bit(rook_index as usize, false);
@@ -354,7 +355,7 @@ impl MoveGenerator {
     pub fn is_move_legal(&self, move_:&Move, position:&mut Position) -> bool{
         //You cannot capture kings
         if move_.get_move_type() == MoveType::PromotionCapture || move_.get_move_type() == MoveType::Capture {
-            if position.piece_at(move_.get_target() as usize).unwrap().1 == PieceType::King {
+            if position.piece_at(move_.get_target() as usize).unwrap().1.piece_type == PieceType::King {
                 return false;
             }
         }
