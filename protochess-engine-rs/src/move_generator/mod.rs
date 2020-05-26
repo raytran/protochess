@@ -226,15 +226,15 @@ impl MoveGenerator {
                 ));
                 //Movements!
                 let mut raw_moves = self.attack_tables.get_sliding_moves_bb(index,
-                                                                          &position.occupied,
-                                                                          movement.move_north,
-                                                                          movement.move_east,
-                                                                          movement.move_south,
-                                                                          movement.move_west,
-                                                                          movement.move_northeast,
-                                                                          movement.move_northwest,
-                                                                          movement.move_southeast,
-                                                                          movement.move_southwest
+                                                                            &position.occupied,
+                                                                            movement.translate_north,
+                                                                            movement.translate_east,
+                                                                            movement.translate_south,
+                                                                            movement.translate_west,
+                                                                            movement.translate_northeast,
+                                                                            movement.translate_northwest,
+                                                                            movement.translate_southeast,
+                                                                            movement.translate_southwest
                 );
                 //Non-attacks ONLY
                 raw_moves &= !&position.occupied;
@@ -251,7 +251,7 @@ impl MoveGenerator {
 
                 // Delta based moves (sliding, non sliding)
                 let (x, y) = from_index(index as usize);
-                for (dx, dy) in &movement.move_jump_deltas {
+                for (dx, dy) in &movement.translate_jump_deltas {
                     let (x2, y2) = (x + *dx, y + *dy);
                     let to = to_index(x2, y2);
                     if position.xy_in_bounds(x2, y2) && !position.occupied.bit(to).unwrap() {
@@ -259,7 +259,6 @@ impl MoveGenerator {
                     }
                 }
 
-                let (x, y) = from_index(index as usize);
                 for (dx, dy) in &movement.attack_jump_deltas {
                     let (x2, y2) = (x + *dx, y + *dy);
                     let to = to_index(x2, y2);
@@ -268,35 +267,38 @@ impl MoveGenerator {
                     }
                 }
 
-                let (x, y) = from_index(index as usize);
-                for (dx, dy) in &movement.attack_sliding_deltas {
-                    let (x2, y2) = (x + *dx, y + *dy);
-                    let to = to_index(x2, y2);
-                    //Out of bounds, next sliding moves can be ignored
-                    if !position.xy_in_bounds(x2, y2) {
-                        break;
-                    }
-                    //If there is an enemy here, we can add an attack move
-                    if enemies.bit(to).unwrap() {
-                        moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
-                        break;
-                    }
-                    //Occupied by own team
-                    if position.occupied.bit(to).unwrap() {
-                        break;
+                for run in &movement.attack_sliding_deltas {
+                    for (dx, dy) in run {
+                        let (x2, y2) = (x + *dx, y + *dy);
+                        let to = to_index(x2, y2);
+                        //Out of bounds, next sliding moves can be ignored
+                        if !position.xy_in_bounds(x2, y2) {
+                            break;
+                        }
+                        //If there is an enemy here, we can add an attack move
+                        if enemies.bit(to).unwrap() {
+                            moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
+                            break;
+                        }
+                        //Occupied by own team
+                        if position.occupied.bit(to).unwrap() {
+                            break;
+                        }
                     }
                 }
 
-                let (x, y) = from_index(index as usize);
-                for (dx, dy) in &movement.move_sliding_deltas {
-                    let (x2, y2) = (x + *dx, y + *dy);
-                    let to = to_index(x2, y2);
-                    //If the point is out of bounds or there is another piece here, we cannot go any
-                    //farther
-                    if !position.xy_in_bounds(x2, y2) || position.occupied.bit(to).unwrap() {
-                        break;
+
+                for run in &movement.translate_sliding_deltas {
+                    for (dx, dy) in run {
+                        let (x2, y2) = (x + *dx, y + *dy);
+                        let to = to_index(x2, y2);
+                        //If the point is out of bounds or there is another piece here, we cannot go any
+                        //farther
+                        if !position.xy_in_bounds(x2, y2) || position.occupied.bit(to).unwrap() {
+                            break;
+                        }
+                        moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
                     }
-                    moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
                 }
 
                 bb_copy.set_bit(index as usize, false);

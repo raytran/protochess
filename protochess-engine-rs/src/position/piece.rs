@@ -5,7 +5,8 @@ use crate::types::bitboard::Bitboard;
 pub struct Piece {
     pub char_rep: char,
     pub piece_type: PieceType,
-    //Movement pattern for this piece, if applicable
+    //Movement pattern for this piece
+    //Only used if this is a custom piece (not one of the original 6)
     pub movement_pattern: Option<MovementPattern>,
     pub bitboard: Bitboard
 }

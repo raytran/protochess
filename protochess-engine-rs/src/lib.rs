@@ -1,4 +1,4 @@
-use crate::types::{Dimensions, bitboard, PieceType};
+use crate::types::{Dimensions, bitboard};
 use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
@@ -14,7 +14,9 @@ mod evaluator;
 mod rankfile;
 
 use crate::evaluator::Evaluator;
-use crate::position::movement_pattern::MovementPattern;
+pub use crate::position::movement_pattern::MovementPattern;
+pub use crate::types::PieceType;
+
 
 /// Starting point for the engine
 pub struct Engine {
@@ -39,35 +41,16 @@ impl Engine {
         self.evaluator.evaluate(&mut self.current_position, &self.move_generator)
     }
 
-    pub fn custom_pieces() -> Engine {
-        let mut eng = Engine::default();
-        eng.current_position.register_piecetype(0,'a',MovementPattern {
-            promotion_squares: None,
-            promo_vals: None,
-            attack_sliding_deltas: vec![],
-            attack_jump_deltas: vec![],
-            attack_north: true,
-            attack_south: false,
-            attack_east: true,
-            attack_west: false,
-            attack_northeast: false,
-            attack_northwest: false,
-            attack_southeast: false,
-            attack_southwest: false,
-            move_jump_deltas: vec![],
-            move_sliding_deltas: vec![],
-            move_north: false,
-            move_south: false,
-            move_east: true,
-            move_west: false,
-            move_northeast: false,
-            move_northwest: false,
-            move_southeast: false,
-            move_southwest: false
-        });
-        eng.current_position.add_piece(0, PieceType::Custom('a'), to_index(0,3) as u8);
-        eng.current_position.update_occupied();
-        eng
+    pub fn register_piecetype(&mut self, player_num:usize,char_rep:char, mp: MovementPattern) {
+        self.current_position.register_piecetype(player_num, char_rep, mp);
+    }
+
+    pub fn add_piece(&mut self, owner:usize, piece_type:PieceType, x: u8, y:u8) {
+        self.current_position.add_piece(0, PieceType::Custom('a'), to_index(x,y) as u8);
+    }
+
+    pub fn remove_piece(&mut self, index:u8) {
+        self.current_position.remove_piece(index);
     }
 
     pub fn make_move(&mut self, x1:u8, y1:u8, x2:u8, y2: u8) -> bool{

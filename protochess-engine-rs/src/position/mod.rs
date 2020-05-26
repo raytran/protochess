@@ -61,7 +61,7 @@ impl Position {
                 let capt_index = move_.get_target();
                 let (owner, captd) = self.piece_at(capt_index as usize).unwrap();
                 new_props.captured_piece = Some((owner, captd.piece_type.to_owned()));
-                self.remove_piece(capt_index);
+                self._remove_piece(capt_index);
             },
             MoveType::KingsideCastle => {
                 let rook_from = move_.get_target();
@@ -88,8 +88,8 @@ impl Position {
         match move_.get_move_type() {
             MoveType::PromotionCapture | MoveType::Promotion => {
                 new_props.promote_from = Some(from_piece_type.to_owned());
-                self.remove_piece(to);
-                self.add_piece(my_player_num, PieceType::from_char(move_.get_promotion_char().unwrap()), to);
+                self._remove_piece(to);
+                self._add_piece(my_player_num, PieceType::from_char(move_.get_promotion_char().unwrap()), to);
             },
             _ => {}
         };
@@ -163,8 +163,8 @@ impl Position {
         //Undo Promotion
         match move_.get_move_type() {
             MoveType::PromotionCapture | MoveType::Promotion => {
-                self.remove_piece(from);
-                self.add_piece(my_player_num, self.properties.promote_from.as_ref().unwrap().to_owned(), from);
+                self._remove_piece(from);
+                self._add_piece(my_player_num, self.properties.promote_from.as_ref().unwrap().to_owned(), from);
             },
             _ => {}
         };
@@ -175,7 +175,7 @@ impl Position {
             MoveType::Capture | MoveType::PromotionCapture => {
                 let capt = move_.get_target();
                 let (owner, pt) = self.properties.captured_piece.as_ref().unwrap();
-                self.add_piece(*owner, pt.to_owned(), capt);
+                self._add_piece(*owner, pt.to_owned(), capt);
             },
             MoveType::KingsideCastle => {
                 let rook_from = move_.get_target();
@@ -391,14 +391,14 @@ impl Position {
     }
 
     /// Removes a piece from the position, assuming the piece is there
-    pub fn remove_piece(&mut self, index:u8) {
+    fn _remove_piece(&mut self, index:u8) {
         let capd_bb:&mut Bitboard = self.piece_bb_at(index as usize).unwrap();
         capd_bb.set_bit(index as usize, false);
     }
 
     /// Adds a piece to the position, assuming the piecetype already exists
-    /// Panics if the piecetype isn't registered already
-    pub fn add_piece(&mut self, owner:u8, pt: PieceType, index:u8){
+    /// Does nothing if a custom piece isn't registered yet
+    fn _add_piece(&mut self, owner:u8, pt: PieceType, index:u8){
         match pt {
             PieceType::King => {self.pieces[owner as usize].king.bitboard.set_bit(index as usize, true);},
             PieceType::Queen => {self.pieces[owner as usize].queen.bitboard.set_bit(index as usize, true);},
@@ -419,12 +419,23 @@ impl Position {
 
     /// Updates the occupied bitboard
     /// Must be called after every position update/modification
-    pub fn update_occupied(&mut self){
+    fn update_occupied(&mut self){
         self.occupied = Bitboard::zero();
         for (_i, ps) in self.pieces.iter_mut().enumerate() {
             ps.update_occupied();
             self.occupied |= &ps.occupied;
         }
+    }
+
+    /// Public interface for modifying the position
+    pub fn add_piece(&mut self, owner:u8, pt:PieceType, index:u8) {
+        self._add_piece(owner, pt, index);
+        self.update_occupied();
+    }
+
+    pub fn remove_piece(&mut self, index:u8) {
+        self._remove_piece(index);
+        self.update_occupied();
     }
 }
 
