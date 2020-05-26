@@ -32,7 +32,9 @@ mod custom_pieces {
             translate_southeast: false,
             translate_southwest: false
         });
+        println!("BASE SCORE: {}", engine.get_score());
         engine.add_piece(0, PieceType::Custom('a'), 0, 3);
+        println!("NEW SCORE: {}", engine.get_score());
         println!("{}", engine.to_string());
         engine.make_move(5, 1, 5, 2);
         engine.make_move(2, 6, 2, 5);

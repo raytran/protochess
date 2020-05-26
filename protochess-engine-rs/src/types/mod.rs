@@ -1,7 +1,7 @@
 pub mod bitboard;
 pub mod chess_move;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub enum PieceType {
     King,
     Queen,
