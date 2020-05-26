@@ -252,13 +252,20 @@ impl MoveGenerator {
 
 
                 // Delta based moves (sliding, non sliding)
-                //TODO add promotion to delta moves
                 let (x, y) = from_index(index as usize);
                 for (dx, dy) in &movement.translate_jump_deltas {
                     let (x2, y2) = (x + *dx, y + *dy);
                     let to = to_index(x2, y2);
                     if position.xy_in_bounds(x2, y2) && !position.occupied.bit(to).unwrap() {
-                        moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
+                        //Promotion here?
+                        if movement.promotion_at(to){
+                            //Add all the promotion moves
+                            for c in movement.promo_vals.as_ref().unwrap() {
+                                moves.push(Move::new(index, to as u8, None, MoveType::Promotion, Some(*c)));
+                            }
+                        }else{
+                            moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
+                        }
                     }
                 }
 
@@ -266,7 +273,15 @@ impl MoveGenerator {
                     let (x2, y2) = (x + *dx, y + *dy);
                     let to = to_index(x2, y2);
                     if enemies.bit(to).unwrap() {
-                        moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
+                        //Promotion here?
+                        if movement.promotion_at(to) {
+                            //Add all the promotion moves
+                            for c in movement.promo_vals.as_ref().unwrap() {
+                                moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::PromotionCapture, Some(*c)));
+                            }
+                        }else{
+                            moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
+                        }
                     }
                 }
 
@@ -280,7 +295,14 @@ impl MoveGenerator {
                         }
                         //If there is an enemy here, we can add an attack move
                         if enemies.bit(to).unwrap() {
-                            moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
+                            if movement.promotion_at(to) {
+                                //Add all the promotion moves
+                                for c in movement.promo_vals.as_ref().unwrap() {
+                                    moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::PromotionCapture, Some(*c)));
+                                }
+                            }else{
+                                moves.push(Move::new(index, to as u8, Some(to as u8), MoveType::Capture, None));
+                            }
                             break;
                         }
                         //Occupied by own team
@@ -300,7 +322,14 @@ impl MoveGenerator {
                         if !position.xy_in_bounds(x2, y2) || position.occupied.bit(to).unwrap() {
                             break;
                         }
-                        moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
+                        if movement.promotion_at(to) {
+                            //Add all the promotion moves
+                            for c in movement.promo_vals.as_ref().unwrap() {
+                                moves.push(Move::new(index, to as u8, None, MoveType::Quiet, Some(*c)));
+                            }
+                        }else {
+                            moves.push(Move::new(index, to as u8, None, MoveType::Quiet, None));
+                        }
                     }
                 }
 

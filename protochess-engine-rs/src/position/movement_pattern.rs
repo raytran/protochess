@@ -34,6 +34,12 @@ pub struct MovementPattern {
 }
 
 impl MovementPattern {
+    pub fn promotion_at(&self, index:usize) -> bool {
+        if let Some(bb) = &self.promotion_squares {
+            return bb.bit(index).unwrap()
+        }
+        false
+    }
 }
 
 
