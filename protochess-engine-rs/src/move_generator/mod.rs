@@ -195,7 +195,8 @@ impl MoveGenerator {
         let enemies = &position.occupied & !&my_pieces.occupied;
 
         for p in &my_pieces.custom {
-            let movement = p.movement_pattern.as_ref().unwrap();
+            //let movement = p.movement_pattern.as_ref().unwrap();
+            let movement = position.get_movement_pattern(&p.piece_type);
             let bb = &p.bitboard;
             let mut bb_copy = bb.to_owned();
             while !bb_copy.is_zero() {
@@ -251,6 +252,7 @@ impl MoveGenerator {
 
 
                 // Delta based moves (sliding, non sliding)
+                //TODO add promotion to delta moves
                 let (x, y) = from_index(index as usize);
                 for (dx, dy) in &movement.translate_jump_deltas {
                     let (x2, y2) = (x + *dx, y + *dy);
@@ -310,7 +312,7 @@ impl MoveGenerator {
 
     /// Returns the number of moves of a piecetype on an otherwise empty board
     /// Useful for evaluation
-    pub fn get_num_moves_on_empty_board(&self, index:u8, piece:&Piece, bounds: &Bitboard) -> u32 {
+    pub fn get_num_moves_on_empty_board(&self, index:u8, position:&Position, piece:&Piece, bounds: &Bitboard) -> u32 {
         let zero = Bitboard::zero();
         let mut moves = match piece.piece_type {
             PieceType::Queen => {self.attack_tables.get_queen_attack(index, &zero, &zero)}
@@ -320,7 +322,7 @@ impl MoveGenerator {
             PieceType::King => {self.attack_tables.get_king_attack(index, &zero, &zero)}
             PieceType::Pawn => {self.attack_tables.get_north_pawn_attack(index, &zero, &zero)}
             PieceType::Custom(c) => {
-                let mp = piece.movement_pattern.as_ref().unwrap();
+                let mp = position.get_movement_pattern(&piece.piece_type);
                 let mut slides = self.attack_tables.get_sliding_moves_bb(
                     index,
                     &zero,

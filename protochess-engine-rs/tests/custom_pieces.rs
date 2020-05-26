@@ -8,7 +8,7 @@ mod custom_pieces {
     fn custom_pieces() {
         let mut engine = protochess_engine_rs::Engine::default();
 
-        engine.register_piecetype(0,'a',MovementPattern {
+        engine.register_piecetype('a',MovementPattern {
             promotion_squares: None,
             promo_vals: None,
             attack_sliding_deltas: vec![vec![(1,1),(2,2)]],

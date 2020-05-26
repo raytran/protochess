@@ -5,18 +5,14 @@ use crate::types::bitboard::Bitboard;
 pub struct Piece {
     pub char_rep: char,
     pub piece_type: PieceType,
-    //Movement pattern for this piece
-    //Only used if this is a custom piece (not one of the original 6)
-    pub movement_pattern: Option<MovementPattern>,
     pub bitboard: Bitboard
 }
 
 impl Piece {
-    pub fn blank_custom(char_rep: char, mp: MovementPattern) -> Piece {
+    pub fn blank_custom(char_rep: char) -> Piece {
        Piece {
            char_rep,
            piece_type: PieceType::Custom(char_rep),
-           movement_pattern: Some(mp),
            bitboard: Bitboard::zero()
        }
     }
@@ -25,7 +21,6 @@ impl Piece {
         Piece {
             char_rep: 'p',
             piece_type: PieceType::Pawn,
-            movement_pattern: None,
             bitboard: Bitboard::zero()
         }
     }
@@ -34,7 +29,6 @@ impl Piece {
         Piece {
             char_rep: 'n',
             piece_type: PieceType::Knight,
-            movement_pattern: None,
             bitboard: Bitboard::zero()
         }
     }
@@ -43,7 +37,6 @@ impl Piece {
         Piece {
             char_rep: 'k',
             piece_type: PieceType::King,
-            movement_pattern: None,
             bitboard: Bitboard::zero()
         }
     }
@@ -52,7 +45,6 @@ impl Piece {
         Piece {
             char_rep: 'r',
             piece_type: PieceType::Rook,
-            movement_pattern: None,
             bitboard: Bitboard::zero()
         }
     }
@@ -61,7 +53,6 @@ impl Piece {
         Piece {
             char_rep: 'b',
             piece_type: PieceType::Bishop,
-            movement_pattern: None,
             bitboard: Bitboard::zero()
         }
     }
@@ -70,7 +61,6 @@ impl Piece {
         Piece {
             char_rep: 'q',
             piece_type: PieceType::Queen,
-            movement_pattern: None,
             bitboard: Bitboard::zero()
         }
     }

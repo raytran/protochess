@@ -41,8 +41,8 @@ impl Engine {
         self.evaluator.evaluate(&mut self.current_position, &self.move_generator)
     }
 
-    pub fn register_piecetype(&mut self, player_num:usize,char_rep:char, mp: MovementPattern) {
-        self.current_position.register_piecetype(player_num, char_rep, mp);
+    pub fn register_piecetype(&mut self, char_rep:char, mp: MovementPattern) {
+        self.current_position.register_piecetype(char_rep, mp);
     }
 
     pub fn add_piece(&mut self, owner:usize, piece_type:PieceType, x: u8, y:u8) {

@@ -42,14 +42,14 @@ impl Evaluator {
         let player_num = position.whos_turn;
         for (i, ps) in position.pieces.iter().enumerate() {
             let side_multiplier = if i as u8 == player_num { 1 } else {-1};
-            score += side_multiplier * self.get_material_score_for_pieceset(ps);
+            score += side_multiplier * self.get_material_score_for_pieceset(position, ps);
         }
         score += self.get_positional_score(position, movegen);
         score += self.get_mobility_score(position, movegen);
         score
     }
 
-    fn get_material_score_for_pieceset(&mut self, piece_set:&PieceSet) -> isize{
+    fn get_material_score_for_pieceset(&mut self, position:&Position, piece_set:&PieceSet) -> isize{
         let mut material_score = 0;
         material_score += piece_set.king.bitboard.count_ones() as isize * KING_SCORE;
         material_score += piece_set.queen.bitboard.count_ones() as isize * QUEEN_SCORE;
@@ -63,7 +63,7 @@ impl Evaluator {
                 let score = *self.custom_piece_value_table.get(&custom.piece_type).unwrap();
                 material_score += custom.bitboard.count_ones() as isize * score;
             }else{
-                let mp = custom.movement_pattern.as_ref().unwrap();
+                let mp = position.get_movement_pattern(&custom.piece_type);
                 let score = Evaluator::score_movement_pattern(mp);
                 self.custom_piece_value_table.insert(custom.piece_type.to_owned(), score);
                 material_score += custom.bitboard.count_ones() as isize * score;

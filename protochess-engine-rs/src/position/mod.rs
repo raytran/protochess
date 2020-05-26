@@ -9,6 +9,7 @@ use position_properties::PositionProperties;
 use crate::types::chess_move::{Move, MoveType};
 use crate::position::movement_pattern::MovementPattern;
 use crate::position::piece::Piece;
+use std::collections::HashMap;
 
 mod position_properties;
 mod castle_rights;
@@ -21,6 +22,8 @@ pub struct Position {
     pub bounds: Bitboard, //Bitboard representing the boundaries
     pub num_players: u8,
     pub whos_turn: u8,
+    //Map of custom piece types to movement patterns
+    pub movement_rules: HashMap<PieceType, MovementPattern>,
     pub pieces:ArrayVec<[PieceSet;4]>, //pieces[0] = white's pieces, pieces[1] black etc
     pub occupied: Bitboard,
     //Properties relating only to the current position
@@ -35,8 +38,17 @@ impl Position {
     }
 
     /// Registers a new piece type for this position
-    pub fn register_piecetype(&mut self, player_num: usize, char_rep: char, mp: MovementPattern) {
-        self.pieces[player_num].custom.push(Piece::blank_custom(char_rep, mp));
+    pub fn register_piecetype(&mut self, char_rep: char, mp: MovementPattern) {
+        //Store the movement rule
+        self.movement_rules.insert(PieceType::Custom(char_rep), mp);
+        //Insert blank for all players
+        for p in &mut self.pieces {
+            p.custom.push(Piece::blank_custom(char_rep));
+        }
+    }
+
+    pub fn get_movement_pattern(&self, piece_type: &PieceType) -> &MovementPattern {
+       self.movement_rules.get(piece_type).unwrap()
     }
 
     /// Modifies the position to make the move
@@ -348,7 +360,8 @@ impl Position {
             pieces: wb_pieces,
             occupied,
             bounds,
-            properties: Arc::new(properties)
+            properties: Arc::new(properties),
+            movement_rules: Default::default()
         };
 
         pos
