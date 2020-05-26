@@ -7,6 +7,7 @@ use crate::move_generator::MoveGenerator;
 use crate::types::PieceType;
 use crate::position::piece::Piece;
 use crate::MovementPattern;
+use crate::types::bitboard::Bitboard;
 
 //Scores are in centipawns
 const KING_SCORE:isize = 9999;
@@ -16,7 +17,9 @@ const BISHOP_SCORE:isize = 300;
 const KNIGHT_SCORE:isize = 300;
 const PAWN_SCORE:isize = 100;
 const CHECKMATED_SCORE:isize = -10000;
-const MOVE_SCORE:isize = 2;
+const MOVE_SCORE:isize = 5;
+//Multiplier for the piece square table
+const PST_MULTIPLIER:isize = 10;
 
 /// Assigns a score to a given position
 pub(crate) struct Evaluator {
@@ -26,7 +29,7 @@ pub(crate) struct Evaluator {
     custom_piece_value_table: HashMap<PieceType, isize>,
     //Piece-square values for all pieces, done as a function of movement possibilities
     //Generated dynamically for all pieces
-    piece_square_table: HashMap<PieceType, Vec<u32>>
+    piece_square_table: HashMap<PieceType, Vec<isize>>
 }
 
 impl Evaluator {
@@ -44,7 +47,7 @@ impl Evaluator {
             let side_multiplier = if i as u8 == player_num { 1 } else {-1};
             score += side_multiplier * self.get_material_score_for_pieceset(position, ps);
         }
-        score += self.get_positional_score(position, movegen);
+        score += self.get_positional_score(position, &position.pieces[player_num as usize],movegen);
         score += self.get_mobility_score(position, movegen);
         score
     }
@@ -103,9 +106,42 @@ impl Evaluator {
         score
     }
 
-    fn get_positional_score(&self, position: &Position, movegen: &MoveGenerator) -> isize {
+    fn get_positional_score(&mut self, position: &Position, piece_set:&PieceSet, movegen: &MoveGenerator) -> isize {
+        let mut score = 0;
+        for p in piece_set.get_piece_refs() {
+            //Don't mess with the king ( don't want the king to move to the center)
+            if p.piece_type == PieceType::King {
+                continue;
+            }
 
-        0
+            //Add piecetype if not in table
+            if !self.piece_square_table.contains_key(&p.piece_type) {
+                //New entry
+                let score_vec = Evaluator::get_positional_score_vec(position, p, movegen);
+
+                self.piece_square_table.insert((&p.piece_type).to_owned(),
+                                               score_vec);
+            }
+            //Calculate score for these pieces
+            let mut bb_copy = (&p.bitboard).to_owned();
+            let score_table = self.piece_square_table.get(&p.piece_type).unwrap();
+            while !bb_copy.is_zero() {
+                let index = bb_copy.lowest_one().unwrap();
+                score += score_table[index] * PST_MULTIPLIER;
+                bb_copy.set_bit(index, false);
+            }
+        }
+        score
+    }
+
+    //Returns Vec of size 256, each with an integer representing # of moves possible at that
+    // location
+    fn get_positional_score_vec(position: &Position, piece:&Piece, movegen: &MoveGenerator) -> Vec<isize> {
+        let mut return_vec = Vec::with_capacity(256);
+        for i in 0..=255 {
+            return_vec.push(movegen.get_num_moves_on_empty_board(i, position, piece, &position.bounds) as isize);
+        }
+        return_vec
     }
 
     fn get_mobility_score(&self, position: &mut Position, movegen: &MoveGenerator) -> isize {

@@ -53,6 +53,20 @@ impl PieceSet {
         }
     }
 
+    pub fn get_piece_refs(&self) -> Vec<&Piece> {
+        let mut return_vec = Vec::with_capacity(6);
+        return_vec.push(&self.king);
+        return_vec.push(&self.queen);
+        return_vec.push(&self.bishop);
+        return_vec.push(&self.knight);
+        return_vec.push(&self.rook);
+        return_vec.push(&self.pawn);
+        for p in &self.custom {
+            return_vec.push(p);
+        }
+        return_vec
+    }
+
     //Recomputes occupied bb
     pub fn update_occupied(&mut self){
         self.occupied = Bitboard::zero();

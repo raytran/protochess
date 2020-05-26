@@ -1,6 +1,6 @@
 use crate::types::{PieceType};
 
-use crate::types::bitboard::{Bitboard, from_index, to_index};
+use crate::types::bitboard::{Bitboard, from_index, to_index, to_string};
 use crate::position::Position;
 use crate::position::piece_set::PieceSet;
 use crate::move_generator::attack_tables::AttackTables;
@@ -254,9 +254,12 @@ impl MoveGenerator {
                 // Delta based moves (sliding, non sliding)
                 let (x, y) = from_index(index as usize);
                 for (dx, dy) in &movement.translate_jump_deltas {
-                    let (x2, y2) = (x + *dx, y + *dy);
-                    let to = to_index(x2, y2);
-                    if position.xy_in_bounds(x2, y2) && !position.occupied.bit(to).unwrap() {
+                    let (x2, y2) = (x as i8 + *dx, y as i8 + *dy);
+                    if x2 < 0 || y2 < 0 || x2 > 15 || y2 > 15 {
+                        continue;
+                    }
+                    let to = to_index(x2 as u8, y2 as u8);
+                    if position.xy_in_bounds(x2 as u8, y2 as u8) && !position.occupied.bit(to).unwrap() {
                         //Promotion here?
                         if movement.promotion_at(to){
                             //Add all the promotion moves
@@ -270,8 +273,12 @@ impl MoveGenerator {
                 }
 
                 for (dx, dy) in &movement.attack_jump_deltas {
-                    let (x2, y2) = (x + *dx, y + *dy);
-                    let to = to_index(x2, y2);
+
+                    let (x2, y2) = (x as i8 + *dx, y as i8 + *dy);
+                    if x2 < 0 || y2 < 0 || x2 > 15 || y2 > 15 {
+                        continue;
+                    }
+                    let to = to_index(x2 as u8, y2 as u8);
                     if enemies.bit(to).unwrap() {
                         //Promotion here?
                         if movement.promotion_at(to) {
@@ -287,10 +294,15 @@ impl MoveGenerator {
 
                 for run in &movement.attack_sliding_deltas {
                     for (dx, dy) in run {
-                        let (x2, y2) = (x + *dx, y + *dy);
-                        let to = to_index(x2, y2);
+
+                        let (x2, y2) = (x as i8 + *dx, y as i8 + *dy);
+                        if x2 < 0 || y2 < 0 || x2 > 15 || y2 > 15 {
+                            break;
+                        }
+
+                        let to = to_index(x2 as u8, y2 as u8);
                         //Out of bounds, next sliding moves can be ignored
-                        if !position.xy_in_bounds(x2, y2) {
+                        if !position.xy_in_bounds(x2 as u8, y2 as u8) {
                             break;
                         }
                         //If there is an enemy here, we can add an attack move
@@ -315,11 +327,14 @@ impl MoveGenerator {
 
                 for run in &movement.translate_sliding_deltas {
                     for (dx, dy) in run {
-                        let (x2, y2) = (x + *dx, y + *dy);
-                        let to = to_index(x2, y2);
+                        let (x2, y2) = (x as i8 + *dx, y as i8 + *dy);
+                        if x2 < 0 || y2 < 0 || x2 > 15 || y2 > 15 {
+                            break;
+                        }
+                        let to = to_index(x2 as u8, y2 as u8);
                         //If the point is out of bounds or there is another piece here, we cannot go any
                         //farther
-                        if !position.xy_in_bounds(x2, y2) || position.occupied.bit(to).unwrap() {
+                        if !position.xy_in_bounds(x2 as u8, y2 as u8) || position.occupied.bit(to).unwrap() {
                             break;
                         }
                         if movement.promotion_at(to) {
@@ -342,6 +357,10 @@ impl MoveGenerator {
     /// Returns the number of moves of a piecetype on an otherwise empty board
     /// Useful for evaluation
     pub fn get_num_moves_on_empty_board(&self, index:u8, position:&Position, piece:&Piece, bounds: &Bitboard) -> u32 {
+        let (x, y) = from_index(index as usize);
+        if !position.xy_in_bounds(x, y) {
+           return 0;
+        }
         let zero = Bitboard::zero();
         let mut moves = match piece.piece_type {
             PieceType::Queen => {self.attack_tables.get_queen_attack(index, &zero, &zero)}
@@ -368,18 +387,25 @@ impl MoveGenerator {
                 // Delta based moves (sliding, non sliding)
                 let (x, y) = from_index(index as usize);
                 for (dx, dy) in mp.translate_jump_deltas.iter().chain(mp.attack_jump_deltas.iter()) {
-                    let (x2, y2) = (x + *dx, y + *dy);
-                    let to = to_index(x2, y2);
+                    let (x2, y2) = (x as i8 + *dx, y as i8 + *dy);
+                    if x2 < 0 || y2 < 0 || x2 > 15 || y2 > 15 {
+                        continue;
+                    }
+
+                    let to = to_index(x2 as u8, y2 as u8);
                     if bounds.bit(to).unwrap() {
                         slides.set_bit(to, true);
                     }
                 }
                 for run in mp.attack_sliding_deltas.iter().chain(mp.translate_sliding_deltas.iter()) {
                     for (dx, dy) in run {
-                        let (x2, y2) = (x + *dx, y + *dy);
-                        let to = to_index(x2, y2);
+                        let (x2, y2) = (x as i8 + *dx, y as i8 + *dy);
+                        if x2 < 0 || y2 < 0 || x2 > 15 || y2 > 15 {
+                            break;
+                        }
+                        let to = to_index(x2 as u8, y2 as u8);
                         //Out of bounds, next sliding moves can be ignored
-                        if bounds.bit(to).unwrap() {
+                        if !bounds.bit(to).unwrap() {
                             break;
                         }
                         slides.set_bit(to, true);

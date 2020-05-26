@@ -9,8 +9,8 @@ pub struct MovementPattern {
     pub promo_vals: Option<Vec<char>>,
 
     // Ways the piece can capture (but not move without capturing)
-    pub attack_sliding_deltas: Vec<Vec<(u8, u8)>>,
-    pub attack_jump_deltas: Vec<(u8, u8)>,
+    pub attack_sliding_deltas: Vec<Vec<(i8, i8)>>,
+    pub attack_jump_deltas: Vec<(i8, i8)>,
     pub attack_north: bool,
     pub attack_south: bool,
     pub attack_east: bool,
@@ -21,8 +21,8 @@ pub struct MovementPattern {
     pub attack_southwest: bool,
 
     //Ways the piece can move (but not capture)
-    pub translate_jump_deltas: Vec<(u8, u8)>,
-    pub translate_sliding_deltas: Vec<Vec<(u8, u8)>>,
+    pub translate_jump_deltas: Vec<(i8, i8)>,
+    pub translate_sliding_deltas: Vec<Vec<(i8, i8)>>,
     pub translate_north: bool,
     pub translate_south: bool,
     pub translate_east: bool,

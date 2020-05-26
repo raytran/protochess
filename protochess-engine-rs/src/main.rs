@@ -6,7 +6,7 @@ pub fn main() {
     println!("{}", engine.to_string());
     let mut ply = 0;
     loop {
-        engine.play_best_move(4);
+        engine.play_best_move(3);
         println!("PLY: {} Engine plays: \n", ply);
         ply += 1;
         println!("{}", engine.to_string());
@@ -23,6 +23,7 @@ pub fn main() {
         }
 
          */
+
 
     }
 }
