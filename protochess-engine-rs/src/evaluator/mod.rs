@@ -7,7 +7,7 @@ use crate::move_generator::MoveGenerator;
 use crate::types::PieceType;
 use crate::position::piece::Piece;
 use crate::MovementPattern;
-use crate::types::bitboard::Bitboard;
+use crate::types::bitboard::{Bitboard, from_index};
 
 //Scores are in centipawns
 const KING_SCORE:isize = 9999;
@@ -17,9 +17,9 @@ const BISHOP_SCORE:isize = 300;
 const KNIGHT_SCORE:isize = 300;
 const PAWN_SCORE:isize = 100;
 const CHECKMATED_SCORE:isize = -10000;
-const MOVE_SCORE:isize = 5;
+const MOVE_SCORE:isize = 2;
 //Multiplier for the piece square table
-const PST_MULTIPLIER:isize = 10;
+const PST_MULTIPLIER:isize = 15;
 
 /// Assigns a score to a given position
 pub(crate) struct Evaluator {
@@ -45,8 +45,11 @@ impl Evaluator {
         let player_num = position.whos_turn;
         for (i, ps) in position.pieces.iter().enumerate() {
             let side_multiplier = if i as u8 == player_num { 1 } else {-1};
-            score += side_multiplier * self.get_material_score_for_pieceset(position, ps);
+            let material_score = self.get_material_score_for_pieceset(position, ps);
+
+            score += side_multiplier * material_score;
         }
+
         score += self.get_positional_score(position, &position.pieces[player_num as usize],movegen);
         score += self.get_mobility_score(position, movegen);
         score
@@ -138,9 +141,25 @@ impl Evaluator {
     // location
     fn get_positional_score_vec(position: &Position, piece:&Piece, movegen: &MoveGenerator) -> Vec<isize> {
         let mut return_vec = Vec::with_capacity(256);
+        let mut total_entries = 0;
+        let mut sum = 0;
         for i in 0..=255 {
-            return_vec.push(movegen.get_num_moves_on_empty_board(i, position, piece, &position.bounds) as isize);
+            let (x, y) = from_index(i);
+            let num_moves = movegen.get_num_moves_on_empty_board(i as u8, position, piece, &position.bounds) as isize;
+            if position.xy_in_bounds(x, y) {
+                total_entries += 1;
+                sum += num_moves;
+            }
+            return_vec.push(num_moves);
         }
+
+        let mean = sum / total_entries;
+        //Center the dataset to give a bonus towards squares with higher moves
+        //And a penalty for squares with fewer moves
+        for i in 0..=255 {
+            return_vec[i] -= mean;
+        }
+
         return_vec
     }
 
