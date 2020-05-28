@@ -43,8 +43,8 @@ impl Evaluator {
     pub fn evaluate(&mut self, position: &mut Position, movegen: &MoveGenerator) -> isize {
         let mut score = 0;
         let player_num = position.whos_turn;
-        for (i, ps) in position.pieces.iter().enumerate() {
-            let side_multiplier = if i as u8 == player_num { 1 } else {-1};
+        for ps in position.pieces.iter() {
+            let side_multiplier = if ps.player_num == player_num { 1 } else {-1};
             let material_score = self.get_material_score_for_pieceset(position, ps);
 
             score += side_multiplier * material_score;

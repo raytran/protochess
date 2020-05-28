@@ -7,6 +7,7 @@ use crate::types::chess_move::Move;
 /// Properties that are hard to recover from a Move
 #[derive(Clone)]
 pub struct PositionProperties {
+    pub zobrist_key: u64,
     pub move_played: Option<Move>,
     //If the last move was a promotion, promote_from is the previous piecetype
     pub promote_from: Option<PieceType>,
@@ -21,6 +22,7 @@ pub struct PositionProperties {
 impl PositionProperties {
     pub fn default() -> PositionProperties {
         PositionProperties{
+            zobrist_key: 0,
             castling_rights: CastleRights::new(),
             move_played: None,
             prev_properties: None,

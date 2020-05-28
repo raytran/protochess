@@ -32,6 +32,7 @@ mod custom_pieces {
             translate_southeast: false,
             translate_southwest: false
         });
+        println!("{}", engine.get_zobrist());
         println!("BASE SCORE: {}", engine.get_score());
         engine.add_piece(0, PieceType::Custom('a'), 0, 3);
         println!("NEW SCORE: {}", engine.get_score());

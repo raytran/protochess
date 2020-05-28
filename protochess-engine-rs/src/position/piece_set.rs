@@ -14,19 +14,21 @@ pub struct PieceSet {
     pub rook: Piece,
     pub pawn: Piece,
     pub custom: Vec<Piece>,
+    pub player_num: u8
 }
 
 impl PieceSet {
-    pub fn new() -> PieceSet {
+    pub fn new(player_num:u8) -> PieceSet {
         PieceSet {
             occupied: Bitboard::zero(),
-            king: Piece::blank_king(),
-            queen: Piece::blank_queen(),
-            bishop: Piece::blank_bishop(),
-            knight: Piece::blank_knight(),
-            rook: Piece::blank_rook(),
-            pawn: Piece::blank_pawn(),
+            king: Piece::blank_king(player_num),
+            queen: Piece::blank_queen(player_num),
+            bishop: Piece::blank_bishop(player_num),
+            knight: Piece::blank_knight(player_num),
+            rook: Piece::blank_rook(player_num),
+            pawn: Piece::blank_pawn(player_num),
             custom: Vec::new(),
+            player_num
         }
     }
 

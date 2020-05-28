@@ -37,6 +37,10 @@ impl Engine {
         }
     }
 
+    pub fn get_zobrist(&self) -> u64 {
+        self.current_position.get_zobrist()
+    }
+
     pub fn get_score(&mut self) -> isize{
         self.evaluator.evaluate(&mut self.current_position, &self.move_generator)
     }
