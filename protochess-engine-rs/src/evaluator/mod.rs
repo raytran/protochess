@@ -10,16 +10,16 @@ use crate::MovementPattern;
 use crate::types::bitboard::{Bitboard, from_index};
 
 //Scores are in centipawns
-const KING_SCORE:isize = 9999;
+const KING_SCORE:isize = 99999;
 const QUEEN_SCORE:isize = 900;
 const ROOK_SCORE:isize = 500;
 const BISHOP_SCORE:isize = 300;
 const KNIGHT_SCORE:isize = 300;
 const PAWN_SCORE:isize = 100;
-const CHECKMATED_SCORE:isize = -10000;
-const MOVE_SCORE:isize = 2;
+const CHECKMATED_SCORE:isize = -99999;
+const MOVE_SCORE:isize = 5;
 //Multiplier for the piece square table
-const PST_MULTIPLIER:isize = 15;
+const PST_MULTIPLIER:isize = 5;
 
 /// Assigns a score to a given position
 pub(crate) struct Evaluator {
@@ -46,11 +46,11 @@ impl Evaluator {
         for ps in position.pieces.iter() {
             let side_multiplier = if ps.player_num == player_num { 1 } else {-1};
             let material_score = self.get_material_score_for_pieceset(position, ps);
+            score += side_multiplier * self.get_positional_score(position, ps,movegen);
 
             score += side_multiplier * material_score;
         }
 
-        score += self.get_positional_score(position, &position.pieces[player_num as usize],movegen);
         score += self.get_mobility_score(position, movegen);
         score
     }
@@ -113,7 +113,7 @@ impl Evaluator {
         let mut score = 0;
         for p in piece_set.get_piece_refs() {
             //Don't mess with the king ( don't want the king to move to the center)
-            if p.piece_type == PieceType::King {
+            if p.piece_type == PieceType::King || p.piece_type == PieceType::Pawn {
                 continue;
             }
 
@@ -170,5 +170,20 @@ impl Evaluator {
             return CHECKMATED_SCORE as isize;
         }
         positional_score * MOVE_SCORE
+    }
+}
+
+#[cfg(test)]
+mod eval_test {
+    use crate::evaluator::Evaluator;
+    use crate::position::Position;
+    use crate::move_generator::MoveGenerator;
+
+    #[test]
+    fn test() {
+        let mut eval = Evaluator::new();
+        let movegen = MoveGenerator::new();
+        let mut pos = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/3PP3/PPP2PPP/RNBQKBNR w KQkq - 0 1".parse().unwrap());
+        println!("{}", eval.evaluate(&mut pos, &movegen));
     }
 }

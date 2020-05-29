@@ -11,11 +11,13 @@ mod move_generator;
 mod types;
 mod position;
 mod evaluator;
+mod searcher;
 mod rankfile;
 
 use crate::evaluator::Evaluator;
 pub use crate::position::movement_pattern::MovementPattern;
 pub use crate::types::PieceType;
+use crate::searcher::Searcher;
 
 
 /// Starting point for the engine
@@ -24,6 +26,7 @@ pub struct Engine {
     pub(crate) current_position: Position,
     pub(crate) move_generator: MoveGenerator,
     pub(crate) evaluator: Evaluator,
+    pub(crate) searcher: Searcher
 }
 
 impl Engine {
@@ -33,7 +36,8 @@ impl Engine {
             dimensions:dims,
             move_generator: MoveGenerator::new(),
             current_position: Position::default(),
-            evaluator: Evaluator::new()
+            evaluator: Evaluator::new(),
+            searcher: Searcher::new()
         }
     }
 
@@ -88,6 +92,7 @@ impl Engine {
             dimensions:dims,
             move_generator: MoveGenerator::new(),
             evaluator: Evaluator::new(),
+            searcher: Searcher::new(),
             current_position: Position::from_fen(fen),
         }
     }
@@ -195,10 +200,20 @@ impl Engine {
         return alpha;
     }
 
-    pub fn play_best_move(&mut self, depth:u8) {
+    pub fn play_best_move(&mut self, depth:u8) -> bool {
+        //let (x1, y1, x2, y2) = self.get_best_move_negamax(depth);
+        //let (x1, y1, x2, y2) = self.get_best_move_alphabeta_negamax(depth);
+        let (x1, y1, x2,y2) = self.searcher.get_best_move(&mut self.evaluator,
+                                                          &mut self.move_generator,
+                                                          &mut self.current_position,
+                                                          depth);
+        self.make_move(x1, y1, x2, y2)
+    }
+
+    pub fn play_best_old(&mut self, depth:u8) -> bool {
         //let (x1, y1, x2, y2) = self.get_best_move_negamax(depth);
         let (x1, y1, x2, y2) = self.get_best_move_alphabeta_negamax(depth);
-        self.make_move(x1, y1, x2, y2);
+        self.make_move(x1, y1, x2, y2)
     }
 }
 
