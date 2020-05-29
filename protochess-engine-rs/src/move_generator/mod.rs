@@ -35,11 +35,12 @@ impl MoveGenerator {
 
         //create a vector of iterators
         let mut iters:Vec<BitboardMoves> = Vec::with_capacity(6);
+        let occ_or_not_in_bounds = &position.occupied | !&position.bounds;
 
         let mut apply_to_each = |mut pieceset:Bitboard, func: fn(&AttackTables, u8, &Bitboard, &Bitboard)-> Bitboard| {
             while !pieceset.is_zero() {
                 let index = pieceset.lowest_one().unwrap() as u8;
-                let mut raw_attacks = func(&self.attack_tables,index, &position.occupied, &enemies);
+                let mut raw_attacks = func(&self.attack_tables,index, &occ_or_not_in_bounds, &enemies);
                 //Do not attack ourselves
                 raw_attacks &= !&my_pieces.occupied;
                 //Keep only in bounds
@@ -193,6 +194,7 @@ impl MoveGenerator {
         }
 
         let enemies = &position.occupied & !&my_pieces.occupied;
+        let occ_or_not_in_bounds = &position.occupied | !&position.bounds;
 
         for p in &my_pieces.custom {
             //let movement = p.movement_pattern.as_ref().unwrap();
@@ -205,7 +207,7 @@ impl MoveGenerator {
                 //Attacks!
                 let mut raw_attacks = self.attack_tables.get_sliding_moves_bb(
                     index,
-                    &position.occupied,
+                    &occ_or_not_in_bounds,
                     movement.attack_north,
                     movement.attack_east,
                    movement.attack_south,
@@ -228,7 +230,7 @@ impl MoveGenerator {
                 ));
                 //Movements!
                 let mut raw_moves = self.attack_tables.get_sliding_moves_bb(index,
-                                                                            &position.occupied,
+                                                                            &occ_or_not_in_bounds,
                                                                             movement.translate_north,
                                                                             movement.translate_east,
                                                                             movement.translate_south,
@@ -362,18 +364,19 @@ impl MoveGenerator {
            return 0;
         }
         let zero = Bitboard::zero();
+        let not_in_bounds = !&position.bounds;
         let mut moves = match piece.piece_type {
-            PieceType::Queen => {self.attack_tables.get_queen_attack(index, &zero, &zero)}
-            PieceType::Bishop => {self.attack_tables.get_bishop_attack(index, &zero, &zero)}
-            PieceType::Rook => {self.attack_tables.get_rook_attack(index, &zero, &zero)}
-            PieceType::Knight => {self.attack_tables.get_knight_attack(index, &zero, &zero)}
-            PieceType::King => {self.attack_tables.get_king_attack(index, &zero, &zero)}
-            PieceType::Pawn => {self.attack_tables.get_north_pawn_attack(index, &zero, &zero)}
+            PieceType::Queen => {self.attack_tables.get_queen_attack(index, &not_in_bounds, &zero)}
+            PieceType::Bishop => {self.attack_tables.get_bishop_attack(index, &not_in_bounds, &zero)}
+            PieceType::Rook => {self.attack_tables.get_rook_attack(index, &not_in_bounds, &zero)}
+            PieceType::Knight => {self.attack_tables.get_knight_attack(index, &not_in_bounds, &zero)}
+            PieceType::King => {self.attack_tables.get_king_attack(index, &not_in_bounds, &zero)}
+            PieceType::Pawn => {self.attack_tables.get_north_pawn_attack(index, &not_in_bounds, &zero)}
             PieceType::Custom(c) => {
                 let mp = position.get_movement_pattern(&piece.piece_type);
                 let mut slides = self.attack_tables.get_sliding_moves_bb(
                     index,
-                    &zero,
+                    &not_in_bounds,
                     mp.translate_north || mp.attack_north,
                     mp.translate_east || mp.attack_east,
                     mp.translate_south || mp.attack_south,
