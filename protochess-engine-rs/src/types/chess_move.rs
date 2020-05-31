@@ -1,3 +1,7 @@
+use std::fmt;
+use crate::rankfile::to_rank_file;
+use crate::types::bitboard::from_index;
+
 #[derive(PartialEq)]
 pub enum MoveType {
     Quiet,
@@ -19,7 +23,7 @@ pub enum MoveType {
 /// 010 = castle
 /// 011 = promotion
 /// 100 = promotion-capture
-#[derive(Copy, Clone)]
+#[derive(PartialEq, Copy, Clone)]
 pub struct Move(u32, Option<char>);
 
 impl Move {
@@ -84,5 +88,13 @@ impl Move {
 
     pub fn get_target(&self) -> u8 {
         ((self.0 >> 16) & 255u32) as u8
+    }
+}
+
+impl fmt::Display for Move {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (x1, y1) = from_index(self.get_from() as usize);
+        let (x2, y2) = from_index(self.get_to() as usize);
+        write!(f, "(from: {}, to:{})", to_rank_file(x1, y1),to_rank_file(x2, y2))
     }
 }

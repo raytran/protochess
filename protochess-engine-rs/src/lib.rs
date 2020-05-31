@@ -145,75 +145,17 @@ impl Engine {
         nodes
     }
 
-    fn get_best_move_alphabeta_negamax(&mut self, depth: u8) -> (u8, u8, u8, u8) {
-        assert!(depth > 0);
-        let mut alpha = isize::MIN + 1;
-        let beta = isize::MAX;
-
-        let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
-
-        let mut best_move = (0,0,0,0);
-        let mut moves_considered = 0;
-        for move_ in moves  {
-            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
-                continue;
-            }
-            moves_considered += 1;
-            self.current_position.make_move(move_);
-            let score = self._alphabeta_negamax( alpha, beta, depth - 1 ).wrapping_neg();
-            self.current_position.unmake_move();
-
-            if score >= alpha {
-                alpha = score; // alpha acts like max in MiniMax
-
-                let (x1, y1) = from_index(move_.get_from() as usize);
-                let (x2, y2) = from_index(move_.get_to() as usize);
-                best_move = (x1, y1, x2, y2);
-            }
-        }
-        println!("moves considered: {}, best score: {}", moves_considered, alpha);
-        println!("best move: {} {} {} {}", best_move.0, best_move.1, best_move.2, best_move.3);
-        best_move
-    }
-
-    fn _alphabeta_negamax(&mut self, mut alpha: isize, beta: isize, depth: u8) -> isize {
-        if depth == 0 {
-            return self.evaluator.evaluate(&mut self.current_position, &self.move_generator);
-        }
-
-        let moves = self.move_generator.get_pseudo_moves(&mut self.current_position);
-        for move_ in moves  {
-            if !self.move_generator.is_move_legal(&move_, &mut self.current_position) {
-                continue;
-            }
-            self.current_position.make_move(move_);
-            let score = self._alphabeta_negamax( beta.wrapping_neg(), alpha.wrapping_neg(), depth - 1 ).wrapping_neg();
-            self.current_position.unmake_move();
-
-            if score >= beta  {
-                return beta;   //  fail hard beta-cutoff
-            }
-            if score > alpha {
-                alpha = score; // alpha acts like max in MiniMax
-            }
-        }
-        return alpha;
-    }
-
     pub fn play_best_move(&mut self, depth:u8) -> bool {
-        //let (x1, y1, x2, y2) = self.get_best_move_negamax(depth);
-        //let (x1, y1, x2, y2) = self.get_best_move_alphabeta_negamax(depth);
-        let (x1, y1, x2,y2) = self.searcher.get_best_move(&mut self.evaluator,
-                                                          &mut self.move_generator,
-                                                          &mut self.current_position,
-                                                          depth);
-        self.make_move(x1, y1, x2, y2)
-    }
-
-    pub fn play_best_old(&mut self, depth:u8) -> bool {
-        //let (x1, y1, x2, y2) = self.get_best_move_negamax(depth);
-        let (x1, y1, x2, y2) = self.get_best_move_alphabeta_negamax(depth);
-        self.make_move(x1, y1, x2, y2)
+        if let Some(best) = self.searcher.get_best_move(&mut self.current_position,
+                                               &mut self.evaluator,
+                                               &self.move_generator,
+                                               depth){
+            let (x1, y1) = from_index(best.get_from() as usize);
+            let (x2, y2) = from_index(best.get_to() as usize);
+            self.make_move(x1, y1, x2, y2)
+        }else{
+            false
+        }
     }
 }
 

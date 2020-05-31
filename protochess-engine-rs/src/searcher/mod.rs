@@ -5,6 +5,7 @@ use crate::move_generator::MoveGenerator;
 use std::cmp;
 use crate::evaluator::Evaluator;
 use crate::types::bitboard::from_index;
+use crate::Engine;
 
 //An entry in the transposition table
 enum EntryFlag{
@@ -20,16 +21,139 @@ struct Entry {
 }
 
 pub(crate) struct Searcher {
-    transposition_table: HashMap<u64, Entry>
+    //transposition_table: HashMap<u64, Entry>
+    transposition_table: HashMap<u64, Move>,
+    //Counter for the number of nodes searched
+    nodes_searched: usize
 }
 
 impl Searcher {
     pub fn new() -> Searcher {
         Searcher{
-            transposition_table: HashMap::with_capacity(1000)
+            transposition_table: HashMap::with_capacity(1000),
+            nodes_searched: 0
         }
     }
 
+
+    pub fn get_best_move(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator, depth: u8) -> Option<Move> {
+        //Iterative deepening
+        for d in 1..=depth {
+            let best_score = self.alphabeta(position, eval, movegen, d, -isize::MAX, isize::MAX);
+            //Print PV info
+            println!("depth: {}, nodes: {}", d, self.nodes_searched);
+            self.nodes_searched = 0;
+            let mut moves_made = 0;
+            while let Some(best_move) = self.transposition_table.get(&position.get_zobrist()) {
+                print!("{}-", best_move);
+                position.make_move(best_move.to_owned());
+                moves_made += 1;
+                if moves_made == d {
+                    break;
+                }
+            }
+            for _ in 0..moves_made {
+                position.unmake_move();
+            }
+            print!("\n");
+
+        }
+
+        match self.transposition_table.get(&position.get_zobrist()){
+            Some(entry) => {Some(entry.to_owned())}
+            None => None
+        }
+    }
+
+    fn alphabeta(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator,
+                     depth: u8, mut alpha: isize, mut beta: isize) -> isize {
+        self.nodes_searched += 1;
+        if depth == 0 {
+            return eval.evaluate(position, movegen);
+        }
+
+        let mut best_move = Move::null();
+        let mut num_legal_moves = 0;
+        let old_alpha = alpha;
+
+
+
+        let mut moves_and_score:Vec<(usize, Move)> = movegen.get_pseudo_moves(position)
+            .map(|mv| {
+                (eval.score_move(position, &mv), mv)
+            }).collect();
+
+        //Assign PV move score to usize::MAX
+        if let Some(best_move) = self.transposition_table.get(&position.get_zobrist()) {
+            for i in 0..moves_and_score.len(){
+                if moves_and_score[i].1 == *best_move {
+                    moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
+                    break;
+                }
+            }
+        }
+
+        //for (score, move_) in moves_and_score {
+        for i in 0..moves_and_score.len() {
+            //Pick the best move
+            Searcher::sort_moves(i, &mut moves_and_score);
+            let move_ = moves_and_score[i].1;
+
+            if !movegen.is_move_legal(&move_, position) {
+                continue;
+            }
+
+
+
+            num_legal_moves += 1;
+            position.make_move((&move_).to_owned());
+            let score = -self.alphabeta(position, eval, movegen,
+                                       depth - 1, -beta, -alpha);
+            position.unmake_move();
+
+            if score >= beta {
+                return beta;
+            }
+            if score > alpha {
+                alpha = score;
+                best_move = move_;
+            }
+        }
+        if num_legal_moves == 0 {
+            return -99999;
+        }
+
+        if alpha != old_alpha {
+            //Alpha improvement, record PV
+            self.transposition_table.insert(position.get_zobrist(), (&best_move).to_owned());
+        }
+        alpha
+    }
+
+    //Selection sort, swapping at moves_seen with the next best move from moves[current_index:]
+    fn sort_moves(current_index:usize, moves:&mut Vec<(usize, Move)>) {
+        let mut best_score = 0;
+        let mut best_score_index = current_index;
+        for i in current_index..moves.len(){
+            let score = moves[i].0;
+            if score >= best_score {
+                best_score = score;
+                best_score_index = i;
+            }
+        }
+        if current_index != best_score_index {
+            moves.swap(current_index, best_score_index);
+        }
+    }
+
+
+
+
+
+
+
+
+    /*
     pub fn get_best_move(&mut self, evaluator: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth:u8) -> (u8,u8,u8,u8) {
         let mut alpha = i64::MIN + 1;
         let beta = i64::MAX;
@@ -141,5 +265,6 @@ impl Searcher {
         value
 
     }
+     */
 
 }

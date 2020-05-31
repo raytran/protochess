@@ -8,9 +8,11 @@ use crate::types::PieceType;
 use crate::position::piece::Piece;
 use crate::MovementPattern;
 use crate::types::bitboard::{Bitboard, from_index};
+use crate::types::chess_move::Move;
+use crate::types::PieceType::King;
 
 //Scores are in centipawns
-const KING_SCORE:isize = 99999;
+const KING_SCORE:isize = 9999;
 const QUEEN_SCORE:isize = 900;
 const ROOK_SCORE:isize = 500;
 const BISHOP_SCORE:isize = 300;
@@ -46,12 +48,12 @@ impl Evaluator {
         for ps in position.pieces.iter() {
             let side_multiplier = if ps.player_num == player_num { 1 } else {-1};
             let material_score = self.get_material_score_for_pieceset(position, ps);
-            score += side_multiplier * self.get_positional_score(position, ps,movegen);
-
+            let positional_score = self.get_positional_score(position, ps,movegen);
+            score += side_multiplier * positional_score;
             score += side_multiplier * material_score;
         }
 
-        score += self.get_mobility_score(position, movegen);
+        //score += self.get_mobility_score(position, movegen);
         score
     }
 
@@ -76,6 +78,41 @@ impl Evaluator {
             }
         }
         material_score
+    }
+
+    /// Scores a move on a position
+    pub fn score_move(&mut self, position: &mut Position, move_:&Move) -> usize {
+        if !move_.get_is_capture() {
+            return 0;
+        }
+        let attacker:PieceType = (&position.piece_at(move_.get_from() as usize).unwrap().1.piece_type).to_owned();
+        let victim:PieceType = (&position.piece_at(move_.get_target() as usize).unwrap().1.piece_type).to_owned();
+
+        let attack_score = self.get_material_score(attacker, position);
+        let victim_score = self.get_material_score(victim, position);
+
+        (KING_SCORE + (victim_score - attack_score)) as usize
+    }
+
+    pub fn get_material_score(&mut self, piece_type:PieceType, position:&Position) -> isize {
+        match piece_type {
+            PieceType::Pawn => { PAWN_SCORE }
+            PieceType::Knight => { KNIGHT_SCORE }
+            PieceType::Bishop => { BISHOP_SCORE }
+            PieceType::Rook => { ROOK_SCORE }
+            PieceType::Queen => { QUEEN_SCORE }
+            PieceType::King => { KING_SCORE }
+            PieceType::Custom(c) => {
+                if self.custom_piece_value_table.contains_key(&piece_type){
+                    *self.custom_piece_value_table.get(&piece_type).unwrap()
+                }else{
+                    let mp = position.get_movement_pattern(&piece_type);
+                    let score = Evaluator::score_movement_pattern(mp);
+                    self.custom_piece_value_table.insert((&piece_type).to_owned(), score);
+                    score
+                }
+            }
+        }
     }
 
     /// Returns a score value for a movement pattern
