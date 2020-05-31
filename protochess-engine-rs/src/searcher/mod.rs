@@ -56,7 +56,7 @@ impl Searcher {
             let best_score = self.alphabeta(position, eval, movegen, d, -isize::MAX, isize::MAX);
             //Print PV info
             let ordering_percentage:f64 = if self.nodes_fail_high != 0 { (self.nodes_fail_high_first as f64) / (self.nodes_fail_high as f64) } else { 0.0 };
-            println!("depth: {}, nodes: {}, ordering: {}", d, self.nodes_searched, ordering_percentage);
+            println!("score:{} depth: {}, nodes: {}, ordering: {}", best_score, d, self.nodes_searched, ordering_percentage);
 
             self.clear_search_stats();
             let mut moves_made = 0;
@@ -85,7 +85,8 @@ impl Searcher {
                      depth: u8, mut alpha: isize, mut beta: isize) -> isize {
         self.nodes_searched += 1;
         if depth == 0 {
-            return eval.evaluate(position, movegen);
+            return self.quiesce(position, eval, movegen, depth, alpha, beta);
+            //return eval.evaluate(position, movegen);
         }
 
         let mut best_move = Move::null();
@@ -163,6 +164,74 @@ impl Searcher {
             //Alpha improvement, record PV
             self.transposition_table.insert(position.get_zobrist(), (&best_move).to_owned());
         }
+        alpha
+    }
+
+
+    fn quiesce(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator,
+                 depth:u8, mut alpha: isize, mut beta: isize) -> isize {
+        self.nodes_searched += 1;
+        let mut score = eval.evaluate(position, movegen);
+        if score >= beta{
+            return beta;
+        }
+        if score > alpha {
+            alpha = score;
+        }
+
+        let mut best_move = Move::null();
+        let mut num_legal_moves = 0;
+        let old_alpha = alpha;
+
+        let mut moves_and_score:Vec<(usize, Move)> = movegen.get_capture_moves(position)
+            .map(|mv| {
+                (eval.score_move(depth, &self.history_moves, &self.killer_moves, position, &mv), mv)
+            }).collect();
+
+        //Assign PV move score to usize::MAX
+        if let Some(best_move) = self.transposition_table.get(&position.get_zobrist()) {
+            for i in 0..moves_and_score.len(){
+                if moves_and_score[i].1 == *best_move {
+                    moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
+                    break;
+                }
+            }
+        }
+
+        //for (score, move_) in moves_and_score {
+        for i in 0..moves_and_score.len() {
+            //Pick the best move
+            Searcher::sort_moves(i, &mut moves_and_score);
+            let move_ = moves_and_score[i].1;
+
+            if !movegen.is_move_legal(&move_, position) {
+                continue;
+            }
+
+            num_legal_moves += 1;
+            position.make_move((&move_).to_owned());
+            let score = -self.quiesce(position, eval, movegen,
+                                         depth, -beta, -alpha);
+            position.unmake_move();
+
+            if score >= beta {
+                if num_legal_moves == 1 {
+                    self.nodes_fail_high_first += 1;
+                }
+                self.nodes_fail_high += 1;
+                return beta;
+            }
+            if score > alpha {
+                alpha = score;
+                best_move = move_;
+            }
+        }
+
+        if alpha != old_alpha {
+            //Alpha improvement, record PV
+            self.transposition_table.insert(position.get_zobrist(), (&best_move).to_owned());
+        }
+
         alpha
     }
 

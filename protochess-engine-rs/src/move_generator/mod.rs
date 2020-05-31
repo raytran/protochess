@@ -27,6 +27,12 @@ impl MoveGenerator {
             .chain(self.get_custom_psuedo_moves(position))
     }
 
+    ///Iterator that yields only capture moves
+    pub fn get_capture_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
+        self.get_classical_pseudo_moves(position).filter(|x| x.get_is_capture())
+            .chain(self.get_custom_psuedo_moves(position).filter(|x| x.get_is_capture()))
+    }
+
     /// Iterator that yields pseudo-legal moves from a position
     /// Considering only the classical piece set
     pub fn get_classical_pseudo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
@@ -516,3 +522,19 @@ impl MoveGenerator {
     }
 }
 
+
+#[cfg(test)]
+mod eval_test {
+    use crate::position::Position;
+    use crate::move_generator::MoveGenerator;
+
+    #[test]
+    fn capture_moves(){
+        let mut pos = Position::from_fen("r3k2r/ppp2Npp/1b5n/4p2b/2B1P2q/BQP2P2/P5PP/RN5K w kq - 1 0".parse().unwrap());
+        let movegen = MoveGenerator::new();
+        for move_ in movegen.get_capture_moves(&mut pos){
+            println!("{}", move_);
+            assert!(move_.get_is_capture());
+        }
+    }
+}

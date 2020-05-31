@@ -11,9 +11,9 @@ pub fn main() {
     println!("{}", engine.to_string());
 
     let mut ply = 0;
-    for _ in 0..5 {
+    loop {
 
-        if !engine.play_best_move(5) {
+        if !engine.play_best_move(6) {
             break;
         }
         ply += 1;
