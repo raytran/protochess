@@ -23,26 +23,42 @@ struct Entry {
 pub(crate) struct Searcher {
     //transposition_table: HashMap<u64, Entry>
     transposition_table: HashMap<u64, Move>,
+    //We store two killer moves per ply,
+    //indexed by killer_moves[depth][0] or killer_moves[depth][0]
+    killer_moves: [[Move;2];64],
+    //Indexed by history_moves[side2move][from][to]
+    history_moves: [[usize;256];256],
+
+    //Stats
     //Counter for the number of nodes searched
-    nodes_searched: usize
+    nodes_searched: usize,
+    nodes_fail_high_first:usize,
+    nodes_fail_high: usize
 }
 
 impl Searcher {
     pub fn new() -> Searcher {
         Searcher{
             transposition_table: HashMap::with_capacity(1000),
-            nodes_searched: 0
+            killer_moves: [[Move::null(); 2];64],
+            history_moves: [[0;256];256],
+            nodes_searched: 0,
+            nodes_fail_high: 0,
+            nodes_fail_high_first: 0
         }
     }
 
 
     pub fn get_best_move(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator, depth: u8) -> Option<Move> {
         //Iterative deepening
+        self.clear_heuristics();
         for d in 1..=depth {
             let best_score = self.alphabeta(position, eval, movegen, d, -isize::MAX, isize::MAX);
             //Print PV info
-            println!("depth: {}, nodes: {}", d, self.nodes_searched);
-            self.nodes_searched = 0;
+            let ordering_percentage:f64 = if self.nodes_fail_high != 0 { (self.nodes_fail_high_first as f64) / (self.nodes_fail_high as f64) } else { 0.0 };
+            println!("depth: {}, nodes: {}, ordering: {}", d, self.nodes_searched, ordering_percentage);
+
+            self.clear_search_stats();
             let mut moves_made = 0;
             while let Some(best_move) = self.transposition_table.get(&position.get_zobrist()) {
                 print!("{}-", best_move);
@@ -80,7 +96,7 @@ impl Searcher {
 
         let mut moves_and_score:Vec<(usize, Move)> = movegen.get_pseudo_moves(position)
             .map(|mv| {
-                (eval.score_move(position, &mv), mv)
+                (eval.score_move(depth,&self.history_moves,&self.killer_moves, position, &mv), mv)
             }).collect();
 
         //Assign PV move score to usize::MAX
@@ -112,11 +128,31 @@ impl Searcher {
             position.unmake_move();
 
             if score >= beta {
+                if num_legal_moves == 1 {
+                    self.nodes_fail_high_first += 1;
+                }
+                self.nodes_fail_high += 1;
+                //Record new killer moves
+                if !move_.get_is_capture() {
+                    //Make sure we're only recording new moves
+                    if move_ != self.killer_moves[depth as usize][0]
+                        && move_ != self.killer_moves[depth as usize][1] {
+                        self.killer_moves[depth as usize][1] = self.killer_moves[depth as usize][0];
+                        self.killer_moves[depth as usize][0] = move_;
+                    }
+                }
                 return beta;
             }
             if score > alpha {
                 alpha = score;
                 best_move = move_;
+
+                //History heuristic
+                if !move_.get_is_capture() {
+                    self.history_moves
+                        [move_.get_from() as usize]
+                        [move_.get_to() as usize] += depth as usize;
+                }
             }
         }
         if num_legal_moves == 0 {
@@ -144,6 +180,26 @@ impl Searcher {
         if current_index != best_score_index {
             moves.swap(current_index, best_score_index);
         }
+    }
+
+    //Resets heuristics
+    fn clear_heuristics(&mut self) {
+        for i in 0..self.killer_moves.len() {
+            for j in 0..self.killer_moves[i].len() {
+                self.killer_moves[i][j] = Move::null();
+            }
+        }
+        for i in 0..self.history_moves.len() {
+            for j in 0..self.history_moves[i].len() {
+                    self.history_moves[i][j] = 0;
+            }
+        }
+    }
+
+    fn clear_search_stats(&mut self) {
+        self.nodes_searched = 0;
+        self.nodes_fail_high_first = 0;
+        self.nodes_fail_high = 0;
     }
 
 

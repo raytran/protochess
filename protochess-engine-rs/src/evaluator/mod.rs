@@ -81,9 +81,13 @@ impl Evaluator {
     }
 
     /// Scores a move on a position
-    pub fn score_move(&mut self, position: &mut Position, move_:&Move) -> usize {
+    pub fn score_move(&mut self, depth:u8, history_moves: &[[usize;256];256], killer_moves: &[[Move;2];64], position: &mut Position, move_:&Move) -> usize {
         if !move_.get_is_capture() {
-            return 0;
+            if move_ == &killer_moves[depth as usize][0] || move_ == &killer_moves[depth as usize][1] {
+                return 9000;
+            }else{
+                return history_moves[move_.get_from() as usize][move_.get_to() as usize] ;
+            }
         }
         let attacker:PieceType = (&position.piece_at(move_.get_from() as usize).unwrap().1.piece_type).to_owned();
         let victim:PieceType = (&position.piece_at(move_.get_target() as usize).unwrap().1.piece_type).to_owned();

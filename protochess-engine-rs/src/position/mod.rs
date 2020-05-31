@@ -499,8 +499,12 @@ impl Position {
 
     /// Public interface for modifying the position
     pub fn add_piece(&mut self, owner:u8, pt:PieceType, index:u8) {
+        let mut new_props:PositionProperties = (*self.properties).clone();
+        new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&pt, owner, index);
         self._add_piece(owner, pt, index);
         self.update_occupied();
+        new_props.prev_properties = Some(Arc::clone(&self.properties));
+        self.properties = Arc::new(new_props);
     }
 
     pub fn remove_piece(&mut self, index:u8) {

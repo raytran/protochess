@@ -37,11 +37,14 @@ mod custom_pieces {
         engine.add_piece(0, PieceType::Custom('a'), 0, 3);
         println!("NEW SCORE: {}", engine.get_score());
         println!("{}", engine.to_string());
-        engine.make_move(5, 1, 5, 2);
-        engine.make_move(2, 6, 2, 5);
+
+
+        let mut ply = 0;
+        engine.play_best_move(1);
+        ply += 1;
+        println!("PLY: {} Engine plays: \n", ply);
         println!("{}", engine.to_string());
-        println!("{}", engine.perft_divide(2));
-        engine.make_move(0, 3, 0, 6);
-        println!("{}", engine.to_string());
+        println!("========================================");
     }
+
 }
