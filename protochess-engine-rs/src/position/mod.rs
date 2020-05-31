@@ -65,6 +65,8 @@ impl Position {
         //And update props
         if move_.get_move_type() == MoveType::Null {
             //Update props
+            //Since we're passing, there cannot be an ep square
+            new_props.ep_square = None;
             new_props.move_played = Some(move_);
             new_props.prev_properties = Some(Arc::clone(&self.properties));
             self.properties = Arc::new(new_props);
@@ -517,7 +519,24 @@ impl Position {
 mod pos_test {
     use crate::position::Position;
     use crate::move_generator::MoveGenerator;
+    use crate::types::chess_move::Move;
 
+
+    #[test]
+    fn null_move_eq() {
+        let mut pos = Position::default();
+        let movegen = MoveGenerator::new();
+        let zob_0 = pos.get_zobrist();
+        pos.make_move(Move::null());
+        pos.make_move(Move::null());
+        pos.make_move(Move::null());
+        pos.make_move(Move::null());
+        pos.unmake_move();
+        pos.unmake_move();
+        pos.unmake_move();
+        pos.unmake_move();
+        assert_eq!(zob_0, pos.get_zobrist());
+    }
     #[test]
     fn zobrist_equality() {
         let mut pos = Position::default();

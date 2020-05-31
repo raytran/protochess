@@ -483,6 +483,25 @@ impl MoveGenerator {
         false
     }
 
+    ///Checks if the player to move is in check
+    pub fn in_check(&self, position:&mut Position) -> bool {
+        let my_player_num = position.whos_turn;
+        let mut in_check = false;
+        position.make_move(Move::null());
+        if self.is_in_check_from_king(position, my_player_num) {
+            in_check = true;
+        }
+        //Custom pieces
+        for move_ in self.get_custom_psuedo_moves(position)  {
+            if move_.get_is_capture() && position.piece_at(move_.get_target() as usize).unwrap().1.piece_type == PieceType::King {
+                in_check = true;
+                break;
+            }
+        }
+        position.unmake_move();
+        in_check
+    }
+
     ///Checks if a move is legal
     pub fn is_move_legal(&self, move_:&Move, position:&mut Position) -> bool{
         //You cannot capture kings
@@ -530,8 +549,11 @@ mod eval_test {
 
     #[test]
     fn capture_moves(){
-        let mut pos = Position::from_fen("r3k2r/ppp2Npp/1b5n/4p2b/2B1P2q/BQP2P2/P5PP/RN5K w kq - 1 0".parse().unwrap());
+        let mut pos = Position::from_fen("rnb1kbnr/ppppqppp/8/8/5P2/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1".parse().unwrap());
         let movegen = MoveGenerator::new();
+        println!("{}",pos.get_zobrist());
+        println!("{}", movegen.in_check(&mut pos));
+        println!("{}",pos.get_zobrist());
         for move_ in movegen.get_capture_moves(&mut pos){
             println!("{}", move_);
             assert!(move_.get_is_capture());

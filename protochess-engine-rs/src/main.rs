@@ -13,7 +13,7 @@ pub fn main() {
     let mut ply = 0;
     loop {
 
-        if !engine.play_best_move(6) {
+        if !engine.play_best_move(8) {
             break;
         }
         ply += 1;

@@ -7,7 +7,7 @@ use crate::move_generator::MoveGenerator;
 use crate::types::PieceType;
 use crate::position::piece::Piece;
 use crate::MovementPattern;
-use crate::types::bitboard::{Bitboard, from_index};
+use crate::types::bitboard::{Bitboard, from_index, to_string};
 use crate::types::chess_move::Move;
 use crate::types::PieceType::King;
 
@@ -15,11 +15,10 @@ use crate::types::PieceType::King;
 const KING_SCORE:isize = 9999;
 const QUEEN_SCORE:isize = 900;
 const ROOK_SCORE:isize = 500;
-const BISHOP_SCORE:isize = 300;
+const BISHOP_SCORE:isize = 350;
 const KNIGHT_SCORE:isize = 300;
 const PAWN_SCORE:isize = 100;
 const CHECKMATED_SCORE:isize = -99999;
-const MOVE_SCORE:isize = 5;
 const CASTLING_BONUS:isize = 400;
 //Multiplier for the piece square table
 const PST_MULTIPLIER:isize = 5;
@@ -46,15 +45,27 @@ impl Evaluator {
     pub fn evaluate(&mut self, position: &mut Position, movegen: &MoveGenerator) -> isize {
         let mut score = 0;
         let player_num = position.whos_turn;
+        //Material score
+        let mut total_material_score = 0;
         for ps in position.pieces.iter() {
-            let side_multiplier = if ps.player_num == player_num { 1 } else {-1};
+            let side_multiplier = if ps.player_num == player_num { 1 } else { -1 };
             let material_score = self.get_material_score_for_pieceset(position, ps);
-            let positional_score = self.get_positional_score(position, ps,movegen);
-            score += side_multiplier * positional_score;
             score += side_multiplier * material_score;
+            total_material_score += material_score;
         }
 
-        //score += self.get_mobility_score(position, movegen);
+        //Positional score
+        let is_endgame = total_material_score < 2 * KING_SCORE + 2 * QUEEN_SCORE + 2 * ROOK_SCORE;
+        for ps in position.pieces.iter(){
+            let side_multiplier = if ps.player_num == player_num { 1 } else { -1 };
+            let positional_score = self.get_positional_score(is_endgame, position, ps,movegen);
+            //Castling bonus
+            if position.properties.castling_rights.did_player_castle(ps.player_num) && !is_endgame {
+                score += CASTLING_BONUS;
+            }
+            score += side_multiplier * positional_score;
+        }
+
         score
     }
 
@@ -120,6 +131,11 @@ impl Evaluator {
         }
     }
 
+    pub fn can_do_null_move(&mut self, position:&Position) -> bool {
+        self.get_material_score_for_pieceset(&position, &position.pieces[position.whos_turn as usize])
+            > KING_SCORE + ROOK_SCORE
+    }
+
     /// Returns a score value for a movement pattern
     fn score_movement_pattern(mp:&MovementPattern) -> isize{
         let mut score:isize = 0;
@@ -151,12 +167,8 @@ impl Evaluator {
         score
     }
 
-    fn get_positional_score(&mut self, position: &Position, piece_set:&PieceSet, movegen: &MoveGenerator) -> isize {
+    fn get_positional_score(&mut self, is_endgame: bool, position: &Position, piece_set:&PieceSet, movegen: &MoveGenerator) -> isize {
         let mut score = 0;
-        //Castling bonus
-        if position.properties.castling_rights.did_player_castle(position.whos_turn) {
-            score += CASTLING_BONUS;
-        }
 
 
         for p in piece_set.get_piece_refs() {
@@ -174,17 +186,16 @@ impl Evaluator {
             let score_table = self.piece_square_table.get(&p.piece_type).unwrap();
             while !bb_copy.is_zero() {
                 let index = bb_copy.lowest_one().unwrap();
-
-                //Don't mess with the king ( don't want the king to move to the center)
                 //If it is the king then limit moves (encourage moving away from the center)
-                if p.piece_type == PieceType::King {
-                    score += -score_table[index] * PST_MULTIPLIER;
+                if  p.piece_type == PieceType::King {
+                    if !is_endgame {
+                        score += -score_table[index] * PST_MULTIPLIER;
+                    }else{
+                        score += score_table[index] * PST_MULTIPLIER;
+                    }
                 }else{
                     score += score_table[index] * PST_MULTIPLIER;
                 }
-
-
-
 
                 bb_copy.set_bit(index, false);
             }
@@ -218,14 +229,6 @@ impl Evaluator {
         return_vec
     }
 
-    fn get_mobility_score(&self, position: &mut Position, movegen: &MoveGenerator) -> isize {
-        let mut positional_score = 0;
-        positional_score += movegen.count_legal_moves(position) as isize;
-        if positional_score == 0 {
-            return CHECKMATED_SCORE as isize;
-        }
-        positional_score * MOVE_SCORE
-    }
 }
 
 #[cfg(test)]

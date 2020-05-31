@@ -54,7 +54,7 @@ impl Searcher {
         //Iterative deepening
         self.clear_heuristics();
         for d in 1..=depth {
-            let best_score = self.alphabeta(position, eval, movegen, d, -isize::MAX, isize::MAX);
+            let best_score = self.alphabeta(position, eval, movegen, d, -isize::MAX, isize::MAX, true);
             //Print PV info
             let ordering_percentage:f64 = if self.nodes_fail_high != 0 { (self.nodes_fail_high_first as f64) / (self.nodes_fail_high as f64) } else { 0.0 };
             println!("score:{} depth: {}, nodes: {}, ordering: {}", best_score, d, self.nodes_searched, ordering_percentage);
@@ -83,7 +83,7 @@ impl Searcher {
     }
 
     fn alphabeta(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator,
-                     depth: u8, mut alpha: isize, mut beta: isize) -> isize {
+                     depth: u8, mut alpha: isize, mut beta: isize, do_null: bool) -> isize {
         self.nodes_searched += 1;
         if depth == 0 {
             return self.quiesce(position, eval, movegen, depth, alpha, beta);
@@ -94,6 +94,18 @@ impl Searcher {
         let mut num_legal_moves = 0;
         let old_alpha = alpha;
 
+        //Null move pruning
+        if do_null {
+            if depth > 3 && eval.can_do_null_move(position) && !movegen.in_check(position) {
+                position.make_move(Move::null());
+                let nscore = -self.alphabeta(position,eval, movegen,
+                                             depth - 3, -beta, -beta + 1, false);
+                position.unmake_move();
+                if nscore >= beta {
+                    return beta;
+                }
+            }
+        }
 
 
         let mut moves_and_score:Vec<(usize, Move)> = movegen.get_pseudo_moves(position)
@@ -121,12 +133,10 @@ impl Searcher {
                 continue;
             }
 
-
-
             num_legal_moves += 1;
             position.make_move((&move_).to_owned());
             let score = -self.alphabeta(position, eval, movegen,
-                                       depth - 1, -beta, -alpha);
+                                       depth - 1, -beta, -alpha, true);
             position.unmake_move();
 
             if score >= beta {
