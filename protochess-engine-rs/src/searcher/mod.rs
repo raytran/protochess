@@ -22,7 +22,7 @@ struct Entry {
 
 pub(crate) struct Searcher {
     //transposition_table: HashMap<u64, Entry>
-    transposition_table: HashMap<u64, Move>,
+    transposition_table: HashMap<u64, Move, ahash::RandomState>,
     //We store two killer moves per ply,
     //indexed by killer_moves[depth][0] or killer_moves[depth][0]
     killer_moves: [[Move;2];64],
@@ -38,8 +38,9 @@ pub(crate) struct Searcher {
 
 impl Searcher {
     pub fn new() -> Searcher {
+        let hasher = ahash::RandomState::new();
         Searcher{
-            transposition_table: HashMap::with_capacity(1000),
+            transposition_table: HashMap::with_capacity_and_hasher(1000, hasher),
             killer_moves: [[Move::null(); 2];64],
             history_moves: [[0;256];256],
             nodes_searched: 0,

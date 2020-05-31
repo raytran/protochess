@@ -89,6 +89,7 @@ impl Position {
                 new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_from);
                 new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_to);
                 self.move_piece(rook_from,rook_to);
+                new_props.castling_rights.set_player_castled(my_player_num);
             },
             MoveType::QueensideCastle => {
                 let rook_from = move_.get_target();
@@ -97,6 +98,7 @@ impl Position {
                 new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_from);
                 new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_to);
                 self.move_piece(rook_from,rook_to);
+                new_props.castling_rights.set_player_castled(my_player_num);
             }
             _ => {}
         }
@@ -403,8 +405,6 @@ impl Position {
                 bounds.set_bit(to_index(x,y),true);
             }
         }
-
-
 
         let pos = Position{
             zobrist_table,

@@ -12,7 +12,7 @@ use crate::position::piece::Piece;
 mod attack_tables;
 mod bitboard_moves;
 pub(crate) struct MoveGenerator {
-    attack_tables: AttackTables,
+    pub attack_tables: AttackTables,
 }
 impl MoveGenerator {
     pub fn new() -> MoveGenerator {

@@ -20,6 +20,7 @@ const KNIGHT_SCORE:isize = 300;
 const PAWN_SCORE:isize = 100;
 const CHECKMATED_SCORE:isize = -99999;
 const MOVE_SCORE:isize = 5;
+const CASTLING_BONUS:isize = 400;
 //Multiplier for the piece square table
 const PST_MULTIPLIER:isize = 5;
 
@@ -152,11 +153,13 @@ impl Evaluator {
 
     fn get_positional_score(&mut self, position: &Position, piece_set:&PieceSet, movegen: &MoveGenerator) -> isize {
         let mut score = 0;
+        //Castling bonus
+        if position.properties.castling_rights.did_player_castle(position.whos_turn) {
+            score += CASTLING_BONUS;
+        }
+
+
         for p in piece_set.get_piece_refs() {
-            //Don't mess with the king ( don't want the king to move to the center)
-            if p.piece_type == PieceType::King || p.piece_type == PieceType::Pawn {
-                continue;
-            }
 
             //Add piecetype if not in table
             if !self.piece_square_table.contains_key(&p.piece_type) {
@@ -171,7 +174,18 @@ impl Evaluator {
             let score_table = self.piece_square_table.get(&p.piece_type).unwrap();
             while !bb_copy.is_zero() {
                 let index = bb_copy.lowest_one().unwrap();
-                score += score_table[index] * PST_MULTIPLIER;
+
+                //Don't mess with the king ( don't want the king to move to the center)
+                //If it is the king then limit moves (encourage moving away from the center)
+                if p.piece_type == PieceType::King {
+                    score += -score_table[index] * PST_MULTIPLIER;
+                }else{
+                    score += score_table[index] * PST_MULTIPLIER;
+                }
+
+
+
+
                 bb_copy.set_bit(index, false);
             }
         }
