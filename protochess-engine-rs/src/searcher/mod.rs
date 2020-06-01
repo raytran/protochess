@@ -104,8 +104,6 @@ impl Searcher {
                 });
             }
             return score;
-
-            //return eval.evaluate(position, movegen);
         }
 
         if let Some(entry) = self.transposition_table.retrieve(position.get_zobrist()) {
@@ -134,38 +132,12 @@ impl Searcher {
                 }
             }
         }
-
-
         //Null move pruning
-        if do_null {
-            if depth > 3 && eval.can_do_null_move(position) && !movegen.in_check(position) {
-                position.make_move(Move::null());
-                let nscore = -self.alphabeta(position,eval, movegen,
-                                             depth - 3, -beta, -beta + 1, false);
-                position.unmake_move();
-                if nscore >= beta {
-                    return beta;
-                }
-            }
+        if let Some(beta) = self.try_null_move(position, eval, movegen, depth, alpha, beta, do_null){
+            return beta;
         }
 
-
-        let mut moves_and_score:Vec<(usize, Move)> = movegen.get_pseudo_moves(position)
-            .map(|mv| {
-                (eval.score_move(depth,&self.history_moves,&self.killer_moves, position, &mv), mv)
-            }).collect();
-
-        //Assign PV move score to usize::MAX
-        if let Some(best_move) = self.pv_table.get(&position.get_zobrist()) {
-            for i in 0..moves_and_score.len(){
-                if moves_and_score[i].1 == *best_move {
-                    moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
-                    break;
-                }
-            }
-        }
-
-
+        let mut moves_and_score = self.get_scored_pseudo_moves(eval, movegen, position, depth);
         let mut best_move = Move::null();
         let mut num_legal_moves = 0;
         let old_alpha = alpha;
@@ -210,14 +182,7 @@ impl Searcher {
                         }
                         self.nodes_fail_high += 1;
                         //Record new killer moves
-                        if !move_.get_is_capture() {
-                            //Make sure we're only recording new moves
-                            if move_ != self.killer_moves[depth as usize][0]
-                                && move_ != self.killer_moves[depth as usize][1] {
-                                self.killer_moves[depth as usize][1] = self.killer_moves[depth as usize][0];
-                                self.killer_moves[depth as usize][0] = (&move_).to_owned();
-                            }
-                        }
+                        self.update_killers(depth, (&move_).to_owned());
                         //Beta cutoff, store in transpositon table
                         self.transposition_table.insert(position.get_zobrist(), Entry{
                             flag: EntryFlag::BETA,
@@ -231,14 +196,11 @@ impl Searcher {
                     alpha = score;
 
                     //History heuristic
-                    if !move_.get_is_capture() {
-                        self.history_moves
-                            [move_.get_from() as usize]
-                            [move_.get_to() as usize] += depth as usize;
-                    }
+                    self.update_history_heuristic(depth, &move_);
                 }
             }
         }
+
         if num_legal_moves == 0 {
             return -99999;
         }
@@ -278,22 +240,7 @@ impl Searcher {
         let mut best_move = Move::null();
         let mut num_legal_moves = 0;
         let old_alpha = alpha;
-
-        let mut moves_and_score:Vec<(usize, Move)> = movegen.get_capture_moves(position)
-            .map(|mv| {
-                (eval.score_move(depth, &self.history_moves, &self.killer_moves, position, &mv), mv)
-            }).collect();
-
-        //Assign PV move score to usize::MAX
-        if let Some(best_move) = self.pv_table.get(&position.get_zobrist()) {
-            for i in 0..moves_and_score.len(){
-                if moves_and_score[i].1 == *best_move {
-                    moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
-                    break;
-                }
-            }
-        }
-
+        let mut moves_and_score = self.get_scored_capture_moves(eval, movegen, position, depth);
         //for (score, move_) in moves_and_score {
         for i in 0..moves_and_score.len() {
             //Pick the best move
@@ -367,125 +314,78 @@ impl Searcher {
         self.nodes_fail_high = 0;
     }
 
-
-
-
-
-
-
-
-    /*
-    pub fn get_best_move(&mut self, evaluator: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth:u8) -> (u8,u8,u8,u8) {
-        let mut alpha = i64::MIN + 1;
-        let beta = i64::MAX;
-
-        let moves = movegen.get_pseudo_moves(position);
-        let mut best_move = (0,0,0,0);
-        let mut moves_considered = 0;
-        let mut best_value = i64::MIN + 1;
-        for move_ in moves  {
-            if !movegen.is_move_legal(&move_, position) {
-                continue;
-            }
-            moves_considered += 1;
-
-            position.make_move(move_);
-
-            let value = self.negamax_with_memory(evaluator,
-                                                 movegen,
-                                                 position,
-                                                 depth - 1,
-                                                 beta.wrapping_neg(),
-                                                 alpha.wrapping_neg()
-            ).wrapping_neg();
-
-            position.unmake_move();
-
-            if value >= best_value {
-                best_value = value;
-                let (x1, y1) = from_index(move_.get_from() as usize);
-                let (x2, y2) = from_index(move_.get_to() as usize);
-                best_move = (x1, y1, x2, y2);
-            }
-
-            alpha = cmp::max(alpha, best_value);
-            if alpha >= beta {
-                break;
+    fn update_killers(&mut self, depth: u8, move_: Move) {
+        if !move_.get_is_capture(){
+            if move_ != self.killer_moves[depth as usize][0]
+                && move_ != self.killer_moves[depth as usize][1] {
+                self.killer_moves[depth as usize][1] = self.killer_moves[depth as usize][0];
+                self.killer_moves[depth as usize][0] = move_;
             }
         }
-        println!("moves considered: {}, best score: {}", moves_considered, alpha);
-        println!("best move: {} {} {} {}", best_move.0, best_move.1, best_move.2, best_move.3);
-        best_move
     }
-    pub fn negamax_with_memory(&mut self, evaluator: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth:u8, mut alpha:i64, mut beta:i64) -> i64 {
-        let alpha_original = alpha;
-        if let Some(entry) = self.pv_table.get(&position.get_zobrist()){
-            if entry.depth >= depth {
-                match entry.flag {
-                    EntryFlag::EXACT => {
-                        return entry.value;
-                    }
-                    EntryFlag::LOWER => {
-                        alpha = cmp::max(alpha, entry.value);
-                    }
-                    EntryFlag::UPPER => {
-                        beta = cmp::min(beta, entry.value);
-                    }
-                }
-                if alpha >= beta {
-                    return entry.value;
+
+    fn update_history_heuristic(&mut self, depth: u8, move_:&Move) {
+        if !move_.get_is_capture() {
+            self.history_moves
+                [move_.get_from() as usize]
+                [move_.get_to() as usize] += depth as usize;
+        }
+    }
+
+    #[inline]
+    fn get_scored_pseudo_moves(&self, eval: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth: u8) -> Vec<(usize, Move)> {
+        let mut moves_and_score:Vec<(usize, Move)> = movegen.get_pseudo_moves(position)
+            .map(|mv| {
+                (eval.score_move(depth,&self.history_moves,&self.killer_moves, position, &mv), mv)
+            }).collect();
+
+        //Assign PV move score to usize::MAX
+        if let Some(best_move) = self.pv_table.get(&position.get_zobrist()) {
+            for i in 0..moves_and_score.len(){
+                if moves_and_score[i].1 == *best_move {
+                    moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
+                    break;
                 }
             }
-        };
-
-
-        if depth == 0 {
-            return evaluator.evaluate(position, movegen) as i64;
         }
-
-
-        let moves = movegen.get_pseudo_moves(position);
-        let mut value = i64::MIN + 1;
-        for move_ in moves {
-            if !movegen.is_move_legal(&move_, position) {
-                continue;
-            }
-            position.make_move(move_);
-            value = cmp::max(value,
-                             self.negamax_with_memory(evaluator,
-                                                      movegen,
-                                                      position,
-                                                      depth - 1,
-                                                      beta.wrapping_neg(),
-                                                      alpha.wrapping_neg()
-                             ).wrapping_neg()
-            );
-
-            alpha = cmp::max(alpha, value);
-            position.unmake_move();
-
-            if alpha >= beta {
-                break;
-            }
-        }
-
-        let mut new_entry = Entry {
-            value,
-            depth,
-            flag: EntryFlag::UPPER,
-        };
-
-        if value <= alpha_original {
-            new_entry.flag = EntryFlag::UPPER;
-        }else if value >= beta {
-            new_entry.flag = EntryFlag::LOWER;
-        }else{
-            new_entry.flag = EntryFlag::EXACT;
-        }
-        self.pv_table.insert(position.get_zobrist(), new_entry);
-        value
-
+        moves_and_score
     }
-     */
+
+    #[inline]
+    fn get_scored_capture_moves(&self, eval: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth: u8) -> Vec<(usize, Move)> {
+        let mut moves_and_score:Vec<(usize, Move)> = movegen.get_capture_moves(position)
+            .map(|mv| {
+                (eval.score_move(depth,&self.history_moves,&self.killer_moves, position, &mv), mv)
+            }).collect();
+
+        //Assign PV move score to usize::MAX
+        if let Some(best_move) = self.pv_table.get(&position.get_zobrist()) {
+            for i in 0..moves_and_score.len(){
+                if moves_and_score[i].1 == *best_move {
+                    moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
+                    break;
+                }
+            }
+        }
+        moves_and_score
+    }
+
+    #[inline]
+    fn try_null_move(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator,
+                 depth: u8, mut alpha: isize, mut beta: isize, do_null: bool) -> Option<isize> {
+        if do_null {
+            if depth > 3 && eval.can_do_null_move(position)
+                && !movegen.in_check(position) {
+                position.make_move(Move::null());
+                let nscore = -self.alphabeta(position,eval, movegen,
+                                             depth - 3, -beta, -beta + 1, false);
+                position.unmake_move();
+                if nscore >= beta {
+                    return Some(beta);
+                }
+            }
+        }
+        None
+    }
 
 }
