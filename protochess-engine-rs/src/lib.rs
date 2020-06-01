@@ -13,6 +13,7 @@ mod position;
 mod evaluator;
 mod searcher;
 mod rankfile;
+mod transposition_table;
 
 use crate::evaluator::Evaluator;
 pub use crate::position::movement_pattern::MovementPattern;
