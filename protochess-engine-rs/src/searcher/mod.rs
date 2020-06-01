@@ -124,6 +124,7 @@ impl Searcher {
         }
 
         //for (score, move_) in moves_and_score {
+        let mut search_pv = true;
         for i in 0..moves_and_score.len() {
             //Pick the best move
             Searcher::sort_moves(i, &mut moves_and_score);
@@ -135,8 +136,19 @@ impl Searcher {
 
             num_legal_moves += 1;
             position.make_move((&move_).to_owned());
-            let score = -self.alphabeta(position, eval, movegen,
-                                       depth - 1, -beta, -alpha, true);
+            let mut score = 0;
+            if search_pv {
+                score = -self.alphabeta(position, eval, movegen,
+                                        depth - 1, -beta, -alpha, true);
+            }else{
+                score = -self.alphabeta(position, eval, movegen,
+                                        depth - 1, -alpha - 1, -alpha, true);
+                if score > alpha  && score < beta {
+                    score = -self.alphabeta(position, eval, movegen,
+                                            depth - 1, -beta, -alpha, true);
+                }
+            }
+
             position.unmake_move();
 
             if score >= beta {
@@ -156,6 +168,7 @@ impl Searcher {
                 return beta;
             }
             if score > alpha {
+                search_pv = false;
                 alpha = score;
                 best_move = move_;
 
