@@ -11,8 +11,6 @@ use crate::transposition_table::{TranspositionTable, Entry, EntryFlag};
 //An entry in the transposition table
 
 pub(crate) struct Searcher {
-    //pv_table: HashMap<u64, Entry>
-    pv_table: HashMap<u64, Move, ahash::RandomState>,
     transposition_table: TranspositionTable,
     //We store two killer moves per ply,
     //indexed by killer_moves[depth][0] or killer_moves[depth][0]
@@ -31,7 +29,6 @@ impl Searcher {
     pub fn new() -> Searcher {
         let hasher = ahash::RandomState::new();
         Searcher{
-            pv_table: HashMap::with_capacity_and_hasher(1000, hasher),
             transposition_table: TranspositionTable::new(),
             killer_moves: [[Move::null(); 2];64],
             history_moves: [[0;256];256],
@@ -52,24 +49,10 @@ impl Searcher {
             println!("score:{} depth: {}, nodes: {}, ordering: {}", best_score, d, self.nodes_searched, ordering_percentage);
 
             self.clear_search_stats();
-            let mut moves_made = 0;
-            while let Some(best_move) = self.pv_table.get(&position.get_zobrist()) {
-                print!("{}-", best_move);
-                position.make_move(best_move.to_owned());
-                moves_made += 1;
-                if moves_made == d {
-                    break;
-                }
-            }
-            for _ in 0..moves_made {
-                position.unmake_move();
-            }
-            print!("\n");
-
         }
 
-        match self.pv_table.get(&position.get_zobrist()){
-            Some(entry) => {Some(entry.to_owned())}
+        match self.transposition_table.retrieve(position.get_zobrist()){
+            Some(entry) => {Some((&entry.move_).to_owned())}
             None => None
         }
     }
@@ -79,31 +62,7 @@ impl Searcher {
         self.nodes_searched += 1;
 
         if depth == 0 {
-            let score  = self.quiesce(position, eval, movegen, depth, alpha, beta);
-            if score <= alpha {
-                self.transposition_table.insert(position.get_zobrist(), Entry{
-                    flag: EntryFlag::ALPHA,
-                    value: score,
-                    move_: Move::null(),
-                    depth
-                });
-            }else if score >= beta {
-                self.transposition_table.insert(position.get_zobrist(), Entry{
-                    flag: EntryFlag::BETA,
-                    value: score,
-                    move_: Move::null(),
-                    depth
-                });
-
-            }else{
-                self.transposition_table.insert(position.get_zobrist(), Entry{
-                    flag: EntryFlag::EXACT,
-                    value: score,
-                    move_: Move::null(),
-                    depth
-                });
-            }
-            return score;
+            return self.quiesce(position, eval, movegen, depth, alpha, beta);
         }
 
         if let Some(entry) = self.transposition_table.retrieve(position.get_zobrist()) {
@@ -142,8 +101,6 @@ impl Searcher {
         let mut num_legal_moves = 0;
         let old_alpha = alpha;
         let mut best_score = -isize::MAX;
-
-        //for (score, move_) in moves_and_score {
         let mut search_pv = true;
         for i in 0..moves_and_score.len() {
             //Pick the best move
@@ -185,6 +142,7 @@ impl Searcher {
                         self.update_killers(depth, (&move_).to_owned());
                         //Beta cutoff, store in transpositon table
                         self.transposition_table.insert(position.get_zobrist(), Entry{
+                            key: position.get_zobrist(),
                             flag: EntryFlag::BETA,
                             value: beta,
                             move_,
@@ -207,8 +165,8 @@ impl Searcher {
 
         if alpha != old_alpha {
             //Alpha improvement, record PV
-            self.pv_table.insert(position.get_zobrist(), (&best_move).to_owned());
             self.transposition_table.insert(position.get_zobrist(), Entry{
+                key: position.get_zobrist(),
                 flag: EntryFlag::EXACT,
                 value: best_score,
                 move_: (&best_move).to_owned(),
@@ -216,6 +174,7 @@ impl Searcher {
             })
         }else{
             self.transposition_table.insert(position.get_zobrist(), Entry{
+                key: position.get_zobrist(),
                 flag: EntryFlag::ALPHA,
                 value: alpha,
                 move_: best_move,
@@ -239,7 +198,6 @@ impl Searcher {
 
         let mut best_move = Move::null();
         let mut num_legal_moves = 0;
-        let old_alpha = alpha;
         let mut moves_and_score = self.get_scored_capture_moves(eval, movegen, position, depth);
         //for (score, move_) in moves_and_score {
         for i in 0..moves_and_score.len() {
@@ -270,15 +228,11 @@ impl Searcher {
             }
         }
 
-        if alpha != old_alpha {
-            //Alpha improvement, record PV
-            self.pv_table.insert(position.get_zobrist(), (&best_move).to_owned());
-        }
-
         alpha
     }
 
     //Selection sort, swapping at moves_seen with the next best move from moves[current_index:]
+    #[inline]
     fn sort_moves(current_index:usize, moves:&mut Vec<(usize, Move)>) {
         let mut best_score = 0;
         let mut best_score_index = current_index;
@@ -314,6 +268,7 @@ impl Searcher {
         self.nodes_fail_high = 0;
     }
 
+    #[inline]
     fn update_killers(&mut self, depth: u8, move_: Move) {
         if !move_.get_is_capture(){
             if move_ != self.killer_moves[depth as usize][0]
@@ -324,6 +279,7 @@ impl Searcher {
         }
     }
 
+    #[inline]
     fn update_history_heuristic(&mut self, depth: u8, move_:&Move) {
         if !move_.get_is_capture() {
             self.history_moves
@@ -333,14 +289,15 @@ impl Searcher {
     }
 
     #[inline]
-    fn get_scored_pseudo_moves(&self, eval: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth: u8) -> Vec<(usize, Move)> {
+    fn get_scored_pseudo_moves(&mut self, eval: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth: u8) -> Vec<(usize, Move)> {
         let mut moves_and_score:Vec<(usize, Move)> = movegen.get_pseudo_moves(position)
             .map(|mv| {
                 (eval.score_move(depth,&self.history_moves,&self.killer_moves, position, &mv), mv)
             }).collect();
 
-        //Assign PV move score to usize::MAX
-        if let Some(best_move) = self.pv_table.get(&position.get_zobrist()) {
+        //Assign PV/hash moves to usize::MAX
+        if let Some(entry) = self.transposition_table.retrieve(position.get_zobrist()) {
+            let best_move = &entry.move_;
             for i in 0..moves_and_score.len(){
                 if moves_and_score[i].1 == *best_move {
                     moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
@@ -352,14 +309,15 @@ impl Searcher {
     }
 
     #[inline]
-    fn get_scored_capture_moves(&self, eval: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth: u8) -> Vec<(usize, Move)> {
+    fn get_scored_capture_moves(&mut self, eval: &mut Evaluator, movegen: &MoveGenerator, position: &mut Position, depth: u8) -> Vec<(usize, Move)> {
         let mut moves_and_score:Vec<(usize, Move)> = movegen.get_capture_moves(position)
             .map(|mv| {
                 (eval.score_move(depth,&self.history_moves,&self.killer_moves, position, &mv), mv)
             }).collect();
 
-        //Assign PV move score to usize::MAX
-        if let Some(best_move) = self.pv_table.get(&position.get_zobrist()) {
+        //Assign PV/hash moves to usize::MAX
+        if let Some(entry) = self.transposition_table.retrieve(position.get_zobrist()) {
+            let best_move = &entry.move_;
             for i in 0..moves_and_score.len(){
                 if moves_and_score[i].1 == *best_move {
                     moves_and_score[i] = (usize::MAX, moves_and_score[i].1);
