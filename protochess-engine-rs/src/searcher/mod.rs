@@ -160,7 +160,13 @@ impl Searcher {
         }
 
         if num_legal_moves == 0 {
-            return -99999;
+            return if movegen.in_check(position) {
+                //Checkmate
+                -99999
+            } else {
+                //Stalemate
+                0
+            };
         }
 
         if alpha != old_alpha {
