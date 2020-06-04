@@ -56,7 +56,7 @@ pub fn main() {
     let mut ply = 0;
     loop {
 
-        if !engine.play_best_move(8) {
+        if !engine.play_best_move(9) {
             break;
         }
         ply += 1;

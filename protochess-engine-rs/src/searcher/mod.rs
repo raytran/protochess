@@ -61,12 +61,13 @@ impl Searcher {
                      depth: u8, mut alpha: isize, mut beta: isize, do_null: bool) -> isize {
         self.nodes_searched += 1;
 
-        if depth == 0 {
-            return self.quiesce(position, eval, movegen, depth, alpha, beta);
+        if depth <= 0 {
+            return self.quiesce(position, eval, movegen, 0, alpha, beta);
         }
 
+        let is_pv = alpha != beta - 1;
         if let Some(entry) = self.transposition_table.retrieve(position.get_zobrist()) {
-            if entry.depth >= depth {
+            if !is_pv && entry.depth >= depth {
                 match entry.flag {
                     EntryFlag::EXACT => {
                         if entry.value < alpha {
@@ -91,6 +92,7 @@ impl Searcher {
                 }
             }
         }
+
         //Null move pruning
         if let Some(beta) = self.try_null_move(position, eval, movegen, depth, alpha, beta, do_null){
             return beta;
@@ -101,7 +103,7 @@ impl Searcher {
         let mut num_legal_moves = 0;
         let old_alpha = alpha;
         let mut best_score = -isize::MAX;
-        let mut search_pv = true;
+        let in_check = movegen.in_check(position);
         for i in 0..moves_and_score.len() {
             //Pick the best move
             Searcher::sort_moves(i, &mut moves_and_score);
@@ -114,16 +116,40 @@ impl Searcher {
             num_legal_moves += 1;
             position.make_move((&move_).to_owned());
             let mut score = 0;
-            if search_pv {
+            if num_legal_moves == 1 {
                 score = -self.alphabeta(position, eval, movegen,
                                         depth - 1, -beta, -alpha, true);
             }else{
-                score = -self.alphabeta(position, eval, movegen,
-                                        depth - 1, -alpha - 1, -alpha, true);
-                if score > alpha  && score < beta {
+
+                //Try late move reduction
+                if num_legal_moves >= 4
+                    && !move_.get_is_capture()
+                    && depth >= 3
+                    && !in_check {
+                    //Null window search with depth - 2
+                    let mut reduced_depth = depth - 2;
+                    if !is_pv && num_legal_moves > 7 {
+                        reduced_depth = depth/3;
+                    }
                     score = -self.alphabeta(position, eval, movegen,
-                                            depth - 1, -beta, -alpha, true);
+                                            reduced_depth, -alpha - 1, -alpha, true);
+                }else{
+                    //Cannot reduce, proceed with standard PVS
+                    score = alpha + 1;
                 }
+
+                if score > alpha {
+                    //PVS
+                    //Null window search
+                    score = -self.alphabeta(position, eval, movegen,
+                                            depth - 1, -alpha - 1, -alpha, true);
+                    //Re-search if necessary
+                    if score > alpha  && score < beta {
+                        score = -self.alphabeta(position, eval, movegen,
+                                                depth - 1, -beta, -alpha, true);
+                    }
+                }
+
             }
 
             position.unmake_move();
@@ -150,7 +176,6 @@ impl Searcher {
                         });
                         return beta;
                     }
-                    search_pv = false;
                     alpha = score;
 
                     //History heuristic
