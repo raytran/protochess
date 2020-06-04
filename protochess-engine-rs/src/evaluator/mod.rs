@@ -28,17 +28,17 @@ pub(crate) struct Evaluator {
     //Piece values for pieces,
     //Hard coded for builtin pieces,
     //generated dynamically based on the piece's movement pattern
-    custom_piece_value_table: HashMap<PieceType, isize>,
+    custom_piece_value_table: HashMap<PieceType, isize, ahash::RandomState>,
     //Piece-square values for all pieces, done as a function of movement possibilities
     //Generated dynamically for all pieces
-    piece_square_table: HashMap<PieceType, Vec<isize>>
+    piece_square_table: HashMap<PieceType, Vec<isize>, ahash::RandomState>
 }
 
 impl Evaluator {
     pub fn new() -> Evaluator {
         Evaluator {
-            custom_piece_value_table: HashMap::new(),
-            piece_square_table:HashMap::new()
+            custom_piece_value_table: HashMap::with_hasher(ahash::RandomState::new()),
+            piece_square_table:HashMap::with_hasher(ahash::RandomState::new())
         }
     }
     //Retrieves the score for the player to move (position.whos_turn)

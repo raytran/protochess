@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::types::chess_move::Move;
+use crate::types::chess_move::{Move, MoveType};
 use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use std::cmp;
@@ -27,7 +27,6 @@ pub(crate) struct Searcher {
 
 impl Searcher {
     pub fn new() -> Searcher {
-        let hasher = ahash::RandomState::new();
         Searcher{
             transposition_table: TranspositionTable::new(),
             killer_moves: [[Move::null(); 2];64],
@@ -43,7 +42,10 @@ impl Searcher {
         //Iterative deepening
         self.clear_heuristics();
         for d in 1..=depth {
-            let best_score = self.alphabeta(position, eval, movegen, d, -isize::MAX, isize::MAX, true);
+            let mut alpha = -isize::MAX;
+            let mut beta = isize::MAX;
+            let mut best_score = self.alphabeta(position, eval, movegen, d,alpha, beta, true);
+
             //Print PV info
             let ordering_percentage:f64 = if self.nodes_fail_high != 0 { (self.nodes_fail_high_first as f64) / (self.nodes_fail_high as f64) } else { 0.0 };
             println!("score:{} depth: {}, nodes: {}, ordering: {}", best_score, d, self.nodes_searched, ordering_percentage);
@@ -94,8 +96,10 @@ impl Searcher {
         }
 
         //Null move pruning
-        if let Some(beta) = self.try_null_move(position, eval, movegen, depth, alpha, beta, do_null){
-            return beta;
+        if !is_pv {
+            if let Some(beta) = self.try_null_move(position, eval, movegen, depth, alpha, beta, do_null){
+                return beta;
+            }
         }
 
         let mut moves_and_score = self.get_scored_pseudo_moves(eval, movegen, position, depth);
@@ -122,15 +126,13 @@ impl Searcher {
             }else{
 
                 //Try late move reduction
-                if num_legal_moves >= 4
-                    && !move_.get_is_capture()
-                    && depth >= 3
+                if num_legal_moves >= 10
+                    && move_.get_move_type() == MoveType::Quiet
+                    && !is_pv
+                    && depth > 4
                     && !in_check {
                     //Null window search with depth - 2
                     let mut reduced_depth = depth - 2;
-                    if !is_pv && num_legal_moves > 7 {
-                        reduced_depth = depth/3;
-                    }
                     score = -self.alphabeta(position, eval, movegen,
                                             reduced_depth, -alpha - 1, -alpha, true);
                 }else{

@@ -248,8 +248,8 @@ impl Position {
     pub fn to_string(&mut self) -> String {
         let mut return_str= String::new();
         for y in (0..self.dimensions.height).rev() {
+            return_str = format!("{} {} ", return_str, y);
             for x in 0..self.dimensions.width {
-
                 if let Some((player_num, piece)) = self.piece_at(bitboard::to_index(x,y)){
                     if player_num == 0 {
                         return_str.push(piece.char_rep.to_ascii_uppercase());
@@ -262,6 +262,10 @@ impl Position {
                 return_str.push(' ');
             }
             return_str.push('\n');
+        }
+        return_str = format!("{}  ", return_str);
+        for x in 0..self.dimensions.width {
+            return_str = format!("{} {}", return_str, x);
         }
 
         format!("{} \nZobrist Key: {}", return_str, self.properties.zobrist_key)
