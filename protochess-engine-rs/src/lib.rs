@@ -2,7 +2,6 @@ use crate::types::{Dimensions, bitboard};
 use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
-
 use crate::types::bitboard::{to_index, from_index};
 
 //Private modules
@@ -31,6 +30,7 @@ pub struct Engine {
 }
 
 impl Engine {
+    /// Initializes a new engine
     pub fn default() -> Engine{
         let dims = Dimensions{width:8,height:8};
         Engine{
@@ -42,26 +42,32 @@ impl Engine {
         }
     }
 
+    /// Returns the zobrist hash key for the current position
     pub fn get_zobrist(&self) -> u64 {
         self.current_position.get_zobrist()
     }
 
+    /// Returns the score of the current position for the side to move
     pub fn get_score(&mut self) -> isize{
         self.evaluator.evaluate(&mut self.current_position, &self.move_generator)
     }
 
+    /// Registers a custom piecetype for the current position
     pub fn register_piecetype(&mut self, char_rep:char, mp: MovementPattern) {
         self.current_position.register_piecetype(char_rep, mp);
     }
 
+    /// Adds a new piece on the board
     pub fn add_piece(&mut self, owner:usize, piece_type:PieceType, x: u8, y:u8) {
         self.current_position.add_piece(0, PieceType::Custom('a'), to_index(x,y) as u8);
     }
 
+    /// Removes a piece on the board, if it exists
     pub fn remove_piece(&mut self, index:u8) {
         self.current_position.remove_piece(index);
     }
 
+    /// Performs a move from (x1, y1) to (x2, y2) on the current board position
     pub fn make_move(&mut self, x1:u8, y1:u8, x2:u8, y2: u8) -> bool{
         let from = bitboard::to_index(x1,y1) as u8;
         let to = bitboard::to_index(x2,y2) as u8;
@@ -79,6 +85,7 @@ impl Engine {
         false
     }
 
+    /// Undoes the most recent move on the current board position
     pub fn undo(&mut self){
         self.current_position.unmake_move();
     }
@@ -98,6 +105,8 @@ impl Engine {
         }
     }
 
+    /// Returns the number of possible moves from a board position up to a given depth
+    /// See https://www.chessprogramming.org/Perft
     pub fn perft(&mut self,depth:u8) -> u64 {
         let mut nodes = 0u64;
 
@@ -117,6 +126,7 @@ impl Engine {
         nodes
     }
 
+    /// Like perft, but prints the moves at the first ply
     pub fn perft_divide(&mut self,depth:u8) -> u64 {
         let mut nodes = 0u64;
 
@@ -146,6 +156,7 @@ impl Engine {
         nodes
     }
 
+    ///Calculates and plays the best move found
     pub fn play_best_move(&mut self, depth:u8) -> bool {
         if let Some(best) = self.searcher.get_best_move(&mut self.current_position,
                                                &mut self.evaluator,

@@ -1,5 +1,4 @@
 use crate::types::bitboard::Bitboard;
-use crate::types::chess_move::Move;
 
 /// MovementPattern describes how a custom piece can move
 /// Each sliding field expects a vec of vec, with the inner vec represnting a new "run"

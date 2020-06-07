@@ -1,7 +1,6 @@
 use crate::types::chess_move::Move;
-use crate::types::AttackDirection::EAST;
 
-const TABLE_SIZE:usize = 6_000_000;
+const TABLE_SIZE:usize = 5_000_000;
 const ENTRIES_PER_CLUSTER:usize = 4;
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum EntryFlag{
@@ -52,6 +51,8 @@ impl TranspositionTable {
         }
     }
 
+    /// Sets all the entries in the table to ancient, allowing them to be rewritten
+    /// before any new entries are rewritten
     pub fn set_ancient(&mut self) {
         for cluster in self.data.iter_mut() {
             for entry in cluster.entries.iter_mut() {
@@ -60,6 +61,7 @@ impl TranspositionTable {
         }
     }
 
+    /// Inserts a new Entry item into the transposition table
     pub fn insert(&mut self, zobrist_key:u64, entry: Entry){
         let cluster = &mut self.data[zobrist_key as usize % TABLE_SIZE];
         for i in 0..cluster.entries.len() {
@@ -98,6 +100,7 @@ impl TranspositionTable {
         }
     }
 
+    /// Returns a handle to an Entry in the table, if it exists
     pub fn retrieve(&mut self, zobrist_key:u64) -> Option<&Entry> {
         let cluster = &self.data[zobrist_key as usize % TABLE_SIZE];
         for entry in &cluster.entries {

@@ -1,6 +1,6 @@
 use crate::types::{PieceType};
 
-use crate::types::bitboard::{Bitboard, from_index, to_index, to_string};
+use crate::types::bitboard::{Bitboard, from_index, to_index};
 use crate::position::Position;
 use crate::position::piece_set::PieceSet;
 use crate::move_generator::attack_tables::AttackTables;
@@ -378,7 +378,7 @@ impl MoveGenerator {
             PieceType::Knight => {self.attack_tables.get_knight_attack(index, &not_in_bounds, &zero)}
             PieceType::King => {self.attack_tables.get_king_attack(index, &not_in_bounds, &zero)}
             PieceType::Pawn => {self.attack_tables.get_north_pawn_attack(index, &not_in_bounds, &zero)}
-            PieceType::Custom(c) => {
+            PieceType::Custom(_c) => {
                 let mp = position.get_movement_pattern(&piece.piece_type);
                 let mut slides = self.attack_tables.get_sliding_moves_bb(
                     index,

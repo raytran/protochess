@@ -3,7 +3,6 @@ mod mask_handler;
 use arrayvec::ArrayVec;
 use crate::types::bitboard::{Bitboard, to_index, from_index};
 use crate::move_generator::attack_tables::mask_handler::MaskHandler;
-use crate::position::movement_pattern::MovementPattern;
 
 /// Holds pre-calculated attack tables for the pieces, assuming a 16x16 size board
 /// Only for classical set of pieces

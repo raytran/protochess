@@ -1,5 +1,4 @@
 use crate::types::PieceType;
-use crate::position::movement_pattern::MovementPattern;
 use crate::types::bitboard::Bitboard;
 
 pub struct Piece {

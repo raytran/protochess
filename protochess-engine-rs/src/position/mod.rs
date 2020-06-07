@@ -134,7 +134,7 @@ impl Position {
 
         if let Some(sq) = self.properties.ep_square {
             //If the last prop had some ep square then we want to clear zob by xoring again
-            let (epx, epy) = from_index(sq as usize);
+            let (epx, _epy) = from_index(sq as usize);
             new_props.zobrist_key ^= self.zobrist_table.get_ep_zobrist_file(epx);
         }
 
@@ -443,7 +443,7 @@ impl Position {
 
     /// Returns bitoard of piece at index
     pub fn piece_bb_at(&mut self,index:usize) -> Option<&mut Bitboard> {
-        if let Some((num, piece)) = self.piece_at(index) {
+        if let Some((_num, piece)) = self.piece_at(index) {
             return Some(&mut piece.bitboard)
         }
         None

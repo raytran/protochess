@@ -1,11 +1,7 @@
-use std::collections::HashMap;
 use crate::types::chess_move::{Move, MoveType};
 use crate::position::Position;
 use crate::move_generator::MoveGenerator;
-use std::cmp;
 use crate::evaluator::Evaluator;
-use crate::types::bitboard::from_index;
-use crate::Engine;
 use crate::transposition_table::{TranspositionTable, Entry, EntryFlag};
 
 //An entry in the transposition table
@@ -43,9 +39,9 @@ impl Searcher {
         self.clear_heuristics();
         self.transposition_table.set_ancient();
         for d in 1..=depth {
-            let mut alpha = -isize::MAX;
-            let mut beta = isize::MAX;
-            let mut best_score = self.alphabeta(position, eval, movegen, d,alpha, beta, true);
+            let alpha = -isize::MAX;
+            let beta = isize::MAX;
+            let best_score = self.alphabeta(position, eval, movegen, d,alpha, beta, true);
 
             //Print PV info
             let ordering_percentage:f64 = if self.nodes_fail_high != 0 { (self.nodes_fail_high_first as f64) / (self.nodes_fail_high as f64) } else { 0.0 };
@@ -61,7 +57,7 @@ impl Searcher {
     }
 
     fn alphabeta(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator,
-                     depth: u8, mut alpha: isize, mut beta: isize, do_null: bool) -> isize {
+                     depth: u8, mut alpha: isize, beta: isize, do_null: bool) -> isize {
         self.nodes_searched += 1;
 
         if depth <= 0 {
@@ -226,9 +222,9 @@ impl Searcher {
 
 
     fn quiesce(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator,
-                 depth:u8, mut alpha: isize, mut beta: isize) -> isize {
+                 depth:u8, mut alpha: isize, beta: isize) -> isize {
         self.nodes_searched += 1;
-        let mut score = eval.evaluate(position, movegen);
+        let score = eval.evaluate(position, movegen);
         if score >= beta{
             return beta;
         }
@@ -370,7 +366,7 @@ impl Searcher {
 
     #[inline]
     fn try_null_move(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator,
-                 depth: u8, mut alpha: isize, mut beta: isize, do_null: bool) -> Option<isize> {
+                 depth: u8, alpha: isize, beta: isize, do_null: bool) -> Option<isize> {
         if do_null {
             if depth > 3 && eval.can_do_null_move(position)
                 && !movegen.in_check(position) {

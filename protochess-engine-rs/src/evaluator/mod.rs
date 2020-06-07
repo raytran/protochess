@@ -7,11 +7,10 @@ use crate::move_generator::MoveGenerator;
 use crate::types::PieceType;
 use crate::position::piece::Piece;
 use crate::MovementPattern;
-use crate::types::bitboard::{Bitboard, from_index, to_string};
+use crate::types::bitboard::from_index;
 use crate::types::chess_move::Move;
-use crate::types::PieceType::King;
 
-//Scores are in centipawns
+// Scores are in centipawns
 const KING_SCORE:isize = 9999;
 const QUEEN_SCORE:isize = 900;
 const ROOK_SCORE:isize = 500;
@@ -41,7 +40,7 @@ impl Evaluator {
             piece_square_table:HashMap::with_hasher(ahash::RandomState::new())
         }
     }
-    //Retrieves the score for the player to move (position.whos_turn)
+    /// Retrieves the score for the player to move (position.whos_turn)
     pub fn evaluate(&mut self, position: &mut Position, movegen: &MoveGenerator) -> isize {
         let mut score = 0;
         let player_num = position.whos_turn;
@@ -95,10 +94,10 @@ impl Evaluator {
     /// Scores a move on a position
     pub fn score_move(&mut self, depth:u8, history_moves: &[[usize;256];256], killer_moves: &[[Move;2];64], position: &mut Position, move_:&Move) -> usize {
         if !move_.get_is_capture() {
-            if move_ == &killer_moves[depth as usize][0] || move_ == &killer_moves[depth as usize][1] {
-                return 9000;
-            }else{
-                return history_moves[move_.get_from() as usize][move_.get_to() as usize] ;
+            return if move_ == &killer_moves[depth as usize][0] || move_ == &killer_moves[depth as usize][1] {
+                9000
+            } else {
+                history_moves[move_.get_from() as usize][move_.get_to() as usize]
             }
         }
         let attacker:PieceType = (&position.piece_at(move_.get_from() as usize).unwrap().1.piece_type).to_owned();
@@ -110,6 +109,7 @@ impl Evaluator {
         (KING_SCORE + (victim_score - attack_score)) as usize
     }
 
+    /// Returns the current material score for a given Position
     pub fn get_material_score(&mut self, piece_type:PieceType, position:&Position) -> isize {
         match piece_type {
             PieceType::Pawn => { PAWN_SCORE }
@@ -131,6 +131,7 @@ impl Evaluator {
         }
     }
 
+    /// Determines whether or not null move pruning can be performed for a Position
     pub fn can_do_null_move(&mut self, position:&Position) -> bool {
         self.get_material_score_for_pieceset(&position, &position.pieces[position.whos_turn as usize])
             > KING_SCORE + ROOK_SCORE
@@ -203,8 +204,8 @@ impl Evaluator {
         score
     }
 
-    //Returns Vec of size 256, each with an integer representing # of moves possible at that
-    // location
+    /// Returns Vec of size 256, each with an integer representing # of moves possible at that
+    /// location
     fn get_positional_score_vec(position: &Position, piece:&Piece, movegen: &MoveGenerator) -> Vec<isize> {
         let mut return_vec = Vec::with_capacity(256);
         let mut total_entries = 0;

@@ -30,7 +30,7 @@ impl CastleRights {
     }
 
     pub fn set_player_castled(&mut self, playernum:u8) {
-        self.2 |= (1u8 << playernum)
+        self.2 |= 1u8 << playernum
     }
 
     pub fn disable_kingside_castle(&mut self, playernum: u8) {

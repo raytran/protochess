@@ -2,7 +2,6 @@ use crate::PieceType;
 use std::collections::HashMap;
 use rand::rngs::StdRng;
 use rand::{SeedableRng, Rng};
-use crate::position::castle_rights::CastleRights;
 use crate::position::piece::Piece;
 
 //Holds the random numbers used in generating zobrist keys
@@ -47,7 +46,7 @@ impl ZobristTable {
             }
         }
 
-        let mut table = ZobristTable{
+        let table = ZobristTable{
             zobrist,
             custom_zobrist: Default::default(),
             ep_zobrist,
