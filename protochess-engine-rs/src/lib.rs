@@ -27,7 +27,7 @@ pub struct Engine {
     pub(crate) current_position: Position,
     pub(crate) move_generator: MoveGenerator,
     pub(crate) evaluator: Evaluator,
-    pub(crate) searcher: Searcher
+    pub(crate) searcher: Searcher,
 }
 
 impl Engine {
@@ -38,7 +38,7 @@ impl Engine {
             move_generator: MoveGenerator::new(),
             current_position: Position::default(),
             evaluator: Evaluator::new(),
-            searcher: Searcher::new()
+            searcher: Searcher::new(),
         }
     }
 

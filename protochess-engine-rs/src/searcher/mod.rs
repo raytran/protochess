@@ -41,6 +41,7 @@ impl Searcher {
     pub fn get_best_move(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator, depth: u8) -> Option<Move> {
         //Iterative deepening
         self.clear_heuristics();
+        self.transposition_table.set_ancient();
         for d in 1..=depth {
             let mut alpha = -isize::MAX;
             let mut beta = isize::MAX;
@@ -69,7 +70,7 @@ impl Searcher {
 
         let is_pv = alpha != beta - 1;
         if let Some(entry) = self.transposition_table.retrieve(position.get_zobrist()) {
-            if !is_pv && entry.depth >= depth {
+            if entry.depth >= depth {
                 match entry.flag {
                     EntryFlag::EXACT => {
                         if entry.value < alpha {
@@ -81,12 +82,12 @@ impl Searcher {
                         return entry.value;
                     }
                     EntryFlag::BETA => {
-                        if beta <= entry.value {
+                        if !is_pv && beta <= entry.value {
                             return beta;
                         }
                     }
                     EntryFlag::ALPHA => {
-                        if alpha >= entry.value {
+                        if !is_pv && alpha >= entry.value {
                             return alpha;
                         }
                     }
@@ -126,13 +127,16 @@ impl Searcher {
             }else{
 
                 //Try late move reduction
-                if num_legal_moves >= 10
+                if num_legal_moves > 4
                     && move_.get_move_type() == MoveType::Quiet
                     && !is_pv
-                    && depth > 4
+                    && depth >= 5
                     && !in_check {
                     //Null window search with depth - 2
                     let mut reduced_depth = depth - 2;
+                    if num_legal_moves > 10 {
+                        reduced_depth = depth - 3;
+                    }
                     score = -self.alphabeta(position, eval, movegen,
                                             reduced_depth, -alpha - 1, -alpha, true);
                 }else{
@@ -174,7 +178,8 @@ impl Searcher {
                             flag: EntryFlag::BETA,
                             value: beta,
                             move_,
-                            depth
+                            depth,
+                            ancient: false
                         });
                         return beta;
                     }
@@ -203,7 +208,8 @@ impl Searcher {
                 flag: EntryFlag::EXACT,
                 value: best_score,
                 move_: (&best_move).to_owned(),
-                depth
+                depth,
+                ancient: false
             })
         }else{
             self.transposition_table.insert(position.get_zobrist(), Entry{
@@ -211,7 +217,8 @@ impl Searcher {
                 flag: EntryFlag::ALPHA,
                 value: alpha,
                 move_: best_move,
-                depth
+                depth,
+                ancient: false
             })
         }
         alpha
