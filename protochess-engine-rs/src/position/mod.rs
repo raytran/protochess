@@ -451,7 +451,10 @@ impl Position {
 
     /// Returns if the point is in bounds
     pub fn xy_in_bounds(&self, x:u8, y:u8) -> bool {
-        self.bounds.bit(to_index(x, y)).unwrap()
+        if x < self.dimensions.width && y < self.dimensions.height {
+            return self.bounds.bit(to_index(x, y)).unwrap()
+        }
+        false
     }
 
     pub fn move_piece(&mut self, from:u8, to:u8){
