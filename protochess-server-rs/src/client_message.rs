@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 /// Public facing API
 /// Message from the server to client
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum ClientResponse {
     ChatMessage {
         from: String,
@@ -12,6 +11,9 @@ pub enum ClientResponse {
     GameState{
         width: u8,
         height: u8
+    },
+    PlayerList{
+        names: Vec<String>
     }
 }
 
@@ -24,6 +26,7 @@ pub enum ClientRequest {
         from: (u8, u8),
         to: (u8, u8)
     },
+    ListPlayers,
     SwitchLeader(u8),
     StartGame,
     GameState

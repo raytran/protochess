@@ -1,12 +1,12 @@
 use tokio::sync::mpsc;
-use std::collections::HashMap;
 use crate::room_message::RoomMessage;
 use crate::client::Client;
-use uuid::Uuid;
 use crate::client_message::{ClientRequest, ClientResponse};
+use uuid::Uuid;
 
 pub struct Room {
     //clients[0] is the leader
+    position: protochess_engine_rs::Position,
     clients: Vec<Client>,
     rx: mpsc::UnboundedReceiver<RoomMessage>,
 }
@@ -33,19 +33,15 @@ impl Room {
                     }
                 }
                 RoomMessage::External(requester_id, client_request) => {
-                    if let Some(requester_client_index) = self.clients.iter().position(|x| x.id == requester_id){
-                        let requester_client = &self.clients[requester_client_index];
+                    if let Some(player_num) = self.clients.iter().position(|x| x.id == requester_id){
+                        let requester_client = &self.clients[player_num];
                         match client_request {
                             ClientRequest::ChatMessage(m) => {
                                 //Send message to other users in the room
-                                for client in &self.clients {
-                                    if client.id != requester_id {
-                                        client.try_send(ClientResponse::ChatMessage {
-                                            from: format!("{}", &requester_client.name),
-                                            content: format!("{}", m)
-                                        });
-                                    }
-                                }
+                                self.broadcast_except(ClientResponse::ChatMessage {
+                                    from: format!("{}", &requester_client.name),
+                                    content: format!("{}", m)
+                                }, requester_id);
                             }
                             ClientRequest::TakeTurn { from, to } => {
                                 let (x1, y1) = from;
@@ -60,6 +56,16 @@ impl Room {
                             ClientRequest::StartGame => {
                                 println!("start game requested")
                             }
+                            ClientRequest::SwitchLeader(new_leader) => {
+                                if player_num == 0 && (new_leader as usize) < self.clients.len() {
+                                    self.clients.swap(0, new_leader as usize);
+                                }
+                            }
+                            ClientRequest::ListPlayers => {
+                                requester_client.try_send(ClientResponse::PlayerList {
+                                    names: self.clients.iter().map(|x| x.name.clone()).collect()
+                                })
+                            }
                             _ => {}
                         }
                     }else{
@@ -72,6 +78,22 @@ impl Room {
             if self.clients.len() == 0 {
                 break;
             }
+        }
+    }
+
+    /// Sends a message to everyone except Uuid
+    fn broadcast_except(&self, cr: ClientResponse, except_id: Uuid) {
+        for client in &self.clients {
+            if client.id != except_id {
+                client.try_send(cr.clone());
+            }
+        }
+    }
+
+    /// Sends a message to everyone
+    fn broadcast(&self, cr: ClientResponse) {
+        for client in &self.clients {
+            client.try_send(cr.clone());
         }
     }
 }
