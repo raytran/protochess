@@ -63,6 +63,10 @@ impl Game {
         self.current_position.unmake_move();
     }
 
+    pub fn get_whos_turn(&self) -> u8 {
+        self.current_position.whos_turn
+    }
+
 }
 
 
