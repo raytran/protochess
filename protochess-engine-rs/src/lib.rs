@@ -1,6 +1,6 @@
 use crate::types::{Dimensions, bitboard};
-use crate::position::Position;
-use crate::move_generator::MoveGenerator;
+pub use crate::position::Position;
+pub use crate::move_generator::MoveGenerator;
 use crate::rankfile::to_rank_file;
 use crate::types::bitboard::{to_index, from_index};
 
