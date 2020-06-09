@@ -20,6 +20,51 @@ pub use crate::types::PieceType;
 pub use crate::types::chess_move::Move;
 use crate::searcher::Searcher;
 
+/// Simple game without an AI engine
+pub struct Game {
+    pub(crate) current_position: Position,
+}
+
+impl Game {
+    pub fn default() -> Game {
+        Game {
+            current_position: Position::default(),
+        }
+    }
+
+    pub fn to_string(&mut self) -> String {
+        self.current_position.to_string()
+    }
+
+    pub fn get_zobrist(&self) -> u64 {
+        self.current_position.get_zobrist()
+    }
+
+    /// Performs a move from (x1, y1) to (x2, y2) on the current board position
+    pub fn make_move(&mut self, move_generator:&MoveGenerator, x1:u8, y1:u8, x2:u8, y2: u8) -> bool{
+        let from = bitboard::to_index(x1,y1) as u8;
+        let to = bitboard::to_index(x2,y2) as u8;
+
+        let moves = move_generator.get_pseudo_moves(&mut self.current_position);
+        for move_ in moves {
+            if !move_generator.is_move_legal(&move_, &mut self.current_position) {
+                continue;
+            }
+            if move_.get_from() == from && move_.get_to() == to {
+                self.current_position.make_move(move_);
+                return true
+            }
+        }
+        false
+    }
+
+    /// Undoes the most recent move on the current board position
+    pub fn undo(&mut self) {
+        self.current_position.unmake_move();
+    }
+
+}
+
 
 /// Starting point for the engine
 pub struct Engine {

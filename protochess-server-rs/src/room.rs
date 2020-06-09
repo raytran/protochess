@@ -4,6 +4,7 @@ use crate::client::Client;
 use crate::client_message::{ClientRequest, ClientResponse};
 use uuid::Uuid;
 use lazy_static::lazy_static;
+use protochess_engine_rs::Move;
 
 
 lazy_static! {
