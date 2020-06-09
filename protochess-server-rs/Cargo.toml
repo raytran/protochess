@@ -1,0 +1,18 @@
+[package]
+name = "protochess-server-rs"
+version = "0.1.0"
+authors = ["raymond <raytran@mit.edu>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "0.2", features = ["macros", "sync"] }
+warp = "0.2"
+serde = {version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+futures = { version = "0.3", default-features = false }
+uuid = { version = "0.4", features = ["serde", "v4"] }
+pretty_env_logger = "0.4.0"
+
+protochess-engine-rs = { git = "https://github.com/raytran/protochess" }
