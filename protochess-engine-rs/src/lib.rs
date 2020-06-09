@@ -17,6 +17,7 @@ mod transposition_table;
 use crate::evaluator::Evaluator;
 pub use crate::position::movement_pattern::MovementPattern;
 pub use crate::types::PieceType;
+pub use crate::types::chess_move::Move;
 use crate::searcher::Searcher;
 
 

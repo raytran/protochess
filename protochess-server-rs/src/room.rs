@@ -3,6 +3,15 @@ use crate::room_message::RoomMessage;
 use crate::client::Client;
 use crate::client_message::{ClientRequest, ClientResponse};
 use uuid::Uuid;
+use lazy_static::lazy_static;
+
+
+lazy_static! {
+    static ref MOVEGEN:protochess_engine_rs::MoveGenerator = {
+        protochess_engine_rs::MoveGenerator::new()
+    };
+}
+
 
 pub struct Room {
     //clients[0] is the leader
@@ -14,6 +23,7 @@ pub struct Room {
 impl Room {
     pub fn new(rx: mpsc::UnboundedReceiver<RoomMessage>) -> Room {
         Room{
+            position: protochess_engine_rs::Position::default(),
             clients: Vec::new(),
             rx,
         }
@@ -47,6 +57,9 @@ impl Room {
                                 let (x1, y1) = from;
                                 let (x2, y2) = to;
                                 println!("taketurn requested {} {} {} {}", x1, y1, x2, y2);
+                                for move_ in MOVEGEN.get_pseudo_moves(&mut self.position){
+                                    println!("{}", move_);
+                                }
 
                             }
                             ClientRequest::GameState => {
