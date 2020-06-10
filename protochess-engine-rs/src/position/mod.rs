@@ -271,6 +271,38 @@ impl Position {
         format!("{} \nZobrist Key: {}", return_str, self.properties.zobrist_key)
     }
 
+    /// Return piece for (x, y, char)
+    pub fn get_pieces(&self) -> Vec<(u8, u8, char)>{
+        let mut tuples = Vec::new();
+        for ps in &self.pieces {
+            for piece in ps.get_piece_refs(){
+                let mut bb_copy = (&piece.bitboard).to_owned();
+                let indx = bb_copy.lowest_one().unwrap();
+                while !bb_copy.is_zero(){
+                    let (x, y) = from_index(indx);
+                    tuples.push((x, y, piece.char_rep));
+                    bb_copy.set_bit(indx, false);
+                }
+            }
+        }
+        tuples
+    }
+
+    pub fn get_squares(&self) -> Vec<(u8, u8, char)> {
+        let mut squares = Vec::new();
+        for x in 0..self.dimensions.width {
+            for y in 0..self.dimensions.height {
+                if self.xy_in_bounds(x, y){
+                    let char_rep = if (x + y) % 2 == 0 {'b'} else {'w'};
+                    squares.push((x, y, char_rep));
+                }else{
+                    squares.push((x, y, 'x'));
+                }
+            }
+        }
+        squares
+    }
+
     pub fn from_fen(fen: String) -> Position{
         let dims = Dimensions{width:DEFAULT_WIDTH,height:DEFAULT_HEIGHT};
 
