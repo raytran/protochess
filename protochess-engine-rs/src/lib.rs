@@ -22,7 +22,7 @@ use crate::searcher::Searcher;
 
 /// Simple game without an AI engine
 pub struct Game {
-    pub(crate) current_position: Position,
+    pub current_position: Position,
 }
 
 impl Game {
