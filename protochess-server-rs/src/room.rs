@@ -16,7 +16,7 @@ lazy_static! {
 
 pub struct Room {
     //clients[0] is the leader
-    position: protochess_engine_rs::Position,
+    game: protochess_engine_rs::Game,
     clients: Vec<Client>,
     rx: mpsc::UnboundedReceiver<RoomMessage>,
 }
@@ -24,7 +24,7 @@ pub struct Room {
 impl Room {
     pub fn new(rx: mpsc::UnboundedReceiver<RoomMessage>) -> Room {
         Room{
-            position: protochess_engine_rs::Position::default(),
+            game: protochess_engine_rs::Game::default(),
             clients: Vec::new(),
             rx,
         }
@@ -55,17 +55,21 @@ impl Room {
                                 }, requester_id);
                             }
                             ClientRequest::TakeTurn { from, to } => {
-                                let (x1, y1) = from;
-                                let (x2, y2) = to;
-                                println!("taketurn requested {} {} {} {}", x1, y1, x2, y2);
-                                for move_ in MOVEGEN.get_pseudo_moves(&mut self.position){
-                                    println!("{}", move_);
+                                //Check if it's this player's turn
+                                if player_num as u8 == self.game.get_whos_turn() {
+                                    let (x1, y1) = from;
+                                    let (x2, y2) = to;
+                                    println!("taketurn requested {} {} {} {}", x1, y1, x2, y2);
+                                    let move_gen:&protochess_engine_rs::MoveGenerator = &MOVEGEN;
+                                    if self.game.make_move(move_gen, x1, y1, x2, y2){
+                                        self.broadcast_game_update();
+                                    }
                                 }
 
                             }
                             ClientRequest::GameState => {
                                 println!("gamestate requested");
-                                requester_client.try_send(ClientResponse::GameState { width: 0, height: 0 });
+                                requester_client.try_send(self.serialize_game());
                             }
                             ClientRequest::StartGame => {
                                 println!("start game requested")
@@ -92,6 +96,25 @@ impl Room {
             if self.clients.len() == 0 {
                 break;
             }
+        }
+    }
+
+    fn broadcast_game_update(&mut self){
+        self.broadcast(self.serialize_game());
+    }
+
+    fn serialize_game(&self) -> ClientResponse {
+        let width = self.game.current_position.dimensions.width;
+        let height = self.game.current_position.dimensions.height;
+        let pieces = self.game.current_position.pieces_as_tuples();
+        let tiles = self.game.current_position.tiles_as_tuples();
+        let to_move = self.game.current_position.whos_turn;
+        ClientResponse::GameState {
+            width,
+            height,
+            to_move,
+            tiles,
+            pieces
         }
     }
 

@@ -18,6 +18,9 @@ use crate::room_message::RoomMessage;
 use crate::room::Room;
 use crate::client::Client;
 use crate::client_message::{ClientRequest, ClientResponse};
+use lazy_static::lazy_static;
+
+
 
 /// Our state of currently connected users.
 ///
@@ -95,6 +98,7 @@ async fn user_connected(ws: WebSocket, room_channels: RoomChannels, room_id: Str
                 }
             })
     );
+    let mut generator = adjective_adjective_animal::Generator::default();
     //Add client to this room
     {
         let rc = room_channels.lock().await;
@@ -102,7 +106,7 @@ async fn user_connected(ws: WebSocket, room_channels: RoomChannels, room_id: Str
             Some(room_tx) => {
                 if let Err(_) = room_tx.send(RoomMessage::AddClient(
                     Client{
-                        name: "Anon".to_string(),
+                        name: generator.next().unwrap(),
                         id: my_id.clone(),
                         sender: web_tx
                     })

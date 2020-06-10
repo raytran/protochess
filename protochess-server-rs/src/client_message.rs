@@ -10,7 +10,10 @@ pub enum ClientResponse {
     },
     GameState{
         width: u8,
-        height: u8
+        height: u8,
+        to_move: u8,
+        tiles: Vec<(u8, u8, char)>,
+        pieces: Vec<(u8, u8, u8, char)>
     },
     PlayerList{
         names: Vec<String>
@@ -44,8 +47,8 @@ mod tests {
         println!("{}", lol);
 
         let lol = json!(ClientRequest::TakeTurn{
-            from: (2, 2),
-            to: (2, 3)
+            from: (0, 2),
+            to: (0, 3)
         });
         println!("{}", lol);
 

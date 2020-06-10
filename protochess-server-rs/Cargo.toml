@@ -15,5 +15,6 @@ futures = { version = "0.3", default-features = false }
 uuid = { version = "0.4", features = ["serde", "v4"] }
 pretty_env_logger = "0.4.0"
 lazy_static = "1.4.0"
+adjective_adjective_animal = "0.1.0"
 
 protochess-engine-rs = { git = "https://github.com/raytran/protochess" }
