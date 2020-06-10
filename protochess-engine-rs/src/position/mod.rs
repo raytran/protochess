@@ -271,16 +271,16 @@ impl Position {
         format!("{} \nZobrist Key: {}", return_str, self.properties.zobrist_key)
     }
 
-    /// Return piece for (x, y, char)
-    pub fn get_pieces(&self) -> Vec<(u8, u8, char)>{
+    /// Return piece for (owner, x, y, char)
+    pub fn pieces_as_tuples(&self) -> Vec<(u8, u8, u8, char)>{
         let mut tuples = Vec::new();
-        for ps in &self.pieces {
+        for (i, ps) in self.pieces.iter().enumerate() {
             for piece in ps.get_piece_refs(){
                 let mut bb_copy = (&piece.bitboard).to_owned();
-                let indx = bb_copy.lowest_one().unwrap();
                 while !bb_copy.is_zero(){
+                    let indx = bb_copy.lowest_one().unwrap();
                     let (x, y) = from_index(indx);
-                    tuples.push((x, y, piece.char_rep));
+                    tuples.push((i as u8, x, y, piece.char_rep));
                     bb_copy.set_bit(indx, false);
                 }
             }
@@ -288,7 +288,7 @@ impl Position {
         tuples
     }
 
-    pub fn get_squares(&self) -> Vec<(u8, u8, char)> {
+    pub fn tiles_as_tuples(&self) -> Vec<(u8, u8, char)> {
         let mut squares = Vec::new();
         for x in 0..self.dimensions.width {
             for y in 0..self.dimensions.height {
@@ -559,6 +559,19 @@ mod pos_test {
     use crate::position::Position;
     use crate::move_generator::MoveGenerator;
     use crate::types::chess_move::Move;
+
+    #[test]
+    fn print_pieces(){
+        let mut pos = Position::default();
+        for pce in pos.pieces_as_tuples(){
+            println!("{:?}", pce);
+        }
+
+        for pce in pos.tiles_as_tuples(){
+            println!("{:?}", pce);
+        }
+
+    }
 
 
     #[test]
