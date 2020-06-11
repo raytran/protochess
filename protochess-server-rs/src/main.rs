@@ -39,7 +39,7 @@ async fn main() {
     let room_channels = warp::any().map(move || room_channels.clone());
 
     // GET /chat -> websocket upgrade
-    let chat = warp::path("chat")
+    let chat = warp::path("chess")
         // The `ws()` filter will prepare Websocket handshake...
         .and(warp::ws())
         .and(warp::path::param())
@@ -174,7 +174,7 @@ static INDEX_HTML: &str = r#"
         <input type="text" id="text" />
         <button type="button" id="send">Send</button>
         <script type="text/javascript">
-        var uri = 'ws://' + location.host + '/chat/bruh';
+        var uri = 'ws://' + location.host + '/chess/bruh';
         var ws = new WebSocket(uri);
         function message(data) {
             var line = document.createElement('p');

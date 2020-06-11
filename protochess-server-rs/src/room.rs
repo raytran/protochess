@@ -1,7 +1,7 @@
 use tokio::sync::mpsc;
 use crate::room_message::RoomMessage;
 use crate::client::Client;
-use crate::client_message::{ClientRequest, ClientResponse};
+use crate::client_message::{ClientRequest, ClientResponse, Piece, Tile};
 use uuid::Uuid;
 use lazy_static::lazy_static;
 use protochess_engine_rs::Move;
@@ -34,11 +34,15 @@ impl Room {
         while let Some(message) = self.rx.recv().await {
             match message {
                 RoomMessage::AddClient(client) => {
+                    client.try_send(self.serialize_game());
                     self.clients.push(client);
+                    self.broadcast_player_list();
                 }
                 RoomMessage::RemoveClient(id) => {
                     if let Some(index) = self.clients.iter().position(|x| x.id == id){
                         self.clients.remove(index);
+                        //Broadcast the new player list
+                        self.broadcast_player_list();
                     }else{
                         eprintln!("no user found at id");
                     }
@@ -62,6 +66,7 @@ impl Room {
                                     println!("taketurn requested {} {} {} {}", x1, y1, x2, y2);
                                     let move_gen:&protochess_engine_rs::MoveGenerator = &MOVEGEN;
                                     if self.game.make_move(move_gen, x1, y1, x2, y2){
+                                        println!("Move successful");
                                         self.broadcast_game_update();
                                     }
                                 }
@@ -81,6 +86,8 @@ impl Room {
                             }
                             ClientRequest::ListPlayers => {
                                 requester_client.try_send(ClientResponse::PlayerList {
+                                    player_num: player_num as u8,
+                                    you: format!("{}", requester_client.name),
                                     names: self.clients.iter().map(|x| x.name.clone()).collect()
                                 })
                             }
@@ -106,8 +113,27 @@ impl Room {
     fn serialize_game(&self) -> ClientResponse {
         let width = self.game.current_position.dimensions.width;
         let height = self.game.current_position.dimensions.height;
-        let pieces = self.game.current_position.pieces_as_tuples();
-        let tiles = self.game.current_position.tiles_as_tuples();
+        let pieces = self.game.current_position.pieces_as_tuples()
+            .into_iter()
+            .map(|(owner, x, y, piece_type)| {
+                Piece{
+                    owner,
+                    x,
+                    y,
+                    piece_type
+                }
+            })
+            .collect();
+        let tiles = self.game.current_position.tiles_as_tuples()
+            .into_iter()
+            .map(|(x, y, tile_type)|{
+                Tile{
+                    x,
+                    y,
+                    tile_type
+                }
+            })
+            .collect();
         let to_move = self.game.current_position.whos_turn;
         ClientResponse::GameState {
             width,
@@ -131,6 +157,16 @@ impl Room {
     fn broadcast(&self, cr: ClientResponse) {
         for client in &self.clients {
             client.try_send(cr.clone());
+        }
+    }
+
+    fn broadcast_player_list(&self){
+        for (i, client) in self.clients.iter().enumerate() {
+            client.try_send(ClientResponse::PlayerList {
+                player_num: i as u8,
+                you: format!("{}", client.name),
+                names: self.clients.iter().map(|x| x.name.clone()).collect()
+            });
         }
     }
 }

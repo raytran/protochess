@@ -1,8 +1,23 @@
 use serde::{Deserialize, Serialize};
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct Tile {
+    pub x: u8,
+    pub y: u8,
+    pub tile_type: char
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct Piece {
+    pub owner: u8,
+    pub x: u8,
+    pub y: u8,
+    pub piece_type: char
+}
 
 /// Public facing API
 /// Message from the server to client
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(tag = "type", content="content")]
 pub enum ClientResponse {
     ChatMessage {
         from: String,
@@ -12,10 +27,12 @@ pub enum ClientResponse {
         width: u8,
         height: u8,
         to_move: u8,
-        tiles: Vec<(u8, u8, char)>,
-        pieces: Vec<(u8, u8, u8, char)>
+        tiles: Vec<Tile>,
+        pieces: Vec<Piece>
     },
     PlayerList{
+        player_num: u8,
+        you: String,
         names: Vec<String>
     }
 }
@@ -23,6 +40,7 @@ pub enum ClientResponse {
 
 /// Message from client to server
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type", content ="content")]
 pub enum ClientRequest {
     ChatMessage(String),
     TakeTurn{
@@ -57,6 +75,10 @@ mod tests {
 
 
         let lol = json!(ClientRequest::SwitchLeader(3));
+        println!("{}", lol);
+
+
+        let lol = json!(ClientRequest::ListPlayers);
         println!("{}", lol);
     }
 }
