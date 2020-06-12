@@ -20,6 +20,17 @@ impl MoveGenerator {
             attack_tables: AttackTables::new(),
         }
     }
+    pub fn get_legal_moves_as_tuples(&self, position: &mut Position) -> Vec<((u8,u8), (u8,u8))> {
+        let mut legal_tuples = Vec::new();
+        for move_ in self.get_pseudo_moves(position){
+            if !self.is_move_legal(&move_, position){
+                continue;
+            }
+            legal_tuples.push((from_index(move_.get_from() as usize),
+                               from_index(move_.get_to() as usize)));
+        }
+        legal_tuples
+    }
 
     /// Iterator that yields pseudo-legal moves from a position
     pub fn get_pseudo_moves(&self, position:&mut Position) -> impl Iterator<Item=Move> {
