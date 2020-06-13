@@ -8,15 +8,22 @@
     export let flipped;
     export let highlighted = null;
     const dispatch = createEventDispatcher();
+    // Game width height
     $: gameDimensions = {width: gameState.width, height: gameState.height};
-    $: tileDimensions = {width: 100 / gameState.width, height: 100 / gameState.height};
+
+    // % of parent dimensions
+    $: tileDimensions = {
+        width: Math.min(100 / gameState.width, 100 / gameState.height),
+        height: Math.min(100 / gameState.width, 100 / gameState.height)
+    };
 
     function handleTileClick(e) {
+        dispatch("tileClick", e.detail);
         let tile = e.detail;
         if (gameState.to_move === player_num) {
             //Set local highlight + show possible moves
             for (let pce of gameState.pieces) {
-                if (pce.x === tile.x && pce.y === tile.y){
+                if (pce.owner === player_num && pce.x === tile.x && pce.y === tile.y){
                     dispatch("gameRequest", {type: "MovesFrom", content: [tile.x, tile.y]});
                     break;
                 }
@@ -25,10 +32,9 @@
     }
 
     function handleHighlightToClick(e){
+        dispatch("tileClick", e.detail);
         let tile = e.detail;
         let to = [tile.x, tile.y];
-        console.log("here")
-        console.log(highlighted)
         //If we click on a highted To square, we can send a move based on tile highlighting
         dispatch("gameRequest", {"content":{"from":highlighted.possibleMoves.from,
                 "promote_to":null,"to":to}, type:"TakeTurn"});
@@ -38,17 +44,23 @@
 
 <style>
     #board{
-        background-color: black;
+        background-color: grey;
         width: 100%;
         height: 100%;
     }
 </style>
 
 <div id="board">
-    {#each gameState.tiles as tile}
-        <Tile color = { tile.tile_type === 'b' ? '#a97d5d' : '#f7dcb4' }
-              on:tileClick={handleTileClick} {tile} {flipped} {gameDimensions} {tileDimensions}/>
-    {/each}
+    {#if gameState.tiles}
+        {#each gameState.tiles as tile}
+            <Tile color = { tile.tile_type === 'b' ? '#a97d5d' : tile.tile_type === 'w' ? '#f7dcb4' : 'black' }
+                  on:tileClick={handleTileClick}
+                  on:tileMouseOver
+                  on:tileMouseDown
+                  on:tileMouseUp
+                  {tile} {flipped} {gameDimensions} {tileDimensions}/>
+        {/each}
+    {/if}
     {#if highlighted}
         {#if highlighted.lastTurn}
             <Tile color = {ColorConstants.FROM_HIGHLIGHT_COLOR}
@@ -81,9 +93,11 @@
         {/if}
     {/if}
 
-    {#each gameState.pieces as piece}
-    <div style="pointer-events: none">
-        <Piece {piece} {flipped} {gameDimensions} {tileDimensions}/>
-    </div>
-    {/each}
+    {#if gameState.pieces}
+        {#each gameState.pieces as piece}
+            <div style="pointer-events: none">
+                <Piece on:pieceClick {piece} {flipped} {gameDimensions} {tileDimensions}/>
+            </div>
+        {/each}
+    {/if}
 </div>
