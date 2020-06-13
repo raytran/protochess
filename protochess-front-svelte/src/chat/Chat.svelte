@@ -57,7 +57,7 @@
 </style>
 
 <div class="chat">
-    <h1 style="text-align: center">Richard&Mortimer</h1>
+    <h1 style="text-align: center">Chat</h1>
     <div class="scrollable" bind:this={div}>
         {#each comments as comment}
             <article>

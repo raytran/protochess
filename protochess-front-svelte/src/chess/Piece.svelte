@@ -1,18 +1,24 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
     export let piece;
     export let tileDimensions;
     export let gameDimensions;
     export let flipped = false;
-    const dispatch = createEventDispatcher();
 
     $: piece_char_rep = piece.owner === 0 ? piece.piece_type.toUpperCase() : piece.piece_type.toLowerCase();
     $: src = "/images/chess_pieces/" + piece_char_rep + ".svg";
 
 </script>
+<style>
+    img{
+        -khtml-user-select: none;
+        -o-user-select: none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+</style>
 
 <div
-        on:click={dispatch('piece_click', piece)}
         style="width:{tileDimensions.width + '%'};
             height:{tileDimensions.height + '%'};
             position: absolute;

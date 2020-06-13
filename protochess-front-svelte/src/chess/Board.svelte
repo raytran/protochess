@@ -1,33 +1,38 @@
 <script>
     import Tile from './Tile.svelte';
     import Piece from './Piece.svelte';
-    import TileHighlight from "./TileHighlight.svelte";
-    import {PlayersList} from '../WebsocketStore';
-    import {sendTakeTurn, GameState} from "../WebsocketStore";
-    let highlighted = null;
-    let last_clicked = {type: "none"};
-    $: gameDimensions = {width: $GameState.width, height: $GameState.height};
-    $: tileDimensions = {width: 100 / $GameState.width, height: 100 / $GameState.height};
-
-    function handlePieceClick(e) {
-        let piece = e.detail;
-        if (last_clicked.type === 'piece') {
-            let from = [last_clicked.target.x, last_clicked.target.y];
-            let to = [piece.x, piece.y];
-            sendTakeTurn(from, to);
-        }
-        last_clicked = {type: 'piece', target: piece};
-        highlighted = {x: piece.x, y: piece.y};
-    }
+    import ColorConstants from './ColorConstants';
+    import { createEventDispatcher } from 'svelte';
+    export let gameState;
+    export let player_num;
+    export let flipped;
+    export let highlighted = null;
+    const dispatch = createEventDispatcher();
+    $: gameDimensions = {width: gameState.width, height: gameState.height};
+    $: tileDimensions = {width: 100 / gameState.width, height: 100 / gameState.height};
 
     function handleTileClick(e) {
         let tile = e.detail;
-        if (last_clicked.type === 'piece') {
-            let from = [last_clicked.target.x, last_clicked.target.y];
-            let to = [tile.x, tile.y];
-            sendTakeTurn(from, to);
+        if (gameState.to_move === player_num) {
+            //Set local highlight + show possible moves
+            for (let pce of gameState.pieces) {
+                if (pce.x === tile.x && pce.y === tile.y){
+                    dispatch("gameRequest", {type: "MovesFrom", content: [tile.x, tile.y]});
+                    break;
+                }
+            }
         }
-        last_clicked = {type: "tile", target: tile};
+    }
+
+    function handleHighlightToClick(e){
+        let tile = e.detail;
+        let to = [tile.x, tile.y];
+        console.log("here")
+        console.log(highlighted)
+        //If we click on a highted To square, we can send a move based on tile highlighting
+        dispatch("gameRequest", {"content":{"from":highlighted.possibleMoves.from,
+                "promote_to":null,"to":to}, type:"TakeTurn"});
+
     }
 </script>
 
@@ -40,14 +45,45 @@
 </style>
 
 <div id="board">
-    {#each $GameState.tiles as tile}
-        <Tile on:tile_click={handleTileClick} {tile} flipped={$PlayersList.player_num !== 0 } {gameDimensions} {tileDimensions}/>
+    {#each gameState.tiles as tile}
+        <Tile color = { tile.tile_type === 'b' ? '#a97d5d' : '#f7dcb4' }
+              on:tileClick={handleTileClick} {tile} {flipped} {gameDimensions} {tileDimensions}/>
     {/each}
-    {#each $GameState.pieces as piece}
-        <Piece on:piece_click={handlePieceClick} {piece} flipped={$PlayersList.player_num !== 0} {gameDimensions} {tileDimensions}/>
+    {#if highlighted}
+        {#if highlighted.lastTurn}
+            <Tile color = {ColorConstants.FROM_HIGHLIGHT_COLOR}
+                  on:tileClick={handleTileClick}
+                  tile={{x: highlighted.lastTurn.from[0], y: highlighted.lastTurn.from[1]}}
+                  {flipped} {gameDimensions} {tileDimensions}/>
+
+            <Tile color = {ColorConstants.TO_HIGHLIGHT_COLOR}
+                  on:tileClick={handleTileClick}
+                  tile={{x: highlighted.lastTurn.to[0], y: highlighted.lastTurn.to[1]}}
+                  {flipped} {gameDimensions} {tileDimensions}/>
+        {/if}
+        {#if highlighted.possibleMoves}
+            <Tile color = {ColorConstants.POSSIBLE_FROM_HIGHLIGHT_COLOR}
+                  on:tileClick={handleTileClick}
+                  tile={{x: highlighted.possibleMoves.from[0], y: highlighted.possibleMoves.from[1]}}
+                  {flipped} {gameDimensions} {tileDimensions}/>
+            {#each highlighted.possibleMoves.to as pos}
+                <Tile color = {ColorConstants.POSSIBLE_TO_HIGHLIGHT_COLOR}
+                      on:tileClick={handleHighlightToClick} tile={{x: pos[0], y: pos[1]}}
+                      {flipped} {gameDimensions} {tileDimensions}/>
+            {/each}
+        {/if}
+        {#if highlighted.in_check_kings}
+            {#each highlighted.in_check_kings as piece}
+                <Tile color = {ColorConstants.IN_CHECK_HIGHLIGHT_COLOR}
+                      on:tileClick={handleTileClick} tile={{x: piece.x, y: piece.y}}
+                      {flipped} {gameDimensions} {tileDimensions}/>
+            {/each}
+        {/if}
+    {/if}
+
+    {#each gameState.pieces as piece}
+    <div style="pointer-events: none">
+        <Piece {piece} {flipped} {gameDimensions} {tileDimensions}/>
+    </div>
     {/each}
-    {#if highlighted }
-        <TileHighlight pos={highlighted} flipped={$PlayersList.player_num !== 0} {gameDimensions} {tileDimensions}
-        />
-    {/if}}
 </div>

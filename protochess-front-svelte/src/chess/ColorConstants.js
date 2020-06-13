@@ -1,0 +1,9 @@
+export default {
+    DARK_SQUARE: '#a97d5d',
+    LIGHT_SQUARE: '#f7dcb4',
+    FROM_HIGHLIGHT_COLOR: 'rgba(92,147,94,0.7)',
+    TO_HIGHLIGHT_COLOR: 'rgba(153,186,130,0.7)',
+    POSSIBLE_FROM_HIGHLIGHT_COLOR: 'rgba(213,197,87,0.7)',
+    POSSIBLE_TO_HIGHLIGHT_COLOR: 'rgba(217,191,119, 0.6)',
+    IN_CHECK_HIGHLIGHT_COLOR: "rgba(255,0,0,0.5)"
+};
