@@ -215,7 +215,14 @@ impl MoveGenerator {
 
         for p in &my_pieces.custom {
             //let movement = p.movement_pattern.as_ref().unwrap();
-            let movement = position.get_movement_pattern(&p.piece_type);
+            let movement = {
+                if let Some(mp) = position.get_movement_pattern(&p.piece_type){
+                    mp
+                }else{
+                    continue;
+                }
+            };
+
             let bb = &p.bitboard;
             let mut bb_copy = bb.to_owned();
             while !bb_copy.is_zero() {
@@ -390,7 +397,14 @@ impl MoveGenerator {
             PieceType::King => {self.attack_tables.get_king_attack(index, &not_in_bounds, &zero)}
             PieceType::Pawn => {self.attack_tables.get_north_pawn_attack(index, &not_in_bounds, &zero)}
             PieceType::Custom(_c) => {
-                let mp = position.get_movement_pattern(&piece.piece_type);
+                let mp = {
+                    if let Some(mp) = position.get_movement_pattern(&piece.piece_type){
+                        mp
+                    }else{
+                        return 0;
+                    }
+                };
+
                 let mut slides = self.attack_tables.get_sliding_moves_bb(
                     index,
                     &not_in_bounds,

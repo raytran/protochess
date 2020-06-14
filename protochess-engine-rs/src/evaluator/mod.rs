@@ -82,8 +82,14 @@ impl Evaluator {
                 let score = *self.custom_piece_value_table.get(&custom.piece_type).unwrap();
                 material_score += custom.bitboard.count_ones() as isize * score;
             }else{
-                let mp = position.get_movement_pattern(&custom.piece_type);
-                let score = Evaluator::score_movement_pattern(mp);
+                let option_mp = position.get_movement_pattern(&custom.piece_type);
+                let score = {
+                    if let Some(mp) = option_mp {
+                        Evaluator::score_movement_pattern(mp)
+                    }else{
+                        0
+                    }
+                };
                 self.custom_piece_value_table.insert(custom.piece_type.to_owned(), score);
                 material_score += custom.bitboard.count_ones() as isize * score;
             }
@@ -122,8 +128,14 @@ impl Evaluator {
                 if self.custom_piece_value_table.contains_key(&piece_type){
                     *self.custom_piece_value_table.get(&piece_type).unwrap()
                 }else{
-                    let mp = position.get_movement_pattern(&piece_type);
-                    let score = Evaluator::score_movement_pattern(mp);
+                    let option_mp = position.get_movement_pattern(&piece_type);
+                    let score = {
+                        if let Some(mp) = option_mp {
+                            Evaluator::score_movement_pattern(mp)
+                        }else{
+                            0;
+                        }
+                    };
                     self.custom_piece_value_table.insert((&piece_type).to_owned(), score);
                     score
                 }
