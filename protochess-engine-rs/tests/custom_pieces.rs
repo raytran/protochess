@@ -8,6 +8,8 @@ mod custom_pieces {
     fn custom_pieces() {
         let mut engine = protochess_engine_rs::Engine::default();
 
+
+        /*
         engine.register_piecetype('a',MovementPattern {
             promotion_squares: None,
             promo_vals: None,
@@ -32,6 +34,8 @@ mod custom_pieces {
             translate_southeast: false,
             translate_southwest: false
         });
+
+         */
         println!("{}", engine.get_zobrist());
         println!("BASE SCORE: {}", engine.get_score());
         engine.add_piece(0, PieceType::Custom('a'), 0, 3);

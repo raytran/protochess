@@ -50,8 +50,8 @@ impl Position {
         }
     }
 
-    pub fn get_movement_pattern(&self, piece_type: &PieceType) -> &MovementPattern {
-       self.movement_rules.get(piece_type).unwrap()
+    pub fn get_movement_pattern(&self, piece_type: &PieceType) -> Option<&MovementPattern> {
+       self.movement_rules.get(piece_type)
     }
 
     /// Modifies the position to make the move
