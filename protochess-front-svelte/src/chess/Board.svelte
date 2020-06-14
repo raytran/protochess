@@ -44,7 +44,7 @@
 
 <style>
     #board{
-        background-color: grey;
+        background-color: #EAEAEA;
         width: 100%;
         height: 100%;
     }
@@ -65,17 +65,27 @@
         {#if highlighted.lastTurn}
             <Tile color = {ColorConstants.FROM_HIGHLIGHT_COLOR}
                   on:tileClick={handleTileClick}
+                  on:tileMouseOver
+                  on:tileMouseDown
+                  on:tileMouseUp
                   tile={{x: highlighted.lastTurn.from[0], y: highlighted.lastTurn.from[1]}}
                   {flipped} {gameDimensions} {tileDimensions}/>
 
             <Tile color = {ColorConstants.TO_HIGHLIGHT_COLOR}
                   on:tileClick={handleTileClick}
+                  on:tileMouseOver
+                  on:tileMouseDown
+                  on:tileMouseUp
                   tile={{x: highlighted.lastTurn.to[0], y: highlighted.lastTurn.to[1]}}
                   {flipped} {gameDimensions} {tileDimensions}/>
         {/if}
         {#if highlighted.possibleMoves}
             <Tile color = {ColorConstants.POSSIBLE_FROM_HIGHLIGHT_COLOR}
                   on:tileClick={handleTileClick}
+                  on:tileClick={handleTileClick}
+                  on:tileMouseOver
+                  on:tileMouseDown
+                  on:tileMouseUp
                   tile={{x: highlighted.possibleMoves.from[0], y: highlighted.possibleMoves.from[1]}}
                   {flipped} {gameDimensions} {tileDimensions}/>
             {#each highlighted.possibleMoves.to as pos}
@@ -88,6 +98,19 @@
             {#each highlighted.in_check_kings as piece}
                 <Tile color = {ColorConstants.IN_CHECK_HIGHLIGHT_COLOR}
                       on:tileClick={handleTileClick} tile={{x: piece.x, y: piece.y}}
+                      on:tileMouseOver
+                      on:tileMouseDown
+                      on:tileMouseUp
+                      {flipped} {gameDimensions} {tileDimensions}/>
+            {/each}
+        {/if}
+        {#if highlighted.etc}
+            {#each highlighted.etc as etc}
+                <Tile color = {etc.color}
+                      on:tileClick={handleTileClick} tile={{x: etc.x, y: etc.y}}
+                      on:tileMouseOver
+                      on:tileMouseDown
+                      on:tileMouseUp
                       {flipped} {gameDimensions} {tileDimensions}/>
             {/each}
         {/if}
