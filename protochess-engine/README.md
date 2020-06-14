@@ -1,1 +1,0 @@
-Protochess backend. C++ native module for node.js.
