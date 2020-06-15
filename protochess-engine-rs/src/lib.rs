@@ -15,10 +15,11 @@ mod rankfile;
 mod transposition_table;
 
 use crate::evaluator::Evaluator;
-pub use crate::position::movement_pattern::MovementPattern;
+use crate::position::movement_pattern::MovementPattern;
 pub use crate::types::PieceType;
 pub use crate::types::chess_move::Move;
 use crate::searcher::Searcher;
+pub use crate::position::movement_pattern::MovementPatternExternal;
 
 /// Simple game without an AI engine
 pub struct Game {
@@ -103,8 +104,8 @@ impl Engine {
     }
 
     /// Registers a custom piecetype for the current position
-    pub fn register_piecetype(&mut self, char_rep:char, mp: MovementPattern) {
-        self.current_position.register_piecetype(char_rep, mp);
+    pub fn register_piecetype(&mut self, char_rep:char, mpe: MovementPatternExternal) {
+        self.current_position.register_piecetype(char_rep, mpe);
     }
 
     /// Adds a new piece on the board

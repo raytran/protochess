@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use position_properties::PositionProperties;
 use crate::types::chess_move::{Move, MoveType};
-use crate::position::movement_pattern::MovementPattern;
+use crate::position::movement_pattern::{MovementPattern, MovementPatternExternal, external_mp_to_internal, internal_mp_to_external};
 use crate::position::piece::Piece;
 use std::collections::HashMap;
 use crate::position::zobrist_table::ZobristTable;
@@ -41,7 +41,8 @@ impl Position {
     }
 
     /// Registers a new piece type for this position
-    pub fn register_piecetype(&mut self, char_rep: char, mp: MovementPattern) {
+    pub fn register_piecetype(&mut self, char_rep: char, mpe: MovementPatternExternal) {
+        let mp = external_mp_to_internal(mpe);
         //Store the movement rule
         self.movement_rules.insert(PieceType::Custom(char_rep), mp);
         //Insert blank for all players
@@ -50,12 +51,12 @@ impl Position {
         }
     }
 
-    pub fn get_char_movementpattern_map(&self) -> HashMap<char, MovementPattern> {
+    pub fn get_char_movementpattern_map(&self) -> HashMap<char, MovementPatternExternal> {
         let mut return_map = HashMap::new();
         for (pieceType, movement_pattern) in self.movement_rules.iter(){
             match pieceType {
                 PieceType::Custom(c) => {
-                    return_map.insert(*c, movement_pattern.to_owned());
+                    return_map.insert(*c, internal_mp_to_external(movement_pattern.to_owned()));
                 }
                 _ => {}
             }

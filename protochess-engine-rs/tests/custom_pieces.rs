@@ -2,12 +2,12 @@ extern crate protochess_engine_rs;
 
 #[cfg(test)]
 mod custom_pieces {
-    use protochess_engine_rs::{MovementPattern, PieceType};
+    use protochess_engine_rs::{MovementPatternExternal, PieceType};
 
     #[test]
     fn custom_pieces() {
         let mut pos = protochess_engine_rs::Position::default();
-        pos.register_piecetype('c',MovementPattern {
+        pos.register_piecetype('c',MovementPatternExternal {
             promotion_squares: None,
             promo_vals: None,
             attack_sliding_deltas: vec![vec![(1,1),(2,2)]],
@@ -31,7 +31,7 @@ mod custom_pieces {
             translate_southeast: false,
             translate_southwest: false
         });
-        pos.register_piecetype('a',MovementPattern {
+        pos.register_piecetype('a',MovementPatternExternal {
             promotion_squares: None,
             promo_vals: None,
             attack_sliding_deltas: vec![vec![(1,1),(2,2)]],
