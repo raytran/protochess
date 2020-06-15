@@ -53,7 +53,7 @@
 <div id="board">
     {#if gameState.tiles}
         {#each gameState.tiles as tile}
-            <Tile color = { tile.tile_type === 'b' ? '#a97d5d' : tile.tile_type === 'w' ? '#f7dcb4' : 'black' }
+            <Tile color = { tile.tile_type === 'b' ? ColorConstants.DARK_SQUARE : tile.tile_type === 'w' ? ColorConstants.LIGHT_SQUARE : ColorConstants.DISABLED }
                   on:tileClick={handleTileClick}
                   on:tileMouseOver
                   on:tileMouseDown

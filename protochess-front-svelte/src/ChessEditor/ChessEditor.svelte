@@ -23,8 +23,11 @@
         CUSTOM: '#',
     }
 
-    let pieceCharSelected = 'a';
-    let customChars = 'acdefghijlmostuvwxyz'.split('');
+    let movementPatterns = {};
+    let showPieceEditor = false;
+    let customPieceCharSelected = 'a';
+    let unregisteredChars = 'acdefghijlmostuvwxyz'.split('');
+    let registeredChars = [];
 
     let pieceSelected = PieceType.PAWN;
     let pieceOwnerSelected = 0;
@@ -99,7 +102,7 @@
                     owner: pieceOwnerSelected,
                     x: tile.x,
                     y: tile.y,
-                    piece_type: pieceCharSelected
+                    piece_type: customPieceCharSelected
                 }];
             }
         } else {
@@ -116,6 +119,49 @@
                 togglePiece(tile);
                 break;
         }
+    }
+
+    function isMovementPatternDefault(mp){
+        for (let dir in mp.attackSlides){
+            if (mp.attackSlides[dir]) return false;
+        }
+        for (let dir in mp.translateSlides){
+            if (mp.translateSlides[dir]) return false;
+        }
+        if (mp.attackJumps.length !== 0) return false;
+        if (mp.translateJumps.length !== 0) return false;
+
+        //Check if attackSlideDeltas is empty
+        if (! mp.attackSlideDeltas.every( function (a) { return !a.length })) return false;
+        if (! mp.translateSlideDeltas.every( function (a) { return !a.length })) return false;
+        return true;
+    }
+    function handlePieceEditor(e){
+        //Check if !default
+        let mp = e.detail.movementPattern;
+        if (!isMovementPatternDefault(mp)){
+            let index = unregisteredChars.findIndex(elem => elem === e.detail.pieceType);
+            if (-1 !== index){
+                unregisteredChars.splice(index, 1);
+                unregisteredChars = unregisteredChars;
+                registeredChars = [...registeredChars, e.detail.pieceType];
+            }
+            movementPatterns[e.detail.pieceType] = e.detail.movementPattern;
+        }else{
+            //If a piece has been reset
+            let index = registeredChars.findIndex(elem => elem === e.detail.pieceType);
+            if (-1 !== index){
+                //Then move back to unregistered
+                registeredChars.splice(index, 1)
+                registeredChars = registeredChars;
+                unregisteredChars = [...unregisteredChars, e.detail.pieceType];
+                delete movementPatterns[e.detail.pieceType]
+            }
+        }
+        showPieceEditor = false;
+
+        console.log(movementPatterns);
+        console.log(e);
     }
 </script>
 
@@ -138,21 +184,7 @@
         box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
     }
 
-
-    .dropdown-content {
-        display: none;
-    }
-
-    #customPieceDropdown:hover .dropdown-content {
-        display: block;
-    }
-
-
 </style>
-
-
-
-
 
 <div style="justify-content:center; font-size: 1.3em; display: flex; flex-direction: row">
     <fieldset style="margin-right: 2em">
@@ -191,7 +223,7 @@
                 on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
                         on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
     </div>
-    <fieldset style="margin-left: 2em; padding-right: 3em;">
+    <fieldset style="width: 8em; margin-left: 2em; padding-right: 3em;">
         <legend style="float: left"><b>Select Tool</b></legend>
         <br>
         <label>
@@ -247,20 +279,51 @@
 
 
             {#if pieceSelected === PieceType.CUSTOM}
-                <div id="customPieceDropdown">
+                <div>
                     Custom Piece:
-                    <ul class='dropdown-content' style="height: 8em;overflow: auto">
-                        {#each customChars as char}
-                            <li>{char}</li>
+                    <div style="height: 8em;overflow: auto">
+                        {#each registeredChars as char}
+                            <div style="background-color:
+                            {customPieceCharSelected === char ? 'rgba(0,0,255,0.6)' : 'rgba(0,0,255,0.3)'};
+                                display: flex;"
+                                 on:click={()=> customPieceCharSelected = char}>
+                                <div> Ready </div>
+                                <div
+                                        style="width: 3em; height: 3em">
+                                    <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
+                                </div>
+                            </div>
                         {/each}
-                    </ul>
+
+                        {#each unregisteredChars as char}
+                            <div style="background-color:
+                                {customPieceCharSelected === char ? 'rgba(255,00,0,0.6)' :  'rgba(255,0,0,0.3)'};
+                                display: flex;"
+                                 on:click={()=> customPieceCharSelected = char}>
+                                <div> ??? </div>
+                                <div
+                                        style="width: 3em; height: 3em">
+                                    <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
                 </div>
+                <button on:click={()=> showPieceEditor = true}>
+                    {registeredChars.includes(customPieceCharSelected) ? 'Edit movement' : 'Set movement'}
+                </button>
             {/if}
         {/if}
     </fieldset>
 
-    <div style="position: absolute; left: 0; top:0;">
-        <PieceEditor selectedPiece="p"/>
-    </div>
+    {#if showPieceEditor}
+        <div style="position: absolute; left: 0; top:0;">
+            <PieceEditor on:saveChanges={handlePieceEditor}
+                         selectedPiece={customPieceCharSelected}
+
+                         movementPattern={movementPatterns[customPieceCharSelected]}
+            />
+        </div>
+    {/if}
 
 </div>

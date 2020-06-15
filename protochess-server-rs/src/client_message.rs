@@ -64,7 +64,12 @@ pub enum ClientRequest {
     MovesFrom(u8, u8),
     ListPlayers,
     SwitchLeader(u8),
-    StartGame,
+    StartGame{
+        width: u8,
+        height: u8,
+        tiles: Vec<Tile>,
+        pieces: Vec<Piece>
+    },
     GameState
 }
 

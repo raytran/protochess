@@ -1,6 +1,7 @@
 export default {
     DARK_SQUARE: '#a97d5d',
     LIGHT_SQUARE: '#f7dcb4',
+    DISABLED: 'rgb(87,87,87)',
     FROM_HIGHLIGHT_COLOR: 'rgba(92,147,94,0.7)',
     TO_HIGHLIGHT_COLOR: 'rgba(153,186,130,0.7)',
     POSSIBLE_FROM_HIGHLIGHT_COLOR: 'rgba(213,197,87,0.7)',
