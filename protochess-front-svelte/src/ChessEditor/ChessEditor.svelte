@@ -319,8 +319,7 @@
     {#if showPieceEditor}
         <div style="position: absolute; left: 0; top:0;">
             <PieceEditor on:saveChanges={handlePieceEditor}
-                         selectedPiece={customPieceCharSelected}
-
+                         pieceType={customPieceCharSelected}
                          movementPattern={movementPatterns[customPieceCharSelected]}
             />
         </div>
