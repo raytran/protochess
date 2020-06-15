@@ -2,6 +2,7 @@ use crate::types::bitboard::Bitboard;
 
 /// MovementPattern describes how a custom piece can move
 /// Each sliding field expects a vec of vec, with the inner vec represnting a new "run"
+#[derive(Clone, Debug )]
 pub struct MovementPattern {
     // Places where this piece can promote, as well as char codes for the promotion pieces
     pub promotion_squares: Option<Bitboard>,

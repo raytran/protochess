@@ -50,9 +50,23 @@ impl Position {
         }
     }
 
-    pub fn get_movement_pattern(&self, piece_type: &PieceType) -> Option<&MovementPattern> {
+    pub fn get_char_movementpattern_map(&self) -> HashMap<char, MovementPattern> {
+        let mut return_map = HashMap::new();
+        for (pieceType, movement_pattern) in self.movement_rules.iter(){
+            match pieceType {
+                PieceType::Custom(c) => {
+                    return_map.insert(*c, movement_pattern.to_owned());
+                }
+                _ => {}
+            }
+        }
+        return_map
+    }
+
+    pub(crate) fn get_movement_pattern(&self, piece_type: &PieceType) -> Option<&MovementPattern> {
        self.movement_rules.get(piece_type)
     }
+
 
     /// Modifies the position to make the move
     pub fn make_move(&mut self, move_: Move) {
