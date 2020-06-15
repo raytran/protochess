@@ -136,47 +136,107 @@
 
 </script>
 <style>
-    fieldset{
+    #container {
+        display: grid;
+        padding: 1em;
+        column-gap: 1em;
+        row-gap: 1em;
+        align-items: start;
+        justify-items: center;
+        width: 100%;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
+
+    #mpWrapper {
+        width: 100%;
+        height: 100%;
+    }
+    #toolSelector {
+        display: grid;
+        justify-items: center;
+        font-size: 1em;
+        grid-template-columns: repeat(auto-fit, minmax(0.5em, 1fr));
+    }
+    #slideBoxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0.5em, 1fr));
+    }
+
+    #leftPanel{
+        width: 90%;
+        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        background-color: white;
+    }
+    #rightPanel{
+        width: 90%;
+        padding: 1em;
+        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        background-color: white;
+    }
+
+    fieldset{
+        border: 0;
+    }
+    fieldset > legend{
+        font-weight: bold;
+    }
+    #wrapper{
+        margin: 2em;
+        padding: 2em;
+        background-color: white;
+        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+    }
+    h1{
+        text-align: center;
+    }
+
 </style>
 
-<div style="background-color: white">
-    <h1> Piece Editor </h1>
-    <div style="background-color: white; justify-content:center; font-size: 1em; display: flex; flex-direction: row">
-        <fieldset style="margin-right: 2em">
-            <button on:click={saveChanges}>Save Changes</button>
-            <button on:click={reset}>Reset</button>
-            <hr>
-            <label>
-                <input type=checkbox bind:checked = {flipped}>
-                <b>View as black</b>
-            </label>
-            <hr>
-            <b>Viewport Size</b>
-            <label>
-                <input type=number bind:value={size} min=1 max=32>
-                <input step=2 type=range bind:value={size} min=1 max=32>
-            </label>
+<div id = wrapper>
+    <h1>Piece Editor</h1>
+    <div id=container>
+        <div id="leftPanel">
+            <fieldset>
+                <button on:click={saveChanges}>Save Changes</button>
+                <button on:click={reset}>Reset</button>
+                <hr>
+                <label>
+                    <input type=checkbox bind:checked = {flipped}>
+                    <b>View as black</b>
+                </label>
+                <hr>
+                <b>Viewport Size</b>
+                <label>
+                    <input type=number bind:value={size} min=1 max=32>
+                    <input step=2 type=range bind:value={size} min=1 max=32>
+                </label>
 
 
-            <b>Display Mode</b>
-            <label>
-                <input type=radio value={DisplayMode.ALL} bind:group={displayModeSelected}>
-                All
-            </label>
+                <b>Display Mode</b>
+                <label>
+                    <input type=radio value={DisplayMode.ALL} bind:group={displayModeSelected}>
+                    All
+                </label>
 
-            <label>
-                <input type=radio value={DisplayMode.ATTACK} bind:group={displayModeSelected}>
-                Attacks
-            </label>
+                <label>
+                    <input type=radio value={DisplayMode.ATTACK} bind:group={displayModeSelected}>
+                    Attacks
+                </label>
 
-            <label>
-                <input type=radio value={DisplayMode.TRANSLATE} bind:group={displayModeSelected}>
-                Translates
-            </label>
+                <label>
+                    <input type=radio value={DisplayMode.TRANSLATE} bind:group={displayModeSelected}>
+                    Translates
+                </label>
 
-        </fieldset>
-        <div on:mouseleave={()=> clicked = false} id="pieceEditor" style="position:relative; width: 30em; height: 30em">
+            </fieldset>
+        </div>
+        <div id="mpWrapper" on:mouseleave={()=> clicked = false}>
             <MovementPatternDisplay
                     {pieceType}
                     {flipped}
@@ -185,39 +245,49 @@
                     {movementPattern}
                     on:tileMouseUp={()=> clicked = false}
                     on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
-                    on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}}
-            />
+                            on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}}
+                            />
         </div>
-        <div style="display: flex; flex-direction: column;">
+        <div id="rightPanel">
             <div style="text-align: center">
-                <h1>Moves</h1>
+                <h3>Moves</h3>
             </div>
-            <label>
-                <input type=radio value={ToolType.ATTACK_JUMP} bind:group={toolSelected}>
-                Attack Jumps
-            </label>
-            <label>
-                <input type=radio value={ToolType.TRANSLATE_JUMP} bind:group={toolSelected}>
-                Translate Jumps
-            </label>
-            <div style="display: flex; flex-direction: row">
-                <label>
-                    <input type=radio value={ToolType.ATTACK_SLIDE} bind:group={toolSelected}>
-                    Attack Slide
-                </label>
-                {#if toolSelected === ToolType.ATTACK_SLIDE}
-                    <button on:click={()=> movementPattern.attackSlideDeltas = [...movementPattern.attackSlideDeltas, []]}>New group</button>
-                {/if}
-            </div>
-            <label>
-                <input type=radio value={ToolType.TRANSLATE_SLIDE} bind:group={toolSelected}>
-                Translate Slide
-                {#if toolSelected === ToolType.TRANSLATE_SLIDE}
-                    <button on:click={()=> movementPattern.translateSlideDeltas = [...movementPattern.translateSlideDeltas, []]}>New group</button>
-                {/if}
-            </label>
+            <fieldset>
+                <legend>Delta-Based Moves</legend>
+                <div id="toolSelector">
+                    <div>
+                        Jumps:
+                        <label>
+                            <input type=radio value={ToolType.ATTACK_JUMP} bind:group={toolSelected}>
+                            Attack
+                        </label>
 
-            <div style="display: flex; flex-direction: row">
+                        <label>
+                            <input type=radio value={ToolType.TRANSLATE_JUMP} bind:group={toolSelected}>
+                            Translate
+                        </label>
+                    </div>
+                    <div>
+                        Slides:
+                        <label>
+                            <input type=radio value={ToolType.ATTACK_SLIDE} bind:group={toolSelected}>
+                            Attack Slide
+                        </label>
+                        {#if toolSelected === ToolType.ATTACK_SLIDE}
+                            <button on:click={()=> movementPattern.attackSlideDeltas = [...movementPattern.attackSlideDeltas, []]}>New group</button>
+                        {/if}
+
+                        <label>
+                            <input type=radio value={ToolType.TRANSLATE_SLIDE} bind:group={toolSelected}>
+                            Translate Slide
+                        </label>
+                        {#if toolSelected === ToolType.TRANSLATE_SLIDE}
+                            <button on:click={()=> movementPattern.translateSlideDeltas = [...movementPattern.translateSlideDeltas, []]}>New group</button>
+                        {/if}
+                    </div>
+                </div>
+            </fieldset>
+            <div id ="slideBoxes">
                 <div>
                     <fieldset>
                         <legend>Slide North</legend>

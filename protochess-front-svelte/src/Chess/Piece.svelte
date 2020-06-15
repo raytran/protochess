@@ -16,18 +16,6 @@
         -webkit-user-select: none;
         user-select: none;
     }
-    #pieceText {
-        position: absolute;
-        text-align: center;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        color: black;
-        -webkit-text-fill-color: white; /* Will override color (regardless of order) */
-        -webkit-text-stroke-width: 0.8px;
-        -webkit-text-stroke-color: black;
-    }
 </style>
 
 {#if piece.x >= 0 && piece.y >= 0 && piece.x < gameDimensions.width && piece.y < gameDimensions.height}
@@ -42,7 +30,21 @@
 ">
         <img style="position: absolute; left: 0; top: 0" {src}/>
         {#if piece.piece_text}
-            <div id="pieceText" style="font-size: {tileDimensions.width/6 + 'em'}">{piece.piece_text}</div>
+            <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 300 75"
+                    preserveAspectRatio="xMinYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+                <text
+                        x="70"
+                        y="-20"
+                        font-size="90"
+                        fill="black"
+                >{piece.piece_text}</text>
+            </svg>
         {/if}
     </div>
 {/if}

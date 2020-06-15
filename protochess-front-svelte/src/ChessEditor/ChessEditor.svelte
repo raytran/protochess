@@ -3,6 +3,7 @@
     import {onMount} from 'svelte';
     import Board from "../Chess/Board.svelte";
     import PieceEditor from "./PieceEditor.svelte";
+    import MovementPatternDisplayBar from "../MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
 
     onMount(async () => {
 
@@ -121,36 +122,41 @@
         }
     }
 
-    function isMovementPatternDefault(mp){
-        for (let dir in mp.attackSlides){
+    function isMovementPatternDefault(mp) {
+        for (let dir in mp.attackSlides) {
             if (mp.attackSlides[dir]) return false;
         }
-        for (let dir in mp.translateSlides){
+        for (let dir in mp.translateSlides) {
             if (mp.translateSlides[dir]) return false;
         }
         if (mp.attackJumps.length !== 0) return false;
         if (mp.translateJumps.length !== 0) return false;
 
         //Check if attackSlideDeltas is empty
-        if (! mp.attackSlideDeltas.every( function (a) { return !a.length })) return false;
-        if (! mp.translateSlideDeltas.every( function (a) { return !a.length })) return false;
+        if (!mp.attackSlideDeltas.every(function (a) {
+            return !a.length
+        })) return false;
+        if (!mp.translateSlideDeltas.every(function (a) {
+            return !a.length
+        })) return false;
         return true;
     }
-    function handlePieceEditor(e){
+
+    function handlePieceEditor(e) {
         //Check if !default
         let mp = e.detail.movementPattern;
-        if (!isMovementPatternDefault(mp)){
+        if (!isMovementPatternDefault(mp)) {
             let index = unregisteredChars.findIndex(elem => elem === e.detail.pieceType);
-            if (-1 !== index){
+            if (-1 !== index) {
                 unregisteredChars.splice(index, 1);
                 unregisteredChars = unregisteredChars;
                 registeredChars = [...registeredChars, e.detail.pieceType];
             }
             movementPatterns[e.detail.pieceType] = e.detail.movementPattern;
-        }else{
+        } else {
             //If a piece has been reset
             let index = registeredChars.findIndex(elem => elem === e.detail.pieceType);
-            if (-1 !== index){
+            if (-1 !== index) {
                 //Then move back to unregistered
                 registeredChars.splice(index, 1)
                 registeredChars = registeredChars;
@@ -166,163 +172,202 @@
 </script>
 
 <style>
-    input{
-        margin:0.4em;
+    #pieceEditorWrapper{
+        position: absolute;
+        top:0;
+        left:0;
+        right:0;
+        margin: 0 auto;
+        width: 100%;
+        background-color: rgba(0,0,0,0.3);
+        height: 100%;
     }
+
     fieldset{
         -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
         -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
         box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        padding: 2em;
         border: 0;
         text-align: left;
     }
 
-    #boardWrapper{
-        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+    #container{
+        display: grid;
+        justify-items: center;
+        column-gap: 1em;
+        row-gap: 1em;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        font-size: 1em;
     }
+
+    #leftControl{
+        min-width: 20em;
+        padding: 1em;
+    }
+
+    #rightControl {
+        min-width: 20em;
+        padding: 1em;
+    }
+    .customCharEntry {
+        display: flex;
+    }
+    .customCharPic{
+        width: 3em;
+        height: 3em;
+    }
+    #customCharList {
+        width: 10em;
+        overflow: auto;
+        height: 10vh;
+    }
+
+
 
 </style>
 
-<div style="justify-content:center; font-size: 1.3em; display: flex; flex-direction: row">
-    <fieldset style="margin-right: 2em">
-        <button on:click={reset}>Reset</button>
-        <button on:click={()=>console.log("bruh")}>Save Changes</button>
-        <hr>
-        <label>
-            <input type=checkbox bind:checked = {flipped}>
-            <b>View as black</b>
-        </label>
-        <hr>
-        <b>Board Width</b>
-        <label>
-            <input type=number bind:value={dimensions.width} min=1 max=16>
-            <input type=range bind:value={dimensions.width} min=1 max=16>
-        </label>
-        <b>Board Height</b>
-        <label>
-            <input type=number bind:value={dimensions.height} min=1 max=16>
-            <input type=range bind:value={dimensions.height} min=1 max=16>
-        </label>
+<div id="container">
+    <div id="leftControl">
+        <fieldset>
+            <button on:click={reset}>Reset</button>
+            <button on:click={()=>console.log("bruh")}>Save Changes</button>
+            <hr>
+            <label>
+                <input type=checkbox bind:checked = {flipped}>
+                <b>View as black</b>
+            </label>
+            <hr>
+            <b>Board Width</b>
+            <label>
+                <input type=number bind:value={dimensions.width} min=1 max=16>
+                <input type=range bind:value={dimensions.width} min=1 max=16>
+            </label>
+            <b>Board Height</b>
+            <label>
+                <input type=number bind:value={dimensions.height} min=1 max=16>
+                <input type=range bind:value={dimensions.height} min=1 max=16>
+            </label>
 
-        <b>JSON</b>
-        <label>
-            <textarea style="height: 10em" readonly value={gameStateJSON}></textarea>
-        </label>
+            <b>JSON</b>
+            <label>
+                <textarea id="gameStateJSONDisplay" readonly value={gameStateJSON}></textarea>
+            </label>
 
-    </fieldset>
-
-    <div id=boardWrapper style="position: relative; width: 35em; height: 35em" on:mouseleave={() => clicked = false}>
-        <Board
-                {flipped}
-                player_num={0}
-                gameState={gameState}
-                on:tileMouseUp={()=> clicked = false}
-                on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
-                        on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
+        </fieldset>
     </div>
-    <fieldset style="width: 8em; margin-left: 2em; padding-right: 3em;">
-        <legend style="float: left"><b>Select Tool</b></legend>
-        <br>
-        <label>
-            <input type=radio bind:group={toolSelected} value={ToolType.TILE}/>
-            Toggle tiles
-        </label>
-        <label>
-            <input type=radio bind:group={toolSelected} value={ToolType.PIECE}/>
-            Place piece
-        </label>
-        {#if toolSelected === ToolType.PIECE}
-            <hr>
-            <b>Tool Options</b>
+    <Board
+        {flipped}
+        player_num={0}
+        gameState={gameState}
+        on:tileMouseUp={()=> clicked = false}
+        on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
+                on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
+    <div id="rightControl">
+        <fieldset >
+            <legend><b>Select Tool</b></legend>
+            <br>
             <label>
-                <input type=radio bind:group={pieceOwnerSelected} value={0}/>
-                White
+                <input type=radio bind:group={toolSelected} value={ToolType.TILE}/>
+                Toggle tiles
             </label>
             <label>
-                <input type=radio bind:group={pieceOwnerSelected} value={1}/>
-                Black
+                <input type=radio bind:group={toolSelected} value={ToolType.PIECE}/>
+                Place piece
             </label>
-            <hr>
+            {#if toolSelected === ToolType.PIECE}
+                <hr>
+                <b>Tool Options</b>
+                <label>
+                    <input type=radio bind:group={pieceOwnerSelected} value={0}/>
+                    White
+                </label>
+                <label>
+                    <input type=radio bind:group={pieceOwnerSelected} value={1}/>
+                    Black
+                </label>
+                <hr>
 
-            <label>
-                <input type=radio bind:group={pieceSelected} value={PieceType.PAWN}/>
-                Pawn
-            </label>
+                <label>
+                    <input type=radio bind:group={pieceSelected} value={PieceType.PAWN}/>
+                    Pawn
+                </label>
 
-            <label>
-                <input type=radio bind:group={pieceSelected} value={PieceType.KNIGHT}/>
-                Knight
-            </label>
+                <label>
+                    <input type=radio bind:group={pieceSelected} value={PieceType.KNIGHT}/>
+                    Knight
+                </label>
 
-            <label>
-                <input type=radio bind:group={pieceSelected} value={PieceType.BISHOP}/>
-                Bishop
-            </label>
+                <label>
+                    <input type=radio bind:group={pieceSelected} value={PieceType.BISHOP}/>
+                    Bishop
+                </label>
 
-            <label>
-                <input type=radio bind:group={pieceSelected} value={PieceType.QUEEN}/>
-                Queen
-            </label>
+                <label>
+                    <input type=radio bind:group={pieceSelected} value={PieceType.QUEEN}/>
+                    Queen
+                </label>
 
-            <label>
-                <input type=radio bind:group={pieceSelected} value={PieceType.KING}/>
-                King
-            </label>
+                <label>
+                    <input type=radio bind:group={pieceSelected} value={PieceType.KING}/>
+                    King
+                </label>
 
-            <label>
-                <input type=radio bind:group={pieceSelected} value={PieceType.CUSTOM}/>
-                Custom
-            </label>
+                <label>
+                    <input type=radio bind:group={pieceSelected} value={PieceType.CUSTOM}/>
+                    Custom
+                </label>
 
 
-            {#if pieceSelected === PieceType.CUSTOM}
-                <div>
-                    Custom Piece:
-                    <div style="height: 8em;overflow: auto">
-                        {#each registeredChars as char}
-                            <div style="background-color:
-                            {customPieceCharSelected === char ? 'rgba(0,0,255,0.6)' : 'rgba(0,0,255,0.3)'};
-                                display: flex;"
-                                 on:click={()=> customPieceCharSelected = char}>
-                                <div> Ready </div>
-                                <div
-                                        style="width: 3em; height: 3em">
-                                    <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
+                {#if pieceSelected === PieceType.CUSTOM}
+                    <div>
+                        Custom Piece:
+                        <div id="customCharList">
+                            {#each registeredChars as char}
+                                <div class=customCharEntry style="background-color:
+                            {customPieceCharSelected === char ? 'rgba(0,0,255,0.6)' : 'rgba(0,0,255,0.3)'};"
+                                     on:click={()=> customPieceCharSelected = char}>
+                                    <div> Ready </div>
+                                    <div class="customCharPic">
+                                        <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
+                                    </div>
                                 </div>
-                            </div>
-                        {/each}
+                            {/each}
 
-                        {#each unregisteredChars as char}
-                            <div style="background-color:
-                                {customPieceCharSelected === char ? 'rgba(255,00,0,0.6)' :  'rgba(255,0,0,0.3)'};
-                                display: flex;"
-                                 on:click={()=> customPieceCharSelected = char}>
-                                <div> ??? </div>
-                                <div
-                                        style="width: 3em; height: 3em">
-                                    <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
+                            {#each unregisteredChars as char}
+                                <div class=customCharEntry style="background-color:
+                                {customPieceCharSelected === char ? 'rgba(255,00,0,0.6)' :  'rgba(255,0,0,0.3)'};"
+                                     on:click={()=> customPieceCharSelected = char}>
+                                    <div> ??? </div>
+                                    <div class="customCharPic">
+                                        <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
+                                    </div>
                                 </div>
-                            </div>
-                        {/each}
+                            {/each}
+                        </div>
                     </div>
-                </div>
-                <button on:click={()=> showPieceEditor = true}>
-                    {registeredChars.includes(customPieceCharSelected) ? 'Edit movement' : 'Set movement'}
-                </button>
+                    <button on:click={()=> showPieceEditor = true}>
+                        {registeredChars.includes(customPieceCharSelected) ? 'Edit movement' : 'Set movement'}
+                    </button>
+                {/if}
             {/if}
-        {/if}
-    </fieldset>
+        </fieldset>
+    </div>
 
-    {#if showPieceEditor}
-        <div style="position: absolute; left: 0; top:0;">
-            <PieceEditor on:saveChanges={handlePieceEditor}
-                         pieceType={customPieceCharSelected}
-                         movementPattern={movementPatterns[customPieceCharSelected]}
-            />
-        </div>
-    {/if}
 
 </div>
+{#if showPieceEditor}
+    <div id=pieceEditorWrapper>
+        <PieceEditor on:saveChanges={handlePieceEditor}
+                     pieceType={customPieceCharSelected}
+                     movementPattern={movementPatterns[customPieceCharSelected]}
+        />
+    </div>
+{/if}
+
+        <!--
+<div style="width:100%; text-align: center">
+    <div style="display:inline-block; width:30em; height: 30em; position: relative" >
+        <MovementPatternDisplayBar/>
+    </div>
+</div>
+-->

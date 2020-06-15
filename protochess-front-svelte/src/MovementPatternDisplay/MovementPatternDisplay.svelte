@@ -5,9 +5,9 @@
     //Readonly; dispatches events
     export let movementPattern;  //This movementPattern
     export let pieceType; //Which pieceType to display in the center
-    export let flipped = false; //View from black?
     export let size = 9; //Size of display in tiles
-    export let displayMode;
+    export let flipped = false; //View from black?
+    export let displayMode = DisplayMode.ALL;
 
     let highlighted= {in_check_kings: null, possibleMoves: null, lastTurn: null};
     let center;
@@ -133,6 +133,7 @@
 
     $: highlighted.etc = (()=>{
         let attacks = []
+        gameState;
         if (displayMode === DisplayMode.ALL || displayMode === DisplayMode.ATTACK) {
             attacks = generatePossibleTo(movementPattern.attackSlides).map(function(val){
                 return {
@@ -157,6 +158,9 @@
     })();
 
 </script>
+
+
+
 <Board
         on:tileMouseUp
         on:tileMouseOver
