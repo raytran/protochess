@@ -1,6 +1,6 @@
 <script>
-    import WebChess from './chess/WebChess.svelte';
-    import Chat from "./chat/Chat.svelte";
+    import WebChess from './Chess/WebChess.svelte';
+    import Chat from "./Chat/Chat.svelte";
     import PList from "./PlayersList/PlayersList.svelte";
     import {fly} from 'svelte/transition';
     import {Connected} from "./WebsocketStore";

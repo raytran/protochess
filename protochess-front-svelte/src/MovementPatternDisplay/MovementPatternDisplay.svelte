@@ -1,5 +1,5 @@
 <script>
-    import Board from "../chess/Board.svelte";
+    import Board from "../Chess/Board.svelte";
     import {DisplayMode} from "./DisplayMode";
     //Renders a MovementPattern on a Board
     //Readonly; dispatches events
@@ -50,8 +50,6 @@
                     for (let l=0;l<movementPattern.translateSlideDeltas[k].length;l++){
                         let loc1 = movementPattern.attackSlideDeltas[i][j];
                         let loc2 = movementPattern.translateSlideDeltas[k][l];
-                        console.log(loc1);
-                        console.log(loc2);
                         if (loc1[0] === loc2[0] && loc1[1] === loc2[1]){
                             attackTranslateSlides.push(loc1);
                         }

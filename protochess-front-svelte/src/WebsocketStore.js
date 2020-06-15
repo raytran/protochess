@@ -1,6 +1,6 @@
 import {derived, writable} from "svelte/store";
 
-const URI = "ws://192.168.0.16:3030/chess/bruh";
+const URI = "ws://192.168.0.16:3030/Chess/bruh";
 const socket = new WebSocket(URI);
 
 

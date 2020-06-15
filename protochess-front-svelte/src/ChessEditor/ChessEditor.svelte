@@ -1,7 +1,7 @@
 <script>
-    import Tile from '../chess/Tile.svelte'
+    import Tile from '../Chess/Tile.svelte'
     import {onMount} from 'svelte';
-    import Board from "../chess/Board.svelte";
+    import Board from "../Chess/Board.svelte";
     import PieceEditor from "./PieceEditor.svelte";
 
     onMount(async () => {

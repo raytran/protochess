@@ -1,6 +1,4 @@
 <script>
-    import Board from "../chess/Board.svelte";
-
     export let pieceType;
     export let movementPattern = {
         attackSlides: {
@@ -30,8 +28,8 @@
     }
 
     import {createEventDispatcher} from 'svelte';
-    import {DisplayMode} from "./DisplayMode";
-    import MovementPatternDisplay from "./MovementPatternDisplay.svelte";
+    import {DisplayMode} from "../MovementPatternDisplay/DisplayMode";
+    import MovementPatternDisplay from "../MovementPatternDisplay/MovementPatternDisplay.svelte";
 
     const dispatch = createEventDispatcher();
 
