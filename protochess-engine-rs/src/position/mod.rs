@@ -68,6 +68,11 @@ impl Position {
        self.movement_rules.get(piece_type)
     }
 
+    pub(crate) fn set_bounds(&mut self, dims: Dimensions, bounds: Bitboard){
+        self.dimensions = dims;
+        self.bounds = bounds;
+    }
+
 
     /// Modifies the position to make the move
     pub fn make_move(&mut self, move_: Move) {

@@ -20,6 +20,8 @@ pub use crate::types::PieceType;
 pub use crate::types::chess_move::Move;
 use crate::searcher::Searcher;
 pub use crate::position::movement_pattern::MovementPatternExternal;
+use crate::types::bitboard::Bitboard;
+
 
 /// Simple game without an AI engine
 pub struct Game {
@@ -33,6 +35,14 @@ impl Game {
         }
     }
 
+    pub fn set_bounds(&mut self, width: u8, height: u8, valid_squares:Vec<(u8,u8)>){
+        let mut bounds = Bitboard::zero();
+        for square in valid_squares {
+            bounds.set_bit(to_index(square.0, square.1), true);
+        }
+        self.current_position.set_bounds(Dimensions{width, height}, bounds);
+    }
+
     pub fn to_string(&mut self) -> String {
         self.current_position.to_string()
     }
@@ -42,7 +52,7 @@ impl Game {
     }
 
     /// Performs a move from (x1, y1) to (x2, y2) on the current board position
-    pub fn make_move(&mut self, move_generator:&MoveGenerator, x1:u8, y1:u8, x2:u8, y2: u8) -> bool{
+    pub fn make_move(&mut self, move_generator:&MoveGenerator, x1:u8, y1:u8, x2:u8, y2: u8) -> bool {
         let from = bitboard::to_index(x1,y1) as u8;
         let to = bitboard::to_index(x2,y2) as u8;
 
@@ -73,7 +83,6 @@ impl Game {
 
 /// Starting point for the engine
 pub struct Engine {
-    pub(crate) dimensions: Dimensions,
     pub(crate) current_position: Position,
     pub(crate) move_generator: MoveGenerator,
     pub(crate) evaluator: Evaluator,
@@ -85,7 +94,6 @@ impl Engine {
     pub fn default() -> Engine{
         let dims = Dimensions{width:8,height:8};
         Engine{
-            dimensions:dims,
             move_generator: MoveGenerator::new(),
             current_position: Position::default(),
             evaluator: Evaluator::new(),
@@ -146,9 +154,7 @@ impl Engine {
     }
 
     pub fn from_fen(fen:String) -> Engine{
-        let dims = Dimensions{width:8,height:8};
         Engine{
-            dimensions:dims,
             move_generator: MoveGenerator::new(),
             evaluator: Evaluator::new(),
             searcher: Searcher::new(),
