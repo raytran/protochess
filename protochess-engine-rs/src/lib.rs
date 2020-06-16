@@ -40,7 +40,15 @@ impl Game {
         for square in valid_squares {
             bounds.set_bit(to_index(square.0, square.1), true);
         }
-        self.current_position.set_bounds(Dimensions{width, height}, bounds);
+        self.current_position.set_bounds(Dimensions{ width, height }, bounds);
+    }
+
+    pub fn get_width(&self) -> u8 {
+        self.current_position.dimensions.width
+    }
+
+    pub fn get_height(&self) -> u8 {
+        self.current_position.dimensions.height
     }
 
     pub fn to_string(&mut self) -> String {
