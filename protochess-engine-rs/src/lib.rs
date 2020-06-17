@@ -13,7 +13,7 @@ mod evaluator;
 mod searcher;
 mod rankfile;
 mod transposition_table;
-
+use std::collections::HashMap;
 use crate::evaluator::Evaluator;
 use crate::position::movement_pattern::MovementPattern;
 pub use crate::types::PieceType;
@@ -42,6 +42,49 @@ impl Game {
         }
         self.current_position.set_bounds(Dimensions{ width, height }, bounds);
     }
+
+    fn each_owner_contains_k(vec: &Vec<(u8,u8,u8,char)>) -> bool{
+        let mut num_players:u8 = 0;
+        for (owner, x, y, pce) in vec {
+            if *owner >= num_players {
+                num_players = owner + 1;
+            }
+        }
+        let mut has_k = vec![false; num_players as usize];
+        for (owner, x, y, pce_char) in vec {
+            if pce_char.to_ascii_lowercase() == 'k' {
+                has_k[*owner as usize] = true;
+            }
+        }
+        for k in has_k {
+            if !k { return false; }
+        }
+        true
+    }
+    pub fn set_state(&mut self, movement_patterns: HashMap<char, MovementPatternExternal>,
+                     valid_squares:Vec<(u8, u8)>, pieces: Vec<(u8, u8, u8, char)>){
+        assert!(Game::each_owner_contains_k(&pieces));
+        let mut width = 0;
+        let mut height = 0;
+        let mut bounds = Bitboard::zero();
+        for sq in valid_squares {
+            if sq.0 >= width { width = sq.0 + 1; }
+            if sq.1 >= height { height = sq.1 + 1; }
+            bounds.set_bit(to_index(sq.0, sq.1), true);
+        }
+
+        let pieces =
+            pieces.into_iter()
+                .map(|(owner, x, y, pce_chr)|
+                    (owner, to_index(x, y) as u8, PieceType::from_char(pce_chr)))
+                .collect();
+        self.current_position = Position::custom(Dimensions{width, height},
+                                                 bounds,
+                                                 movement_patterns, pieces
+        )
+
+    }
+
 
     pub fn get_width(&self) -> u8 {
         self.current_position.dimensions.width
@@ -224,9 +267,9 @@ impl Engine {
     ///Calculates and plays the best move found
     pub fn play_best_move(&mut self, depth:u8) -> bool {
         if let Some(best) = self.searcher.get_best_move(&mut self.current_position,
-                                               &mut self.evaluator,
-                                               &self.move_generator,
-                                               depth){
+                                                        &mut self.evaluator,
+                                                        &self.move_generator,
+                                                        depth){
             let (x1, y1) = from_index(best.get_from() as usize);
             let (x2, y2) = from_index(best.get_to() as usize);
             self.make_move(x1, y1, x2, y2)

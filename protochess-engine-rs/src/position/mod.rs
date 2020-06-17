@@ -11,6 +11,7 @@ use crate::position::movement_pattern::{MovementPattern, MovementPatternExternal
 use crate::position::piece::Piece;
 use std::collections::HashMap;
 use crate::position::zobrist_table::ZobristTable;
+use crate::constants::fen::EMPTY;
 
 mod position_properties;
 mod castle_rights;
@@ -323,7 +324,24 @@ impl Position {
         squares
     }
 
-    pub fn from_fen(fen: String) -> Position{
+    ///pieces(owner, index, PieceType)
+    pub(crate) fn custom(dims: Dimensions, bounds: Bitboard,
+                  movement_patterns: HashMap<char, MovementPatternExternal>,
+                  pieces: Vec<(u8, u8, PieceType)>) -> Position {
+        let mut pos = Position::from_fen(String::from(EMPTY));
+        pos.dimensions = dims;
+        pos.bounds = bounds;
+        for (chr, mpe) in movement_patterns {
+            pos.register_piecetype(chr, mpe);
+        }
+
+        for (owner, index, piece_type) in pieces {
+            pos.add_piece(owner, piece_type, index);
+        }
+        pos
+    }
+
+    pub fn from_fen(fen: String) -> Position {
         let dims = Dimensions{width:DEFAULT_WIDTH,height:DEFAULT_HEIGHT};
 
         let mut wb_pieces = ArrayVec::<[_;4]>::new();

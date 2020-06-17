@@ -14,7 +14,7 @@ pub enum PieceType {
 
 impl PieceType {
     pub fn from_char(c:char) -> PieceType {
-        match c {
+        match c.to_ascii_lowercase() {
             'k' =>{PieceType::King}
             'q' =>{PieceType::Queen}
             'r' =>{PieceType::Rook}
