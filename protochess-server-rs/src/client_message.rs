@@ -1,4 +1,27 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct Slides {
+    pub north: bool,
+    pub east: bool,
+    pub south: bool,
+    pub west: bool,
+    pub northeast: bool,
+    pub northwest: bool,
+    pub southeast: bool,
+    pub southwest: bool,
+}
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct MovementPattern{
+    pub attack_slides: Slides,
+    pub translate_slides: Slides,
+    pub attack_jumps:Vec<(i8, i8)>,
+    pub translate_jumps: Vec<(i8, i8)>,
+    pub attack_slide_deltas: Vec<Vec<(i8, i8)>>,
+    pub translate_slide_deltas: Vec<Vec<(i8, i8)>>,
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Turn {
     pub promote_to: Option<char>,
@@ -40,7 +63,8 @@ pub enum ClientResponse {
         //from(x,y) to (x,y)
         last_turn: Option<Turn>,
         tiles: Vec<Tile>,
-        pieces: Vec<Piece>
+        pieces: Vec<Piece>,
+        movement_patterns: HashMap<char, MovementPattern>,
     },
     PlayerList{
         player_num: u8,
@@ -64,11 +88,12 @@ pub enum ClientRequest {
     MovesFrom(u8, u8),
     ListPlayers,
     SwitchLeader(u8),
-    StartGame{
+    EditGameState{
         width: u8,
         height: u8,
         tiles: Vec<Tile>,
-        pieces: Vec<Piece>
+        pieces: Vec<Piece>,
+        movement_patterns: HashMap<char, MovementPattern>,
     },
     GameState
 }
@@ -79,6 +104,7 @@ mod tests {
     use crate::client_message::ClientRequest;
     use crate::client_message::ClientResponse;
     use crate::client_message::Turn;
+    use std::collections::HashMap;
     use serde_json::json;
     use uuid::Uuid;
     #[test]
@@ -107,18 +133,15 @@ mod tests {
         println!("{}", lol);
 
 
+        let eds = ClientRequest::EditGameState {
+            width: 8,
+            height: 8,
+            tiles: vec![],
+            pieces: vec![],
+            movement_patterns: HashMap::new(),
+        };
+        let lol = json!(eds);
 
-        let lol = json!(ClientResponse::GameState {
-        height:0,
-        in_check_kings: None,
-        to_move_in_check: false,
-        winner: None,
-        width: 0,
-        last_turn:None,
-        pieces:vec![],
-        tiles:vec![],
-        to_move:0,
-        });
         println!("{}", lol);
     }
 }

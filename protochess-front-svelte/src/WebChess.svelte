@@ -1,29 +1,34 @@
 <!-- A Board with websocketstore bindings -->
 <script>
-    import Board from "./Board.svelte";
-    import {sendRequest, GameState, PlayersList, MovesFrom} from '../WebsocketStore';
+    import Board from "./Chess/Board.svelte";
+    import {sendRequest, GameState, PlayersList, MovesFrom} from './WebsocketStore';
+    import ChessEditor from "./ChessEditor/ChessEditor.svelte";
+
     let highlighted = {};
-    MovesFrom.subscribe(function(e){
+    MovesFrom.subscribe(function (e) {
         highlighted.lastTurn = null;
         highlighted.possibleMoves = e;
     });
 
     //Reset highlighting whenever the gamestate updates
-    GameState.subscribe(function(e){
+    GameState.subscribe(function (e) {
         highlighted = null;
-        highlighted= {in_check_kings: e.in_check_kings, possibleMoves: null, lastTurn: e.last_turn};
+        highlighted = {in_check_kings: e.in_check_kings, possibleMoves: null, lastTurn: e.last_turn};
     });
+
     function handleGameRequest(e) {
         sendRequest(e.detail);
     }
-</script>
 
+</script>
 
 <div ondragstart="return false;" ondrop="return false;">
     <Board
             {highlighted}
             on:gameRequest={handleGameRequest}
             gameState={$GameState}
+            width={$GameState.width}
+            height={$GameState.height}
             player_num={$PlayersList.player_num}
             flipped={$PlayersList.player_num !== 0} />
 </div>

@@ -8,15 +8,6 @@
     export let flipped;
     export let highlighted = null;
     const dispatch = createEventDispatcher();
-    // Game width height
-    $: gameDimensions = {width: gameState.width, height: gameState.height};
-
-    // % of parent dimensions
-    $: tileDimensions = {
-        width: Math.min(100 / gameState.width, 100 / gameState.height),
-        height: Math.min(100 / gameState.width, 100 / gameState.height)
-    };
-
     function handleTileClick(e) {
         dispatch("tileClick", e.detail);
         let tile = e.detail;
@@ -46,20 +37,24 @@
     #boardWrapper{
         position: relative;
         width: 100%;
-        height: 100%;
+        height: 0;
+        padding-bottom: 100%;
     }
     #board{
         background-color: #EAEAEA;
-        position: relative;
-        width: 100%;
-        padding-bottom: 100%;
+        grid-template-columns: repeat(var(--size), 1fr);
+        grid-template-rows: repeat(var(--size), 1fr);
         -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
         -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
         box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+
+        display: grid;
+        justify-items: center;
     }
 </style>
+
 <div id="boardWrapper">
-    <div id="board">
+    <div id="board" style="--size: {Math.max(gameState.width, gameState.height)}">
         {#if gameState.tiles}
             {#each gameState.tiles as tile}
                 <Tile color = { tile.tile_type === 'b' ? ColorConstants.DARK_SQUARE : tile.tile_type === 'w' ? ColorConstants.LIGHT_SQUARE : ColorConstants.DISABLED }
@@ -67,7 +62,7 @@
                       on:tileMouseOver
                       on:tileMouseDown
                       on:tileMouseUp
-                      {tile} {flipped} {gameDimensions} {tileDimensions}/>
+                      {tile} {flipped} gameHeight={gameState.height} gameWidth={gameState.width} />
             {/each}
         {/if}
         {#if highlighted}
@@ -78,7 +73,8 @@
                       on:tileMouseDown
                       on:tileMouseUp
                       tile={{x: highlighted.lastTurn.from[0], y: highlighted.lastTurn.from[1]}}
-                      {flipped} {gameDimensions} {tileDimensions}/>
+                      {flipped}
+                      gameHeight={gameState.height} gameWidth={gameState.width} />
 
                 <Tile color = {ColorConstants.TO_HIGHLIGHT_COLOR}
                       on:tileClick={handleTileClick}
@@ -86,7 +82,8 @@
                       on:tileMouseDown
                       on:tileMouseUp
                       tile={{x: highlighted.lastTurn.to[0], y: highlighted.lastTurn.to[1]}}
-                      {flipped} {gameDimensions} {tileDimensions}/>
+                      {flipped}
+                      gameHeight={gameState.height} gameWidth={gameState.width} />
             {/if}
             {#if highlighted.possibleMoves}
                 <Tile color = {ColorConstants.POSSIBLE_FROM_HIGHLIGHT_COLOR}
@@ -96,11 +93,13 @@
                       on:tileMouseDown
                       on:tileMouseUp
                       tile={{x: highlighted.possibleMoves.from[0], y: highlighted.possibleMoves.from[1]}}
-                      {flipped} {gameDimensions} {tileDimensions}/>
+                      {flipped}
+                      gameHeight={gameState.height} gameWidth={gameState.width} />
                 {#each highlighted.possibleMoves.to as pos}
                     <Tile color = {ColorConstants.POSSIBLE_TO_HIGHLIGHT_COLOR}
                           on:tileClick={handleHighlightToClick} tile={{x: pos[0], y: pos[1]}}
-                          {flipped} {gameDimensions} {tileDimensions}/>
+                          {flipped}
+                          gameHeight={gameState.height} gameWidth={gameState.width} />
                 {/each}
             {/if}
             {#if highlighted.in_check_kings}
@@ -110,7 +109,8 @@
                           on:tileMouseOver
                           on:tileMouseDown
                           on:tileMouseUp
-                          {flipped} {gameDimensions} {tileDimensions}/>
+                          {flipped}
+                          gameHeight={gameState.height} gameWidth={gameState.width} />
                 {/each}
             {/if}
             {#if highlighted.etc}
@@ -120,16 +120,15 @@
                           on:tileMouseOver
                           on:tileMouseDown
                           on:tileMouseUp
-                          {flipped} {gameDimensions} {tileDimensions}/>
+                          {flipped}
+                          gameHeight={gameState.height} gameWidth={gameState.width} />
                 {/each}
             {/if}
         {/if}
-
         {#if gameState.pieces}
             {#each gameState.pieces as piece}
-                <div style="pointer-events: none">
-                    <Piece on:pieceClick {piece} {flipped} {gameDimensions} {tileDimensions}/>
-                </div>
+                <Piece on:pieceClick {piece} {flipped}
+                       gameHeight={gameState.height} gameWidth={gameState.width} />
             {/each}
         {/if}
     </div>

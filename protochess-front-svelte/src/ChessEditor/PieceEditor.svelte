@@ -1,30 +1,33 @@
 <script>
     export let pieceType;
-    export let movementPattern = {
-        attackSlides: {
-            north: false,
-            east: false,
-            south: false,
-            west: false,
-            northeast: false,
-            northwest: false,
-            southeast: false,
-            southwest: false,
-        },
-        translateSlides: {
-            north: false,
-            east: false,
-            south: false,
-            west: false,
-            northeast: false,
-            northwest: false,
-            southeast: false,
-            southwest: false,
-        },
-        attackJumps: [],
-        translateJumps: [],
-        attackSlideDeltas: [[]],
-        translateSlideDeltas: [[]]
+    export let movementPattern = null
+    if (movementPattern === null) {
+        movementPattern = {
+            attackSlides: {
+                north: false,
+                east: false,
+                south: false,
+                west: false,
+                northeast: false,
+                northwest: false,
+                southeast: false,
+                southwest: false,
+            },
+            translateSlides: {
+                north: false,
+                east: false,
+                south: false,
+                west: false,
+                northeast: false,
+                northwest: false,
+                southeast: false,
+                southwest: false,
+            },
+            attackJumps: [],
+            translateJumps: [],
+            attackSlideDeltas: [[]],
+            translateSlideDeltas: [[]]
+        }
     }
 
     import {createEventDispatcher} from 'svelte';

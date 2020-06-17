@@ -1,6 +1,6 @@
 import {derived, writable} from "svelte/store";
 
-const URI = "ws://192.168.0.16:3030/Chess/bruh";
+const URI = "ws://localhost:3030/chess/bruh";
 const socket = new WebSocket(URI);
 
 
@@ -18,9 +18,11 @@ socket.onopen = function(){
 
 socket.onmessage = function(msg){
     try {
+        console.log(msg.data);
         let apiMsg = JSON.parse(msg.data);
         console.log(apiMsg.content);
         if (apiMsg.type === 'GameState') {
+            console.log(apiMsg.content.width);
             _GameState.set(apiMsg.content);
         }else if (apiMsg.type === 'ChatMessage') {
             _ChatMessage.set(apiMsg.content);

@@ -6,6 +6,5 @@
 
 </style>
 <main>
-    <h1>Protochess</h1>
-    <ChessEditor/>
+    <GameRoom/>
 </main>
