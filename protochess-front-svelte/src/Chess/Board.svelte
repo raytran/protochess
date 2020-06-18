@@ -44,9 +44,8 @@
         background-color: #EAEAEA;
         grid-template-columns: repeat(var(--size), 1fr);
         grid-template-rows: repeat(var(--size), 1fr);
-        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
+
+        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
 
         display: grid;
         justify-items: center;

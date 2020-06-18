@@ -139,47 +139,65 @@
 
 </script>
 <style>
-    #container {
+    #container{
         display: grid;
-        padding: 1em;
+        justify-items: center;
         column-gap: 1em;
         row-gap: 1em;
-        align-items: start;
-        justify-items: center;
-        width: 100%;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-areas: 'left-control board right-control';
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        font-size: 1em;
+    }
+    @media (max-width: 1200px) {
+        #container {
+            grid-template-areas:
+                    'board        board'
+                    'left-control right-control'
+        }
     }
 
-    #mpWrapper {
-        width: 100%;
-        height: 100%;
-    }
-    #toolSelector {
-        display: grid;
-        justify-items: center;
-        font-size: 1em;
-        grid-template-columns: repeat(auto-fit, minmax(0.5em, 1fr));
-    }
-    #slideBoxes {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0.5em, 1fr));
+    @media (max-width: 650px) {
+        #container {
+            grid-template-areas:
+                    'board'
+                    'left-control'
+                    'right-control'
+        }
     }
 
     #leftPanel{
-        width: 90%;
-        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        background-color: white;
-    }
-    #rightPanel{
-        width: 90%;
+        grid-area: left-control;
+        min-width: 300px;
+        max-width: 400px;
         padding: 1em;
-        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        background-color: white;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+        text-align: left;
     }
+
+    #mpWrapper {
+        max-width: 800px;
+        grid-area: board;
+        width: 100%;
+    }
+
+    #rightPanel {
+        grid-area: right-control;
+        min-width: 300px;
+        width: 100%;
+        max-width: 400px;
+        max-height: 100%;
+        padding: 1em;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    }
+    #toolSelector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    #slideBoxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
 
     fieldset{
         border: 0;

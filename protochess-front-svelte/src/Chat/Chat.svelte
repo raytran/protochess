@@ -44,8 +44,8 @@
     .chat {
         display: flex;
         flex-direction: column;
+        width: 100%;
         height: 100%;
-        max-width: 500px;
     }
     span {
         padding: 0.2em;

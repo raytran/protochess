@@ -1,6 +1,7 @@
 <script>
     import MovementPatternDisplay from "../MovementPatternDisplay/MovementPatternDisplay.svelte";
     import {DisplayMode} from "../MovementPatternDisplay/DisplayMode";
+    export let flipped = false;
     export let movementPatterns;
     let customPieces = [];
     $: customPieces = (()=>{
@@ -46,7 +47,7 @@
         <MovementPatternDisplay
                 {movementPattern}
                 {pieceType}
-                flipped={false}
+                {flipped}
                 {size}
                 displayMode={DisplayMode.ALL}
         />
