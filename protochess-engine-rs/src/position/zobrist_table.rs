@@ -77,7 +77,7 @@ impl ZobristTable {
         }
     }
 
-    pub fn get_zobrist_sq_from_pt(&mut self, pt: &PieceType, owner: u8, index: u8) -> u64 {
+    pub fn get_zobrist_sq_from_pt(&self, pt: &PieceType, owner: u8, index: u8) -> u64 {
         match pt {
             PieceType::King => {
                 self.zobrist[owner as usize][0][index as usize]
@@ -99,23 +99,24 @@ impl ZobristTable {
             }
             PieceType::Custom(c) => {
                 if !self.custom_zobrist.contains_key(&(owner, pt.to_owned())) {
-                    self.register_piecetype(owner, pt);
+                    return 0;
+                    //self.register_piecetype(owner, pt);
                 }
                 self.custom_zobrist.get(&(owner, pt.to_owned())).unwrap()[index as usize]
             }
         }
     }
 
-    pub fn get_zobrist_sq(&mut self, piece:&Piece, index:u8) -> u64 {
+    pub fn get_zobrist_sq(&self, piece:&Piece, index:u8) -> u64 {
         self.get_zobrist_sq_from_pt(&piece.piece_type, piece.player_num, index)
     }
 
-    pub fn get_ep_zobrist_file(&mut self, rank: u8) -> u64 {
+    pub fn get_ep_zobrist_file(&self, rank: u8) -> u64 {
         self.ep_zobrist[rank as usize]
     }
 
     //Registers a custom piece type
-    fn register_piecetype(&mut self, player_num:u8, pt:&PieceType){
+    pub fn register_piecetype(&mut self, player_num:u8, pt:&PieceType){
         let randoms = self.make_randoms();
         self.custom_zobrist.insert((player_num, pt.to_owned()), randoms);
     }

@@ -19,13 +19,27 @@ mod zobrist_table;
 pub mod piece;
 pub mod piece_set;
 pub mod movement_pattern;
+use std::sync::RwLock;
+
+//No reason to have more than one zobrist table
+lazy_static! {
+    static ref ZOBRIST_TABLE: ZobristTable = {
+        let mut zob = ZobristTable::new();
+        for c in "acdefghijlmostuvwxyz".chars() {
+            zob.register_piecetype(0, &PieceType::Custom(c));
+            zob.register_piecetype(1, &PieceType::Custom(c));
+        }
+        zob
+    };
+}
+
+
 /// Represents a single position in chess
 pub struct Position {
     pub dimensions: Dimensions,
     pub bounds: Bitboard, //Bitboard representing the boundaries
     pub num_players: u8,
     pub whos_turn: u8,
-    pub zobrist_table: ZobristTable,
     //Map of custom piece types to movement patterns
     pub movement_rules: HashMap<PieceType, MovementPattern>,
     pub pieces:ArrayVec<[PieceSet;4]>, //pieces[0] = white's pieces, pieces[1] black etc
@@ -48,6 +62,7 @@ impl Position {
         self.movement_rules.insert(PieceType::Custom(char_rep), mp);
         //Insert blank for all players
         for (i, p) in self.pieces.iter_mut().enumerate() {
+                //ZOBRIST_TABLE.register_piecetype(0, &PieceType::Custom(char_rep));
             p.custom.push(Piece::blank_custom(i as u8, char_rep));
         }
     }
@@ -77,11 +92,12 @@ impl Position {
 
     /// Modifies the position to make the move
     pub fn make_move(&mut self, move_: Move) {
+        let zobrist_table = &ZOBRIST_TABLE;
         let my_player_num = self.whos_turn;
         self.whos_turn = (self.whos_turn + 1) % self.num_players;
 
         let mut new_props:PositionProperties = (*self.properties).clone();
-        new_props.zobrist_key ^= self.zobrist_table.get_to_move_zobrist(self.whos_turn);
+        new_props.zobrist_key ^= zobrist_table.get_to_move_zobrist(self.whos_turn);
         //In the special case of the null move, don't do anything except update whos_turn
         //And update props
         if move_.get_move_type() == MoveType::Null {
@@ -101,7 +117,7 @@ impl Position {
                 let (owner, captd) = self.piece_at(capt_index as usize).unwrap();
                 let captd_piece_type = (&captd.piece_type).to_owned();
                 let captd_owner = captd.player_num;
-                new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&captd_piece_type,captd_owner , capt_index);
+                new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&captd_piece_type,captd_owner , capt_index);
                 new_props.captured_piece = Some((owner, captd_piece_type));
                 self._remove_piece(capt_index);
             },
@@ -109,8 +125,8 @@ impl Position {
                 let rook_from = move_.get_target();
                 let (x, y) = from_index(move_.get_to() as usize);
                 let rook_to = to_index(x - 1, y) as u8;
-                new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_from);
-                new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_to);
+                new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_from);
+                new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_to);
                 self.move_piece(rook_from,rook_to);
                 new_props.castling_rights.set_player_castled(my_player_num);
             },
@@ -118,8 +134,8 @@ impl Position {
                 let rook_from = move_.get_target();
                 let (x, y) = from_index(move_.get_to() as usize);
                 let rook_to = to_index(x + 1, y) as u8;
-                new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_from);
-                new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_to);
+                new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_from);
+                new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&PieceType::Rook, my_player_num, rook_to);
                 self.move_piece(rook_from,rook_to);
                 new_props.castling_rights.set_player_castled(my_player_num);
             }
@@ -130,8 +146,8 @@ impl Position {
         let to = move_.get_to();
         let from_piece = self.piece_at(from as usize).unwrap().1;
         let from_piece_type = from_piece.piece_type.to_owned();
-        new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&from_piece_type, my_player_num, from);
-        new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&from_piece_type, my_player_num, to);
+        new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&from_piece_type, my_player_num, from);
+        new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&from_piece_type, my_player_num, to);
 
         //Move piece to location
         self.move_piece(from, to);
@@ -139,10 +155,10 @@ impl Position {
         match move_.get_move_type() {
             MoveType::PromotionCapture | MoveType::Promotion => {
                 new_props.promote_from = Some(from_piece_type.to_owned());
-                new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&from_piece_type, my_player_num, to);
+                new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&from_piece_type, my_player_num, to);
                 self._remove_piece(to);
                 let promote_to_pt = PieceType::from_char(move_.get_promotion_char().unwrap());
-                new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&promote_to_pt, my_player_num, to);
+                new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&promote_to_pt, my_player_num, to);
                 self._add_piece(my_player_num, promote_to_pt, to);
             },
             _ => {}
@@ -156,7 +172,7 @@ impl Position {
         if let Some(sq) = self.properties.ep_square {
             //If the last prop had some ep square then we want to clear zob by xoring again
             let (epx, _epy) = from_index(sq as usize);
-            new_props.zobrist_key ^= self.zobrist_table.get_ep_zobrist_file(epx);
+            new_props.zobrist_key ^= zobrist_table.get_ep_zobrist_file(epx);
         }
 
         if from_piece_type == PieceType::Pawn
@@ -169,7 +185,7 @@ impl Position {
                     to_index(x1, y2 + 1) as u8
                 }
             );
-            new_props.zobrist_key ^= self.zobrist_table.get_ep_zobrist_file(x1);
+            new_props.zobrist_key ^= zobrist_table.get_ep_zobrist_file(x1);
         } else {
             new_props.ep_square = None;
         }
@@ -178,18 +194,18 @@ impl Position {
         //Disable rights if applicable
         if new_props.castling_rights.can_player_castle(my_player_num) {
             if from_piece_type == PieceType::King {
-                new_props.zobrist_key ^= self.zobrist_table.get_castling_zobrist(my_player_num, true);
-                new_props.zobrist_key ^= self.zobrist_table.get_castling_zobrist(my_player_num, false);
+                new_props.zobrist_key ^= zobrist_table.get_castling_zobrist(my_player_num, true);
+                new_props.zobrist_key ^= zobrist_table.get_castling_zobrist(my_player_num, false);
                 new_props.castling_rights.disable_kingside_castle(my_player_num);
                 new_props.castling_rights.disable_queenside_castle(my_player_num);
             }else if from_piece_type == PieceType::Rook {
                 //King side
                 if x1 >= self.dimensions.width/2 {
                     new_props.castling_rights.disable_kingside_castle(my_player_num);
-                    new_props.zobrist_key ^= self.zobrist_table.get_castling_zobrist(my_player_num, true);
+                    new_props.zobrist_key ^= zobrist_table.get_castling_zobrist(my_player_num, true);
                 }else{
                     new_props.castling_rights.disable_queenside_castle(my_player_num);
-                    new_props.zobrist_key ^= self.zobrist_table.get_castling_zobrist(my_player_num, false);
+                    new_props.zobrist_key ^= zobrist_table.get_castling_zobrist(my_player_num, false);
                 }
             }
         }
@@ -483,7 +499,6 @@ impl Position {
         }
 
         let pos = Position{
-            zobrist_table,
             whos_turn,
             num_players: 2,
             dimensions: dims,
@@ -579,7 +594,8 @@ impl Position {
     /// Public interface for modifying the position
     pub fn add_piece(&mut self, owner:u8, pt:PieceType, index:u8) {
         let mut new_props:PositionProperties = (*self.properties).clone();
-        new_props.zobrist_key ^= self.zobrist_table.get_zobrist_sq_from_pt(&pt, owner, index);
+        let zobrist_table = &ZOBRIST_TABLE;
+        new_props.zobrist_key ^= zobrist_table.get_zobrist_sq_from_pt(&pt, owner, index);
         self._add_piece(owner, pt, index);
         self.update_occupied();
         new_props.prev_properties = Some(Arc::clone(&self.properties));

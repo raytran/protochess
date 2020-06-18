@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate lazy_static;
 use crate::types::{Dimensions, bitboard};
 pub use crate::position::Position;
 pub use crate::move_generator::MoveGenerator;

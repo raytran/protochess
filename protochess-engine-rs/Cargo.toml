@@ -8,9 +8,13 @@ edition = "2018"
 [profile.dev]
 opt-level = 3
 
+[profile.test]
+opt-level = 3
+
 [dependencies]
 scan-rules = "0.2.0"
 rand = "0.7.3"
 arrayvec = "0.5.1"
 numext-fixed-uint = "0.1.4"
 ahash = "0.3.5"
+lazy_static = "1.4.0"
