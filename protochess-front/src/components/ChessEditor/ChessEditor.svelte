@@ -193,12 +193,13 @@
         justify-items: center;
         column-gap: 1em;
         row-gap: 1em;
-        grid-template-areas: 'left-control board right-control';
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-areas: 'left-control board board right-control';
+        grid-template-columns: repeat(4,  1fr);
         font-size: 1em;
     }
     @media (max-width: 1200px) {
         #container {
+            grid-template-columns: repeat(2,  1fr);
             grid-template-areas:
                     'board        board'
                     'left-control right-control'
@@ -207,6 +208,7 @@
 
     @media (max-width: 650px) {
         #container {
+            grid-template-columns: 1fr;
             grid-template-areas:
                     'board'
                     'left-control'
@@ -216,22 +218,21 @@
 
     #leftControl{
         grid-area: left-control;
-        min-width: 300px;
+        width: 100%;
         max-width: 350px;
         padding: 1em;
         box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
         text-align: center;
     }
     #boardWrapper {
-        max-width: 800px;
+        max-width: 700px;
         grid-area: board;
-        min-width: 30vw;
         width: 100%;
     }
 
     #rightControl {
         grid-area: right-control;
-        min-width: 300px;
+        width: 100%;
         max-width: 400px;
         padding: 1em;
         box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);

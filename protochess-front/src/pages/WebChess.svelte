@@ -35,14 +35,13 @@
         grid-area: board;
         position: relative;
         width: 100%;
-        min-width: 30vw;
         max-width: 700px;
     }
 
     #chatWrapper {
         grid-area: chat;
         width: 100%;
-        max-width: 500px;
+        max-width: 400px;
         height: 50vh;
         background-color: white;
         -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
@@ -51,11 +50,10 @@
     }
     #movementPatternDisplayBarWrapper {
         grid-area: movement-pattern;
-        min-width: 300px;
         text-align: center;
         height: 50vh;
         width: 100%;
-        max-width:500px;
+        max-width:400px;
         overflow: scroll;
         box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
     }
@@ -65,12 +63,13 @@
         justify-items: center;
         column-gap: 1em;
         row-gap: 1em;
-        grid-template-columns: repeat(auto-fit, minmax(20vw, 1fr));
+        grid-template-columns: repeat(4,  1fr);
         grid-template-areas: 'chat board board movement-pattern';
     }
 
     @media (max-width: 1200px) {
         #boardAndMP {
+            grid-template-columns: repeat(2,  1fr);
             grid-template-areas:
                     'board        board'
                     'chat         movement-pattern'
@@ -79,6 +78,7 @@
 
     @media (max-width: 650px) {
         #boardAndMP {
+            grid-template-columns: 1fr;
             grid-template-areas:
                     'board'
                     'chat'

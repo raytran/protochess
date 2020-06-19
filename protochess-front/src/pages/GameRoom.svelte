@@ -73,7 +73,6 @@
 </style>
 
 <div>
-    <h1>Protochess</h1>
     {#if $Connected }
         <span style="color: green"> ✓ Connected</span>
     {:else}
