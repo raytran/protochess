@@ -1,9 +1,9 @@
 <script>
     import WebChess from './WebChess.svelte';
-    import PList from "./PlayersList/PlayersList.svelte";
-    import {sendRequest, GameState, PlayersList, MovesFrom} from './WebsocketStore';
-    import {Connected} from "./WebsocketStore";
-    import ChessEditor from "./ChessEditor/ChessEditor.svelte";
+    import PList from "../components/PlayersList/PlayersList.svelte";
+    import {sendRequest, GameState, PlayersList, MovesFrom} from '../WebsocketStore';
+    import {Connected} from "../WebsocketStore";
+    import ChessEditor from "../components/ChessEditor/ChessEditor.svelte";
 
 
     function requestEdits(e) {
@@ -80,7 +80,7 @@
         <span style="color: red"> ✖ Disconnected</span>
     {/if}
     <div style="display: inline-block">
-        <PList/>
+        <PList playersList={$PlayersList}/>
     </div>
     <div class="tabs">
         <input type="radio" name="tabs" id="tabone" checked="checked">

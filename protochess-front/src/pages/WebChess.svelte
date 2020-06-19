@@ -1,11 +1,12 @@
 <!-- A Board with websocketstore bindings -->
 <script>
-    import Board from "./Chess/Board.svelte";
-    import {sendRequest, GameState, PlayersList, MovesFrom} from './WebsocketStore';
-    import ChessEditor from "./ChessEditor/ChessEditor.svelte";
+    import Board from "../components/Chess/Board.svelte";
+    import {sendRequest, GameState, PlayersList, MovesFrom} from '../WebsocketStore';
+    import ChessEditor from "../components/ChessEditor/ChessEditor.svelte";
     import {fly, fade} from 'svelte/transition';
-    import MovementPatternDisplayBar from "./MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
-    import Chat from "./Chat/Chat.svelte";
+    import MovementPatternDisplayBar from "../components/MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
+    import Chat from "../components/Chat/Chat.svelte";
+    import WebChat from "./_WebChat.svelte";
 
     let chatVisible = true;
     let mpVisible = true;
@@ -27,7 +28,6 @@
     }
 
 </script>
-
 
 
 <style>
@@ -91,7 +91,7 @@
 <div  id="boardAndMP">
     {#if chatVisible}
         <div transition:fade="{{duration: 200}}" id="chatWrapper" style="border:1px solid lightgray;">
-            <Chat/>
+            <WebChat/>
         </div>
     {/if}
         <!-- center board -->

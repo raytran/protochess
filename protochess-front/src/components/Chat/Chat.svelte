@@ -1,15 +1,10 @@
 <script>
-    let comments = [];
-    import {sendChatMessage, ChatMessage} from '../WebsocketStore';
-    import { beforeUpdate, afterUpdate } from 'svelte';
-    import {PlayersList} from '../WebsocketStore';
+    export let comments = [];
+    const dispatch = createEventDispatcher();
+    import {beforeUpdate, afterUpdate, createEventDispatcher} from 'svelte';
 
-    ChatMessage.subscribe(value => {
-        if (value != null) {
-            console.log(value);
-            comments = [...comments, {from: value.from, content: value.content}];
-        }
-    });
+    export let name = "anon";
+
 
     function handleKeyDown(event) {
         if (event.key === 'Enter') {
@@ -17,8 +12,7 @@
             if (!text) return;
             console.log(text)
             event.target.value = '';
-            sendChatMessage(text);
-            comments = [...comments, {from: $PlayersList.you, content: text} ];
+            dispatch('chatRequest', text);
         }
     }
 
@@ -62,8 +56,8 @@
         {#each comments as comment}
             <article>
             <span>
-                <b style="color: { comment.from === $PlayersList.you ? 'blue' : ''}">{
-                comment.from === $PlayersList.you ? comment.from + " (You)" : comment.from
+                <b style="color: { comment.from === name ? 'blue' : ''}">{
+                comment.from === name ? comment.from + " (You)" : comment.from
                 }</b>
                 <br>
                 &nbsp;&nbsp;&nbsp;&nbsp;
