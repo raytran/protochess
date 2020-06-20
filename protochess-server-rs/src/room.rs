@@ -2,10 +2,10 @@ use tokio::sync::mpsc;
 use crate::room_message::RoomMessage;
 use crate::client::Client;
 use crate::client_message::{ClientRequest, ClientResponse, Piece, Tile, Turn, MovementPattern, Slides};
+use std::sync::{ Arc };
 use std::collections::HashMap;
 use uuid::Uuid;
 use lazy_static::lazy_static;
-use protochess_engine_rs::{Move, MovementPatternExternal};
 
 
 lazy_static! {
@@ -20,7 +20,7 @@ pub struct Room {
     game: protochess_engine_rs::Game,
     to_move_in_check: bool,
     winner: Option<String>,
-    clients: Vec<Client>,
+    clients: Vec<Arc<Client>>,
     last_turn: Option<Turn>,
     rx: mpsc::UnboundedReceiver<RoomMessage>,
 }
@@ -37,6 +37,8 @@ impl Room {
         }
     }
 
+    //Technically only ever runs in one process (that's why self.clients is not behind a Mutex)
+    //Need async here to call recv.await
     pub async fn run(&mut self){
         while let Some(message) = self.rx.recv().await {
             match message {
@@ -258,7 +260,7 @@ impl Room {
 
         let map = self.game.current_position.get_char_movementpattern_map();
 
-        let mut movement_patterns = {
+        let movement_patterns = {
             let mut temp = HashMap::new();
             for (k, v) in self.game.current_position.get_char_movementpattern_map() {
                 temp.insert(k, MovementPattern{

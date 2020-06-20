@@ -49,6 +49,10 @@ pub struct Piece {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content="content")]
 pub enum ClientResponse {
+    RemovedFromRoom,
+    RoomList(Vec<String>),
+    CannotOverwriteRoom,
+    NoRoomFound,
     ChatMessage {
         from: String,
         content: String
@@ -82,6 +86,13 @@ pub enum ClientResponse {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content ="content")]
 pub enum ClientRequest {
+    ListRooms,
+    CreateRoom{
+        room_id: String,
+        is_public: bool
+    },
+    JoinRoom(String),
+    LeaveRoom,
     ChatMessage(String),
     TakeTurn(Turn),
     //Moves from (x,y)
@@ -121,15 +132,15 @@ mod tests {
         }));
         println!("{}", lol);
 
-        let lol = json!(ClientRequest::GameState);
+        let lol = json!(ClientRequest::CreateRoom{room_id: "bruh".to_string(), is_public:true});
         println!("{}", lol);
 
 
-        let lol = json!(ClientRequest::SwitchLeader(3));
+        let lol = json!(ClientRequest::ListRooms);
         println!("{}", lol);
 
 
-        let lol = json!(ClientRequest::ListPlayers);
+        let lol = json!(ClientRequest::JoinRoom("bruh".to_string()));
         println!("{}", lol);
 
 
