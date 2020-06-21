@@ -1,12 +1,12 @@
 <!-- A Board with websocketstore bindings -->
 <script>
-    import Board from "../components/Chess/Board.svelte";
-    import {sendRequest, GameState, PlayersList, MovesFrom} from '../WebsocketStore';
-    import ChessEditor from "../components/ChessEditor/ChessEditor.svelte";
+    import Board from "../../components/Chess/Board.svelte";
+    import {sendRequest, GameState, PlayersList, MovesFrom} from '../../WebsocketStore';
+    import ChessEditor from "../../components/ChessEditor/ChessEditor.svelte";
     import {fly, fade} from 'svelte/transition';
-    import MovementPatternDisplayBar from "../components/MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
-    import Chat from "../components/Chat/Chat.svelte";
-    import WebChat from "./_WebChat.svelte";
+    import MovementPatternDisplayBar from "../../components/MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
+    import Chat from "../../components/Chat/Chat.svelte";
+    import WebChat from "../_WebChat.svelte";
 
     let chatVisible = true;
     let mpVisible = true;

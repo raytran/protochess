@@ -8,6 +8,7 @@ use crate::client_message::{ClientResponse, ClientRequest};
 use crate::client::Client;
 use uuid::Uuid;
 use crate::room_message::RoomMessage;
+use crate::client_message::ClientResponse::RoomList;
 
 pub async fn user_connected(ws: WebSocket, rooms: Rooms){
     //Bind mpsc channel to websocket
@@ -58,31 +59,41 @@ pub async fn user_connected(ws: WebSocket, rooms: Rooms){
             if let Ok(cm) = res {
                 match cm {
                     ClientRequest::ListRooms => {
-                        let public_rooms = rooms.read().await.get_public_room_ids().await;
+                        let public_rooms = rooms.read().await.get_public_rooms().await;
                         my_client.try_send(ClientResponse::RoomList(public_rooms));
                     }
-                    ClientRequest::CreateRoom{room_id, is_public} => {
-                        println!("Create room requested!");
+                    ClientRequest::CreateRoom{allow_edits, is_public, init_game_state } => {
                         if my_room.is_none() {
-                            if let Err(_) = rooms.write().await.new_room(room_id.clone(), is_public).await {
-                                my_client.try_send(ClientResponse::CannotOverwriteRoom);
+                            //Get a new ID
+                            let room_id = {
+                                rooms.read().await.get_new_id().await
                             };
-
-                            match rooms.read().await.add_client_to_room(&room_id, my_client.clone()).await {
-                                Ok(tx) =>{
-                                    my_room = Some((room_id, tx));
-
+                            println!("New room id: {}", room_id);
+                            let mut success = false;
+                            match rooms.write().await.new_room(room_id.clone(), is_public, allow_edits, init_game_state).await {
+                                Ok(tx) => {
+                                    success = true;
+                                    my_client.try_send(ClientResponse::RoomCreateSuccess(room_id.clone()));
                                 }
                                 Err(_) => {
-                                    my_client.try_send(ClientResponse::NoRoomFound) ;
+                                    my_client.try_send(ClientResponse::CannotOverwriteRoom);
                                 }
                             }
-                        }
-
-                        if my_room.is_some(){
-                            //Don't listen to room changes anymore
-                            let mut rms = rooms.write().await;
-                            rms.unregister_broadcast_rooms(&my_id).await;
+                            if success {
+                                match rooms.read().await.add_client_to_room(&room_id, my_client.clone()).await {
+                                    Ok(tx) =>{
+                                        my_room = Some((room_id, tx));
+                                    }
+                                    Err(_) => {
+                                        my_client.try_send(ClientResponse::NoRoomFound) ;
+                                    }
+                                }
+                            }
+                            if my_room.is_some(){
+                                //Don't listen to room changes anymore
+                                let mut rms = rooms.write().await;
+                                rms.unregister_broadcast_rooms(&my_id).await;
+                            }
                         }
                     }
                     ClientRequest::JoinRoom(room_id) => {
@@ -104,7 +115,6 @@ pub async fn user_connected(ws: WebSocket, rooms: Rooms){
                         }
                     }
                     ClientRequest::LeaveRoom => {
-                        println!("Leave room requested!");
                         if let Some((room_id, tx)) = my_room {
                             {
                                 rooms.read().await.remove_client_from_room(&room_id, &my_id).await;
@@ -132,7 +142,7 @@ pub async fn user_connected(ws: WebSocket, rooms: Rooms){
     //If we get here that means the user disconnected
     eprintln!("good bye user: {}", my_id);
     if let Some((room_id, tx)) = my_room {
-       rooms.read().await.remove_client_from_room(&room_id, &my_id).await;
+        rooms.read().await.remove_client_from_room(&room_id, &my_id).await;
     }
 
     let mut rms = rooms.write().await;

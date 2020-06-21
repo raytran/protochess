@@ -27,7 +27,7 @@ async fn main() {
     let rooms = warp::any().map(move || rooms.clone());
 
     // GET /chess -> websocket upgrade
-    let chess = warp::path("main")
+    let chess = warp::path("chess")
         .and(warp::ws())
         .and(rooms.clone())
         .and_then(|ws: warp::ws::Ws, rooms| async move {
@@ -57,7 +57,7 @@ static INDEX_HTML: &str = r#"
         <input type="text" id="text" />
         <button type="button" id="send">Send</button>
         <script type="text/javascript">
-        var uri = 'ws://' + location.host + '/main';
+        var uri = 'ws://' + location.host + '/chess';
         var ws = new WebSocket(uri);
         function message(data) {
             var line = document.createElement('p');

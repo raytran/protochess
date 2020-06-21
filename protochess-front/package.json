@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@sveltech/routify": "^1.7.12",
+    "clipboard": "^2.0.6",
     "svelte": "^3.20.1"
   }
 }

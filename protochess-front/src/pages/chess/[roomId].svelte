@@ -1,10 +1,22 @@
 <script>
-    import WebChess from './WebChess.svelte';
-    import PList from "../components/PlayersList/PlayersList.svelte";
-    import {sendRequest, GameState, PlayersList, MovesFrom} from '../WebsocketStore';
-    import {Connected} from "../WebsocketStore";
-    import ChessEditor from "../components/ChessEditor/ChessEditor.svelte";
+    export let roomId;
+    import WebChess from './_WebChess.svelte';
+    import PList from "../../components/PlayersList/PlayersList.svelte";
+    import ClipboardJS from "clipboard";
+    import { beforeUrlChange } from "@sveltech/routify"
+    import {
+        sendRequest,
+        GameState,
+        PlayersList,
+        MovesFrom,
+        leaveRoom,
+        CurrentRoom,
+        joinRoom
+    } from '../../WebsocketStore';
+    import {Connected} from "../../WebsocketStore";
+    import ChessEditor from "../../components/ChessEditor/ChessEditor.svelte";
 
+    joinRoom(roomId);
 
     function requestEdits(e) {
         console.log(e);
@@ -19,11 +31,16 @@
                     }
                 });
     }
+
+    $beforeUrlChange((event, store) => {
+        leaveRoom();
+        return true
+    });
+    new ClipboardJS('.btn');
 </script>
 <style>
-    main {
-        padding-left: 2%;
-        padding-right: 2%;
+    #wrapper{
+        padding-top: 0.5rem;
     }
     h1 {
         margin-top: 0;
@@ -40,8 +57,8 @@
         order: 1;
         display: block;
         width: 50%;
-        max-width: 500px;
         padding-top: 0.8rem;
+        text-decoration: underline;
         text-align: center;
         padding-bottom: 0.8rem;
         cursor: pointer;
@@ -72,7 +89,10 @@
     }
 </style>
 
-<div>
+<div id="wrapper">
+    <button class="btn" data-clipboard-text={window.location}>
+        Copy URL to clipboard
+    </button>
     {#if $Connected }
         <span style="color: green"> ✓ Connected</span>
     {:else}
@@ -87,10 +107,13 @@
         <div class="tab">
             <WebChess/>
         </div>
-        <input type="radio" name="tabs" id="tabtwo">
-        <label for="tabtwo">Editor</label>
-        <div class="tab">
-            <ChessEditor on:saveChanges={e => requestEdits(e)}  />
-        </div>
+
+        {#if $GameState.editable === true}
+            <input type="radio" name="tabs" id="tabtwo">
+            <label for="tabtwo">Editor</label>
+            <div class="tab">
+                <ChessEditor on:saveChanges={e => requestEdits(e)}  />
+            </div>
+        {/if}
     </div>
 </div>

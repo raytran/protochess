@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use crate::room_manager::RoomInfo;
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Slides {
     pub north: bool,
@@ -49,8 +51,9 @@ pub struct Piece {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content="content")]
 pub enum ClientResponse {
+    RoomCreateSuccess(String),
     RemovedFromRoom,
-    RoomList(Vec<String>),
+    RoomList(Vec<RoomInfo>),
     CannotOverwriteRoom,
     NoRoomFound,
     ChatMessage {
@@ -58,6 +61,7 @@ pub enum ClientResponse {
         content: String
     },
     GameState {
+        editable: bool,
         width: u8,
         height: u8,
         winner: Option<String>,
@@ -81,6 +85,15 @@ pub enum ClientResponse {
     }
 }
 
+/// A game state without computed properties (winner, in_check, etc)
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RequestGameState {
+    width: u8,
+    height: u8,
+    pub(crate) tiles: Vec<Tile>,
+    pub(crate) pieces: Vec<Piece>,
+    pub(crate) movement_patterns: HashMap<char, MovementPattern>,
+}
 
 /// Message from client to server
 #[derive(Serialize, Deserialize, Debug)]
@@ -88,8 +101,9 @@ pub enum ClientResponse {
 pub enum ClientRequest {
     ListRooms,
     CreateRoom{
-        room_id: String,
-        is_public: bool
+        allow_edits: bool,
+        is_public: bool,
+        init_game_state: RequestGameState
     },
     JoinRoom(String),
     LeaveRoom,
@@ -99,20 +113,15 @@ pub enum ClientRequest {
     MovesFrom(u8, u8),
     ListPlayers,
     SwitchLeader(u8),
-    EditGameState{
-        width: u8,
-        height: u8,
-        tiles: Vec<Tile>,
-        pieces: Vec<Piece>,
-        movement_patterns: HashMap<char, MovementPattern>,
-    },
+    EditGameState(RequestGameState),
+    DisableEdits,
     GameState
 }
 
 
 #[cfg(test)]
 mod tests {
-    use crate::client_message::ClientRequest;
+    use crate::client_message::{ClientRequest, RequestGameState};
     use crate::client_message::ClientResponse;
     use crate::client_message::Turn;
     use std::collections::HashMap;
@@ -132,8 +141,13 @@ mod tests {
         }));
         println!("{}", lol);
 
-        let lol = json!(ClientRequest::CreateRoom{room_id: "bruh".to_string(), is_public:true});
-        println!("{}", lol);
+        let rgs = RequestGameState{
+            width: 0,
+            height: 0,
+            tiles: vec![],
+            pieces: vec![],
+            movement_patterns: HashMap::new()
+        };
 
 
         let lol = json!(ClientRequest::ListRooms);
@@ -144,13 +158,7 @@ mod tests {
         println!("{}", lol);
 
 
-        let eds = ClientRequest::EditGameState {
-            width: 8,
-            height: 8,
-            tiles: vec![],
-            pieces: vec![],
-            movement_patterns: HashMap::new(),
-        };
+        let eds = ClientRequest::LeaveRoom;
         let lol = json!(eds);
 
         println!("{}", lol);
