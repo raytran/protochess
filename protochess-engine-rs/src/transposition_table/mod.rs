@@ -1,6 +1,6 @@
 use crate::types::chess_move::Move;
 
-const TABLE_SIZE:usize = 5_000_000;
+const TABLE_SIZE:usize = 1_500_000;
 const ENTRIES_PER_CLUSTER:usize = 4;
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum EntryFlag{

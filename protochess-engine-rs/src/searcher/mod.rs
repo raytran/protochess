@@ -12,7 +12,7 @@ pub(crate) struct Searcher {
     //indexed by killer_moves[depth][0] or killer_moves[depth][0]
     killer_moves: [[Move;2];64],
     //Indexed by history_moves[side2move][from][to]
-    history_moves: [[usize;256];256],
+    history_moves: [[u8;256];256],
 
     //Stats
     //Counter for the number of nodes searched
@@ -320,7 +320,7 @@ impl Searcher {
         if !move_.get_is_capture() {
             self.history_moves
                 [move_.get_from() as usize]
-                [move_.get_to() as usize] += depth as usize;
+                [move_.get_to() as usize] += depth;
         }
     }
 
