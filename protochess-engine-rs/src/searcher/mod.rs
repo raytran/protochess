@@ -3,6 +3,7 @@ use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::evaluator::Evaluator;
 use crate::transposition_table::{TranspositionTable, Entry, EntryFlag};
+use std::time::{Duration, Instant};
 
 //An entry in the transposition table
 
@@ -48,6 +49,36 @@ impl Searcher {
             println!("score:{} depth: {}, nodes: {}, ordering: {}", best_score, d, self.nodes_searched, ordering_percentage);
 
             self.clear_search_stats();
+        }
+
+        match self.transposition_table.retrieve(position.get_zobrist()){
+            Some(entry) => {Some((&entry.move_).to_owned())}
+            None => None
+        }
+    }
+
+    pub fn get_best_move_timeout(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator, time_sec: u64) -> Option<Move>{
+        //Iterative deepening
+        self.clear_heuristics();
+        self.transposition_table.set_ancient();
+        let mut d = 1;
+        let start = Instant::now();
+        let max_time = Duration::from_secs(time_sec);
+        loop {
+            if start.elapsed() >= max_time {
+                break;
+            }
+
+            let alpha = -isize::MAX;
+            let beta = isize::MAX;
+            let best_score = self.alphabeta(position, eval, movegen, d,alpha, beta, true);
+
+            //Print PV info
+            let ordering_percentage:f64 = if self.nodes_fail_high != 0 { (self.nodes_fail_high_first as f64) / (self.nodes_fail_high as f64) } else { 0.0 };
+            println!("score:{} depth: {}, nodes: {}, ordering: {}", best_score, d, self.nodes_searched, ordering_percentage);
+
+            self.clear_search_stats();
+            d += 1;
         }
 
         match self.transposition_table.retrieve(position.get_zobrist()){

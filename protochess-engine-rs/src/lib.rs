@@ -266,12 +266,27 @@ impl Engine {
         nodes
     }
 
-    ///Calculates and plays the best move found
+    ///Calculates and plays the best move found up to a given depth
     pub fn play_best_move(&mut self, depth:u8) -> bool {
         if let Some(best) = self.searcher.get_best_move(&mut self.current_position,
                                                         &mut self.evaluator,
                                                         &self.move_generator,
                                                         depth){
+            let (x1, y1) = from_index(best.get_from() as usize);
+            let (x2, y2) = from_index(best.get_to() as usize);
+            self.make_move(x1, y1, x2, y2)
+        }else{
+            false
+        }
+    }
+
+
+    ///Calculates and plays the best move found
+    pub fn play_best_move_timeout(&mut self, max_sec:u64) -> bool {
+        if let Some(best) = self.searcher.get_best_move_timeout(&mut self.current_position,
+                                                        &mut self.evaluator,
+                                                        &self.move_generator,
+                                                        max_sec){
             let (x1, y1) = from_index(best.get_from() as usize);
             let (x2, y2) = from_index(best.get_to() as usize);
             self.make_move(x1, y1, x2, y2)
