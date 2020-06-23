@@ -11,7 +11,12 @@ opt-level = 3
 [profile.test]
 opt-level = 3
 
+[features]
+stdweb = [ "instant/stdweb" ]
+wasm-bindgen = [ "instant/wasm-bindgen" ]
+
 [dependencies]
+instant = { version = "0.1", features = [ "now", "wasm-bindgen" ] }
 scan-rules = "0.2.0"
 rand = "0.7.3"
 arrayvec = "0.5.1"

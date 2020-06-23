@@ -1,7 +1,7 @@
 <!-- A Board with websocketstore bindings -->
 <script>
     import Board from "../../components/Chess/Board.svelte";
-    import {sendRequest, GameState, PlayersList, MovesFrom} from '../../WebsocketStore';
+    import {sendRequest, GameInfo, PlayersList, MovesFrom} from '../../WebsocketStore';
     import ChessEditor from "../../components/ChessEditor/ChessEditor.svelte";
     import {fly, fade} from 'svelte/transition';
     import MovementPatternDisplayBar from "../../components/MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
@@ -18,9 +18,9 @@
     });
 
     //Reset highlighting whenever the gamestate updates
-    GameState.subscribe(function (e) {
+    GameInfo.subscribe(function (v) {
         highlighted = null;
-        highlighted = {in_check_kings: e.in_check_kings, possibleMoves: null, lastTurn: e.last_turn};
+        highlighted = {in_check_kings: v.in_check_kings, possibleMoves: null, lastTurn: v.last_turn};
     });
 
     function handleGameRequest(e) {
@@ -96,13 +96,13 @@
     {/if}
         <!-- center board -->
     <div id="boardWrapper">
-        {#if $GameState.winner}
+        {#if $GameInfo.winner}
             <svg style="width: 100%" viewBox="0 0 230 150">
                 <rect x="0" y="40%" width="100%" height="45%" fill="rgba(30,220,30)" fill-opacity="0.3"/>
                 <text x="50%" y="55%"
                       font-family="Arial, Helvetica, sans-serif"
                       dominant-baseline="central" text-anchor="middle" fill="white">
-                    {$GameState.winner}
+                    {$GameInfo.winner}
                 </text>
 
                 <text x="50%" y="70%"
@@ -116,7 +116,7 @@
             <Board
                     {highlighted}
                     on:gameRequest={handleGameRequest}
-                    gameState={$GameState}
+                    gameState={$GameInfo.state}
                     player_num={$PlayersList.player_num}
                     flipped={$PlayersList.player_num !== 0} />
 
@@ -130,7 +130,7 @@
                 <h1>Movement Patterns</h1>
                 <button on:click={()=> mpFlipped = !mpFlipped }>Toggle Perspective</button>
             </div>
-            <MovementPatternDisplayBar flipped={mpFlipped} movementPatterns={$GameState.movement_patterns} />
+            <MovementPatternDisplayBar flipped={mpFlipped} movementPatterns={$GameInfo.state ? $GameInfo.state.movement_patterns : null} />
         </div>
     {/if}
 </div>

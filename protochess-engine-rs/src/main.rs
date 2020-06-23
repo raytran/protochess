@@ -12,7 +12,7 @@ pub fn main() {
     let mut ply = 0;
     loop {
 
-        if !engine.play_best_move_timeout(4) {
+        if !engine.play_best_move_timeout(4).0 {
             break;
         }
         ply += 1;

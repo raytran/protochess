@@ -1,3 +1,4 @@
+import rust from '@wasm-tool/rollup-plugin-rust';
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -56,6 +57,7 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
         dedupe: importee => importee === 'svelte' || importee.startsWith('svelte/')
       }),
       commonjs(),
+      rust({debug: false, serverPath: "/build/"}),
 
 
       // If we're building for production (npm run build

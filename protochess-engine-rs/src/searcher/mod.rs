@@ -3,7 +3,7 @@ use crate::position::Position;
 use crate::move_generator::MoveGenerator;
 use crate::evaluator::Evaluator;
 use crate::transposition_table::{TranspositionTable, Entry, EntryFlag};
-use std::time::{Duration, Instant};
+use instant::{Instant, Duration};
 
 //An entry in the transposition table
 
@@ -57,13 +57,14 @@ impl Searcher {
         }
     }
 
-    pub fn get_best_move_timeout(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator, time_sec: u64) -> Option<Move>{
+    pub fn get_best_move_timeout(&mut self, position: &mut Position, eval: &mut Evaluator, movegen: &MoveGenerator, time_sec: u64)
+        -> Option<(Move, u8)>{
         //Iterative deepening
         self.clear_heuristics();
         self.transposition_table.set_ancient();
         let mut d = 1;
-        let start = Instant::now();
-        let max_time = Duration::from_secs(time_sec);
+        let start = instant::Instant::now();
+        let max_time = instant::Duration::from_secs(time_sec);
         loop {
             if start.elapsed() >= max_time {
                 break;
@@ -82,7 +83,7 @@ impl Searcher {
         }
 
         match self.transposition_table.retrieve(position.get_zobrist()){
-            Some(entry) => {Some((&entry.move_).to_owned())}
+            Some(entry) => {Some(((&entry.move_).to_owned(), d))}
             None => None
         }
     }

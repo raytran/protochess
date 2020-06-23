@@ -6,7 +6,7 @@
     import { beforeUrlChange } from "@sveltech/routify"
     import {
         sendRequest,
-        GameState,
+        GameInfo,
         PlayersList,
         MovesFrom,
         leaveRoom,
@@ -108,7 +108,7 @@
             <WebChess/>
         </div>
 
-        {#if $GameState.editable === true}
+        {#if $GameInfo.editable === true}
             <input type="radio" name="tabs" id="tabtwo">
             <label for="tabtwo">Editor</label>
             <div class="tab">

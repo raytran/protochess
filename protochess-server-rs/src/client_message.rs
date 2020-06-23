@@ -1,50 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::room_manager::RoomInfo;
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct Slides {
-    pub north: bool,
-    pub east: bool,
-    pub south: bool,
-    pub west: bool,
-    pub northeast: bool,
-    pub northwest: bool,
-    pub southeast: bool,
-    pub southwest: bool,
-}
-#[derive(Clone, Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct MovementPattern{
-    pub attack_slides: Slides,
-    pub translate_slides: Slides,
-    pub attack_jumps:Vec<(i8, i8)>,
-    pub translate_jumps: Vec<(i8, i8)>,
-    pub attack_slide_deltas: Vec<Vec<(i8, i8)>>,
-    pub translate_slide_deltas: Vec<Vec<(i8, i8)>>,
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct Turn {
-    pub promote_to: Option<char>,
-    pub from: (u8,u8),
-    pub to: (u8, u8)
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct Tile {
-    pub x: u8,
-    pub y: u8,
-    pub tile_type: char
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct Piece {
-    pub owner: u8,
-    pub x: u8,
-    pub y: u8,
-    pub piece_type: char
-}
+use protochess_common::{GameState, Tile, Piece, MovementPattern, Turn};
 
 /// Public facing API
 /// Message from the server to client
@@ -60,19 +17,13 @@ pub enum ClientResponse {
         from: String,
         content: String
     },
-    GameState {
+    GameInfo {
         editable: bool,
-        width: u8,
-        height: u8,
         winner: Option<String>,
-        to_move: u8,
         to_move_in_check: bool,
         in_check_kings: Option<Vec<Piece>>,
-        //from(x,y) to (x,y)
         last_turn: Option<Turn>,
-        tiles: Vec<Tile>,
-        pieces: Vec<Piece>,
-        movement_patterns: HashMap<char, MovementPattern>,
+        state: GameState
     },
     PlayerList{
         player_num: u8,
@@ -85,16 +36,6 @@ pub enum ClientResponse {
     }
 }
 
-/// A game state without computed properties (winner, in_check, etc)
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RequestGameState {
-    width: u8,
-    height: u8,
-    pub(crate) tiles: Vec<Tile>,
-    pub(crate) pieces: Vec<Piece>,
-    pub(crate) movement_patterns: HashMap<char, MovementPattern>,
-}
-
 /// Message from client to server
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content ="content")]
@@ -103,7 +44,7 @@ pub enum ClientRequest {
     CreateRoom{
         allow_edits: bool,
         is_public: bool,
-        init_game_state: RequestGameState
+        init_game_state: GameState
     },
     JoinRoom(String),
     LeaveRoom,
@@ -113,7 +54,7 @@ pub enum ClientRequest {
     MovesFrom(u8, u8),
     ListPlayers,
     SwitchLeader(u8),
-    EditGameState(RequestGameState),
+    EditGameState(GameState),
     DisableEdits,
     GameState
 }

@@ -1,7 +1,8 @@
 use tokio::sync::mpsc;
 use crate::room_message::RoomMessage;
 use crate::client::Client;
-use crate::client_message::{ClientRequest, ClientResponse, Piece, Tile, Turn, MovementPattern, Slides};
+use crate::client_message::{ClientRequest, ClientResponse};
+use protochess_common::{Piece, Tile, Turn, MovementPattern, Slides, GameState, serialize_game_state, validate_gamestate_request};
 use std::sync::{ Arc };
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -113,7 +114,7 @@ impl Room {
                             ClientRequest::EditGameState(request_game_state) => {
                                 if self.editable {
                                     if let Some((movements, valid_squares, valid_pieces)) =
-                                    Room::validate_gamestate_request(request_game_state.tiles,
+                                    validate_gamestate_request(request_game_state.tiles,
                                                                      request_game_state.pieces,
                                                                      request_game_state.movement_patterns){
                                         self.game.set_state(movements,
@@ -170,29 +171,6 @@ impl Room {
     }
 
     fn serialize_game(&self) -> ClientResponse {
-        let width = self.game.get_width();
-        let height = self.game.get_height();
-        let pieces = self.game.current_position.pieces_as_tuples()
-            .into_iter()
-            .map(|(owner, x, y, piece_type)| {
-                Piece{
-                    owner,
-                    x,
-                    y,
-                    piece_type
-                }
-            })
-            .collect();
-        let tiles = self.game.current_position.tiles_as_tuples()
-            .into_iter()
-            .map(|(x, y, tile_type)|{
-                Tile{
-                    x,
-                    y,
-                    tile_type
-                }
-            })
-            .collect();
         let to_move = self.game.get_whos_turn();
         let to_move_in_check = self.to_move_in_check;
         let in_check_kings = if to_move_in_check {
@@ -213,56 +191,13 @@ impl Room {
             )
         } else { None };
 
-        let map = self.game.current_position.get_char_movementpattern_map();
-
-        let movement_patterns = {
-            let mut temp = HashMap::new();
-            for (k, v) in self.game.current_position.get_char_movementpattern_map() {
-                temp.insert(k, MovementPattern{
-                    attack_slides: Slides {
-                        north: v.attack_north,
-                        east: v.attack_east,
-                        south: v.attack_south,
-                        west: v.attack_west,
-                        northeast: v.attack_northeast,
-                        northwest: v.attack_northwest,
-                        southeast: v.attack_southeast,
-                        southwest: v.attack_southwest
-                    },
-                    translate_slides: Slides {
-                        north: v.translate_north,
-                        east: v.translate_east,
-                        south: v.translate_south,
-                        west: v.translate_west,
-                        northeast: v.translate_northeast,
-                        northwest: v.translate_northwest,
-                        southeast: v.translate_southeast,
-                        southwest: v.translate_southwest
-                    },
-                    attack_jumps: v.attack_jump_deltas,
-                    translate_jumps: v.translate_jump_deltas,
-                    attack_slide_deltas: v.attack_sliding_deltas,
-                    translate_slide_deltas:v.translate_sliding_deltas
-                });
-            }
-            temp
-        };
-
-
-
-
-        ClientResponse::GameState {
+        ClientResponse::GameInfo {
             editable: self.editable,
-            width,
-            height,
             winner: self.winner.clone(),
-            to_move,
+            last_turn: (&self.last_turn).to_owned(),
             to_move_in_check,
             in_check_kings,
-            last_turn: (&self.last_turn).to_owned(),
-            tiles,
-            pieces,
-            movement_patterns
+            state: serialize_game_state(&self.game.current_position)
         }
     }
 
@@ -290,64 +225,5 @@ impl Room {
                 names: self.clients.iter().map(|x| x.name.clone()).collect()
             });
         }
-    }
-
-    pub(crate) fn validate_gamestate_request(tiles:Vec<Tile>, pieces:Vec<Piece>, movement_patterns:HashMap<char, MovementPattern>)
-                                             -> Option<(HashMap<char,MovementPatternExternal>, Vec<(u8, u8)>, Vec<(u8, u8, u8, char)>)>{
-        let mut w_has_king = false;
-        let mut b_has_king = false;
-        for pce in &pieces {
-            if pce.piece_type == 'k' {
-                if pce.owner == 0 {
-                    w_has_king = true;
-                }else {
-                    b_has_king = true;
-                }
-            }
-        }
-
-        if w_has_king && b_has_king {
-            let valid_squares = tiles
-                .into_iter()
-                .filter(|sq| sq.x < 16 && sq.y < 16 && (sq.tile_type == 'w' || sq.tile_type == 'b'))
-                .map(|sq| (sq.x, sq.y))
-                .collect();
-
-            let mut movements = HashMap::new();
-            for (key, val) in movement_patterns {
-                let piece_type_char = key.to_ascii_lowercase();
-                if piece_type_char.is_ascii_alphabetic(){
-                    movements.insert(piece_type_char, protochess_engine_rs::MovementPatternExternal{
-                        promotion_squares: None,
-                        promo_vals: None,
-                        attack_sliding_deltas: val.attack_slide_deltas,
-                        attack_jump_deltas: val.attack_jumps,
-                        attack_north: val.attack_slides.north,
-                        attack_south: val.attack_slides.south,
-                        attack_east: val.attack_slides.east,
-                        attack_west: val.attack_slides.west,
-                        attack_northeast: val.attack_slides.northeast,
-                        attack_northwest: val.attack_slides.northwest,
-                        attack_southeast: val.attack_slides.southeast,
-                        attack_southwest: val.attack_slides.southwest,
-                        translate_jump_deltas: val.translate_jumps,
-                        translate_sliding_deltas: val.translate_slide_deltas,
-                        translate_north: val.translate_slides.north,
-                        translate_south: val.translate_slides.south,
-                        translate_east: val.translate_slides.east,
-                        translate_west: val.translate_slides.west,
-                        translate_northeast: val.translate_slides.northeast,
-                        translate_northwest: val.translate_slides.northwest,
-                        translate_southeast: val.translate_slides.southeast,
-                        translate_southwest: val.translate_slides.southwest
-                    });
-                }
-            }
-
-            let pieces = pieces.into_iter().map(|pce| (pce.owner, pce.x, pce.y, pce.piece_type)).collect();
-
-            return Some((movements, valid_squares, pieces));
-        }
-        None
     }
 }

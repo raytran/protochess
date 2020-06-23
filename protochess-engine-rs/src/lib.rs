@@ -136,8 +136,8 @@ impl Game {
 
 /// Starting point for the engine
 pub struct Engine {
-    pub(crate) current_position: Position,
-    pub(crate) move_generator: MoveGenerator,
+    pub current_position: Position,
+    pub move_generator: MoveGenerator,
     pub(crate) evaluator: Evaluator,
     pub(crate) searcher: Searcher,
 }
@@ -280,19 +280,57 @@ impl Engine {
         }
     }
 
-
-    ///Calculates and plays the best move found
-    pub fn play_best_move_timeout(&mut self, max_sec:u64) -> bool {
-        if let Some(best) = self.searcher.get_best_move_timeout(&mut self.current_position,
+    ///Returns (fromx,fromy,tox,toy)
+    pub fn get_best_move(&mut self, depth:u8) -> Option<(u8, u8, u8, u8)> {
+        if let Some(best) = self.searcher.get_best_move(&mut self.current_position,
                                                         &mut self.evaluator,
                                                         &self.move_generator,
-                                                        max_sec){
+                                                        depth){
             let (x1, y1) = from_index(best.get_from() as usize);
             let (x2, y2) = from_index(best.get_to() as usize);
-            self.make_move(x1, y1, x2, y2)
+            Some((x1, y1, x2, y2))
         }else{
-            false
+            None
         }
+    }
+
+    ///Calculates and plays the best move found
+    pub fn play_best_move_timeout(&mut self, max_sec:u64) -> (bool, u8) {
+        if let Some((best, depth)) = self.searcher.get_best_move_timeout(&mut self.current_position,
+                                                                         &mut self.evaluator,
+                                                                         &self.move_generator,
+                                                                         max_sec){
+            let (x1, y1) = from_index(best.get_from() as usize);
+            let (x2, y2) = from_index(best.get_to() as usize);
+            (self.make_move(x1, y1, x2, y2), depth)
+        }else{
+            (false, 0)
+        }
+    }
+
+    ///Returns ((fromX,fromY,toX,toY), depth)
+    pub fn get_best_move_timeout(&mut self, max_sec: u64) -> Option<((u8, u8, u8, u8), u8)> {
+        if let Some((best, depth)) = self.searcher.get_best_move_timeout(&mut self.current_position,
+                                                                         &mut self.evaluator,
+                                                                         &self.move_generator,
+                                                                         max_sec){
+            let (x1, y1) = from_index(best.get_from() as usize);
+            let (x2, y2) = from_index(best.get_to() as usize);
+            Some(((x1, y1, x2, y2), depth))
+        }else{
+            None
+        }
+    }
+
+    pub fn moves_from(&mut self, x:u8, y:u8) -> Vec<(u8, u8)>{
+        let moves = self.move_generator.get_legal_moves_as_tuples(&mut self.current_position);
+        let mut possible_moves = Vec::new();
+        for (from, to) in moves{
+            if from == (x, y){
+                possible_moves.push(to);
+            }
+        }
+        possible_moves
     }
 }
 

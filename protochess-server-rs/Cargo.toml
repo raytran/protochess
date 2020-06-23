@@ -17,4 +17,5 @@ pretty_env_logger = "0.4.0"
 lazy_static = "1.4.0"
 adjective_adjective_animal = "0.1.0"
 
-protochess-engine-rs = { git = "https://github.com/raytran/protochess" }
+protochess-engine-rs = {path = "../protochess-engine-rs"}
+protochess-common = {path = "../protochess-common"}

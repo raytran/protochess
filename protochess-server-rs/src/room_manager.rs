@@ -7,7 +7,8 @@ use std::collections::HashMap;
 use crate::client::Client;
 use uuid::Uuid;
 use tokio::sync::mpsc::{UnboundedSender, UnboundedReceiver};
-use crate::client_message::{ClientResponse, RequestGameState};
+use crate::client_message::{ClientResponse};
+use protochess_common::{GameState, validate_gamestate_request};
 
 /// Holds meta deta for a room
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -90,7 +91,7 @@ impl RoomManager {
     pub async fn new_room(&mut self, room_id: String,
                           public: bool,
                           editable: bool,
-                          init_gamestate: RequestGameState)
+                          init_gamestate: GameState)
         -> Result<UnboundedSender<RoomMessage>,()> {
 
 
@@ -105,7 +106,7 @@ impl RoomManager {
         //Set the initial state for the room
         new_room.editable = editable;
         if let Some((movements, valid_squares, valid_pieces)) =
-        Room::validate_gamestate_request(init_gamestate.tiles,
+        validate_gamestate_request(init_gamestate.tiles,
                                          init_gamestate.pieces,
                                          init_gamestate.movement_patterns){
             new_room.game.set_state(movements,
