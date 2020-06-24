@@ -332,5 +332,28 @@ impl Engine {
         }
         possible_moves
     }
+
+    pub fn set_state(&mut self, movement_patterns: HashMap<char, MovementPatternExternal>,
+                     valid_squares:Vec<(u8, u8)>, pieces: Vec<(u8, u8, u8, char)>){
+        assert!(Game::each_owner_contains_k(&pieces));
+        let mut width = 0;
+        let mut height = 0;
+        let mut bounds = Bitboard::zero();
+        for sq in valid_squares {
+            if sq.0 >= width { width = sq.0 + 1; }
+            if sq.1 >= height { height = sq.1 + 1; }
+            bounds.set_bit(to_index(sq.0, sq.1), true);
+        }
+
+        let pieces =
+            pieces.into_iter()
+                .map(|(owner, x, y, pce_chr)|
+                    (owner, to_index(x, y) as u8, PieceType::from_char(pce_chr)))
+                .collect();
+        self.current_position = Position::custom(Dimensions{width, height},
+                                                 bounds,
+                                                 movement_patterns, pieces
+        )
+    }
 }
 

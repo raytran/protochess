@@ -14,9 +14,17 @@ const _RoomList = writable([]);
 const _CurrentRoom = writable(null);
 
 let createRoomCallback = null;
+
+//Requests are placed in a queue if ws is not open
+let msgQueue = [];
 socket.onopen = function(){
     console.log("socket opened!");
     _Connected.set(true);
+    //Send from queue
+    while (msgQueue.length > 0) {
+        console.log(msgQueue)
+        socket.send(msgQueue.pop())
+    }
 }
 
 socket.onmessage = function(msg){
@@ -51,13 +59,13 @@ socket.onmessage = function(msg){
 
 export function sendChatMessage(msg) {
     let apiMsg = {"content":msg,"type":"ChatMessage"};
-    socket.send(JSON.stringify(apiMsg));
+    sendRequest(apiMsg);
 }
 
 export function createRoom(is_public, init_game_state, allow_edits, callback){
     //{"content":{"is_public":true,"room_id":"bruh"},"type":"CreateRoom"}
     let apiMsg = {"content":{"init_game_state":init_game_state,"allow_edits": allow_edits, "is_public":is_public},"type":"CreateRoom"}
-    socket.send(JSON.stringify(apiMsg));
+    sendRequest(apiMsg);
     createRoomCallback = callback;
 }
 
@@ -71,13 +79,20 @@ export function leaveRoom(){
 
 export function joinRoom(roomId) {
     let apiMsg = {"content":roomId,"type":"JoinRoom"};
-    sendRequest(apiMsg)
+    console.log('hey');
+    sendRequest(apiMsg);
 }
 
 export function sendRequest(apiMsg){
     let json = JSON.stringify(apiMsg);
-    console.log(json);
-    socket.send(json);
+    if (socket.readyState !== 1){
+        console.log('pushing' + json);
+        console.log(msgQueue);
+        msgQueue.push(json)
+        console.log(msgQueue);
+    }else{
+        socket.send(json);
+    }
 }
 
 export const GameInfo = derived(_GameInfo, x => x);

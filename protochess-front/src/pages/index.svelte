@@ -1,7 +1,9 @@
 <script>
     import {RoomList, createRoom} from '../WebsocketStore';
-    import { redirect } from '@sveltech/routify'
-
+    import { url, redirect } from '@sveltech/routify'
+    import { Button, Modal } from 'svelma'
+    import FullWidthModal from '../components/Modal.svelte';
+    let active = false
     import Rl from "../components/RoomList/RoomList.svelte";
     import CreateRoomDialog from "../components/CreateRoomDialog/CreateRoomDialog.svelte";
     import ChessEditor from "../components/ChessEditor/ChessEditor.svelte";
@@ -24,11 +26,15 @@
 
 
     function onCreateRoom(e){
+        active = false;
+
         console.log("Creating room" + isPublic + gameState + allowEdits);
         createRoom(isPublic, gameState, allowEdits, function(v){
             $redirect('/chess/'+ v);
         });
     }
+
+
 </script>
 <style>
     #content {
@@ -36,14 +42,13 @@
         align-items: center;
         flex-direction: column;
     }
-    #createRoomWrapper{
-        width: 100%;
-        max-width: 400px;
+    #createRoomWrapper {
+        max-width: 500px;
     }
     #createRoomRoomListWrapper {
         display: grid;
         justify-items: center;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         width: 100%;
     }
 
@@ -53,26 +58,66 @@
         }
     }
     #roomListWrapper {
+        min-height: 50vh;
         max-width: 400px;
         width: 100%;
     }
 </style>
 
 <div id="content">
-    <h3>Chess with custom pieces and boards</h3>
-    <div>
-        Design your pieces & play against your friends.
-    </div>
-    {#if showBoardEditor}
-        <ChessEditor on:saveChanges={onSaveChanges}  />
-    {/if}
     <div id="createRoomRoomListWrapper">
-        <div id="createRoomWrapper">
-            <CreateRoomDialog {gameState} bind:allowEdits={allowEdits} bind:isPublic={isPublic} on:createRoom={onCreateRoom} on:editBoard={()=> showBoardEditor = true}/>
-        </div>
 
-        <div id="roomListWrapper">
+        <div class="box" id="roomListWrapper">
             <Rl on:roomRequest={handleRoomRequest} roomList={$RoomList}/>
         </div>
+
+        <div class="container">
+            <div class="box">
+                <h1 class="title">Protochess</h1>
+                <h2 class="subtitle">Chess with custom pieces and boards</h2>
+
+                <figure style="float:right; width: 30%; margin: 1em" class="image">
+                    <img class="is-rounded" src="images/zebra.png">
+                </figure>
+                <div class="is-size-6">
+                    Don't know how to play chess? Just make your own rules!
+                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="box">
+                <button class="button is-info is-large is-fullwidth" on:click={() => $redirect('../singleplayer')}>
+                    Play against the Computer
+                </button>
+                <br>
+                <button class="button is-primary is-large is-fullwidth" on:click={() => active = true}>
+                    Play Online
+                </button>
+            </div>
+        </div>
+
     </div>
+    <Modal bind:active={active}  onBody={false}> >
+        <div class="box" id="createRoomWrapper">
+            <CreateRoomDialog {gameState} bind:allowEdits={allowEdits} bind:isPublic={isPublic} on:createRoom={onCreateRoom} on:editBoard={()=> showBoardEditor = true}/>
+        </div>
+    </Modal>
+
+
+    {#if showBoardEditor}
+    <div style="z-index: 88888">
+        <FullWidthModal on:close={()=>showBoardEditor=false}>
+            <div slot="header" style="text-align: center">
+                <h1 class="title">Chess Editor</h1>
+            </div>
+            <div class="box">
+                <ChessEditor on:saveChanges={onSaveChanges}  />
+            </div>
+        </FullWidthModal>
+    </div>
+    {/if}
+
 </div>
+

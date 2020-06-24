@@ -6,8 +6,6 @@
 
 <style>
     #wrapper {
-        padding-top: 0.3em;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
         width: 100%;
         text-align:center;
     }
@@ -15,27 +13,29 @@
         padding: 1em;
         border-top: 1px solid #eee;
     }
-    li { cursor: pointer; }
-    li:hover {
+    table > tr:hover {
         background-color: #0bf5cc;
+        cursor:pointer;
     }
 </style>
 
 
 <div id="wrapper">
-    <h3>Public Rooms</h3>
-    <div id="content">
-        <ul>
-            {#each roomList as roomInfo}
-                <li on:click={dispatch("roomRequest", roomInfo)}>
-                    <div>
-                        {roomInfo.room_id}
-                    </div>
-                    <div>
-                        {roomInfo.num_clients} Players
-                    </div>
-                </li>
+    <h1 class="title">Public Rooms</h1>
+    <div id="content" class="table-container">
+        <table class="table is-fullwidth">
+            <thead>
+            <tr>
+                <th>Room Id</th>
+                <th># Clients</th>
+            </tr>
+            </thead>
+            {#each roomList.sort((a, b) => a.num_clients > b.num_clients) as roomInfo}
+                <tr on:click={dispatch("roomRequest", roomInfo)} >
+                    <td>{roomInfo.room_id}</td>
+                    <td>{roomInfo.num_clients}</td>
+                </tr>
             {/each}
-        </ul>
+        </table>
     </div>
 </div>

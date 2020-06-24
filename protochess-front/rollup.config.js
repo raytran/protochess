@@ -1,3 +1,5 @@
+import autoPreprocess from 'svelte-preprocess';
+import postcss from 'rollup-plugin-postcss'
 import rust from '@wasm-tool/rollup-plugin-rust';
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
@@ -44,7 +46,9 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
         // a separate file — better for performance
         css: css => {
           css.write(`${buildDir}/bundle.css`);
-        }
+        },
+        preprocess: autoPreprocess(),
+        emitCss: true
       }),
 
       // If you have external dependencies installed from
@@ -58,7 +62,19 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
       }),
       commonjs(),
       rust({debug: false, serverPath: "/build/"}),
-
+      postcss({
+            extract: true,
+            minimize: true,
+            use: [
+              [
+                "sass",
+                {
+                  includePaths: ["./node_modules", "./node_modules/bulma", "./src"],
+                },
+              ],
+            ],
+          }
+      ),
 
       // If we're building for production (npm run build
       // instead of npm run dev), minify

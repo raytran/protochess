@@ -170,9 +170,8 @@
     #leftPanel{
         grid-area: left-control;
         width: 100%;
-        max-width: 400px;
+        max-width: 350px;
         padding: 1em;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
         text-align: left;
     }
 
@@ -185,10 +184,9 @@
     #rightPanel {
         grid-area: right-control;
         width: 100%;
-        max-width: 400px;
+        max-width: 350px;
         max-height: 100%;
         padding: 1em;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
     }
     #toolSelector {
         display: grid;
@@ -199,212 +197,213 @@
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 
-
-    fieldset{
-        border: 0;
-    }
-    fieldset > legend{
-        font-weight: bold;
-    }
-    #wrapper{
-        padding: 2em;
-        background-color: white;
-        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-    }
     h1{
         text-align: center;
     }
 
 </style>
 
-<div id = wrapper>
-    <h1>Piece Editor</h1>
-    <div id=container>
-        <div id="leftPanel">
-            <fieldset>
-                <button on:click={saveChanges}>Save Changes</button>
-                <button on:click={reset}>Reset</button>
-                <hr>
-                <label>
+<div id=container>
+    <div class="box" id="leftPanel">
+        <div class="field">
+            <button class="button is-danger" on:click={reset}>Reset</button>
+            <button class="button is-primary" on:click={saveChanges}>Save Changes</button>
+            <hr>
+            <div class="control">
+                <label class="label">
                     <input type=checkbox bind:checked = {flipped}>
-                    <b>View as black</b>
+                    View as black
                 </label>
-                <hr>
-                <b>Viewport Size</b>
+            </div>
+            <hr>
+            <label class="label">Viewport Size</label>
+            <div class="control">
                 <label>
                     <input type=number bind:value={size} min=1 max=32>
                     <input step=2 type=range bind:value={size} min=1 max=32>
                 </label>
+            </div>
 
 
-                <b>Display Mode</b>
+            <label class="label">Display Mode</label>
+            <div class="control">
                 <label>
                     <input type=radio value={DisplayMode.ALL} bind:group={displayModeSelected}>
                     All
                 </label>
+            </div>
 
+            <div class="control">
                 <label>
                     <input type=radio value={DisplayMode.ATTACK} bind:group={displayModeSelected}>
                     Attacks
                 </label>
+            </div>
 
+            <div class="control">
                 <label>
                     <input type=radio value={DisplayMode.TRANSLATE} bind:group={displayModeSelected}>
                     Translates
                 </label>
-
-            </fieldset>
-        </div>
-        <div id="mpWrapper" on:mouseleave={()=> clicked = false}>
-            <MovementPatternDisplay
-                    {pieceType}
-                    {flipped}
-                    {size}
-                    displayMode={displayModeSelected}
-                    {movementPattern}
-                    on:tileMouseUp={()=> clicked = false}
-                    on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
-                            on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}}
-                            />
-        </div>
-        <div id="rightPanel">
-            <div style="text-align: center">
-                <h3>Moves</h3>
             </div>
-            <fieldset>
-                <legend>Delta-Based Moves</legend>
-                <div id="toolSelector">
-                    <div>
-                        Jumps:
-                        <label>
-                            <input type=radio value={ToolType.ATTACK_JUMP} bind:group={toolSelected}>
-                            Attack
-                        </label>
+        </div>
+    </div>
+    <div id="mpWrapper" on:mouseleave={()=> clicked = false}>
+        <MovementPatternDisplay
+                {pieceType}
+                {flipped}
+                {size}
+                displayMode={displayModeSelected}
+                {movementPattern}
+                on:tileMouseUp={()=> clicked = false}
+                on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
+                        on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}}
+                        />
+    </div>
+    <div class="box" id="rightPanel">
+        <div class="field">
+            <label class="label">Delta-Based Moves</label>
+            <div id="toolSelector">
+                <div class="control">
+                    Jumps:
+                    <label>
+                        <input type=radio value={ToolType.ATTACK_JUMP} bind:group={toolSelected}>
+                        Attack
+                    </label>
 
-                        <label>
-                            <input type=radio value={ToolType.TRANSLATE_JUMP} bind:group={toolSelected}>
-                            Translate
-                        </label>
-                    </div>
-                    <div>
-                        Slides:
-                        <label>
-                            <input type=radio value={ToolType.ATTACK_SLIDE} bind:group={toolSelected}>
-                            Attack Slide
-                        </label>
-                        {#if toolSelected === ToolType.ATTACK_SLIDE}
-                            <button on:click={()=> movementPattern.attackSlideDeltas = [...movementPattern.attackSlideDeltas, []]}>New group</button>
-                        {/if}
-
-                        <label>
-                            <input type=radio value={ToolType.TRANSLATE_SLIDE} bind:group={toolSelected}>
-                            Translate Slide
-                        </label>
-                        {#if toolSelected === ToolType.TRANSLATE_SLIDE}
-                            <button on:click={()=> movementPattern.translateSlideDeltas = [...movementPattern.translateSlideDeltas, []]}>New group</button>
-                        {/if}
-                    </div>
+                    <label>
+                        <input type=radio value={ToolType.TRANSLATE_JUMP} bind:group={toolSelected}>
+                        Translate
+                    </label>
                 </div>
-            </fieldset>
-            <div id ="slideBoxes">
-                <div>
-                    <fieldset>
-                        <legend>Slide North</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.north}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.north}>
-                            Translate
-                        </label>
-                    </fieldset>
-                    <fieldset>
-                        <legend>Slide East</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.east}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.east}>
-                            Translate
-                        </label>
-                    </fieldset>
+                <div class="control">
+                    Slides:
+                    <label>
+                        <input type=radio value={ToolType.ATTACK_SLIDE} bind:group={toolSelected}>
+                        Attack Slide
+                    </label>
 
-                    <fieldset>
-                        <legend>Slide South</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.south}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.south}>
-                            Translate
-                        </label>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend>Slide West</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.west}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.west}>
-                            Translate
-                        </label>
-                    </fieldset>
+                    <label>
+                        <input type=radio value={ToolType.TRANSLATE_SLIDE} bind:group={toolSelected}>
+                        Translate Slide
+                    </label>
+                    {#if toolSelected === ToolType.ATTACK_SLIDE}
+                        <button on:click={()=> movementPattern.attackSlideDeltas = [...movementPattern.attackSlideDeltas, []]}>New group</button>
+                    {/if}
+                    {#if toolSelected === ToolType.TRANSLATE_SLIDE}
+                        <button on:click={()=> movementPattern.translateSlideDeltas = [...movementPattern.translateSlideDeltas, []]}>New group</button>
+                    {/if}
                 </div>
-                <div>
-                    <fieldset>
-                        <legend>Slide Northeast</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.northeast}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.northeast}>
-                            Translate
-                        </label>
-                    </fieldset>
+            </div>
+        </div>
+        <div id ="slideBoxes">
+            <div class="field">
+                <label class="label">Slide North</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.north}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.north}>
+                        Translate
+                    </label>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Slide East</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.east}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.east}>
+                        Translate
+                    </label>
+                </div>
+            </div>
 
-                    <fieldset>
-                        <legend>Slide Northwest</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.northwest}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.northwest}>
-                            Translate
-                        </label>
-                    </fieldset>
+            <div class="field">
+                <label class="label">Slide South</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.south}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.south}>
+                        Translate
+                    </label>
+                </div>
+            </div>
 
-                    <fieldset>
-                        <legend>Slide Southeast</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.southeast}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.southeast}>
-                            Translate
-                        </label>
-                    </fieldset>
+            <div class="field">
+                <label class="label">Slide West</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.west}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.west}>
+                        Translate
+                    </label>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Slide Northeast</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.northeast}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.northeast}>
+                        Translate
+                    </label>
+                </div>
+            </div>
 
-                    <fieldset>
-                        <legend>Slide Southwest</legend>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.attackSlides.southwest}>
-                            Attack
-                        </label>
-                        <label>
-                            <input type=checkbox bind:checked={movementPattern.translateSlides.southwest}>
-                            Translate
-                        </label>
-                    </fieldset>
+            <div class="field">
+                <label class="label">Slide Northwest</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.northwest}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.northwest}>
+                        Translate
+                    </label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Slide Southeast</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.southeast}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.southeast}>
+                        Translate
+                    </label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Slide Southwest</label>
+                <div class="control">
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.attackSlides.southwest}>
+                        Attack
+                    </label>
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={movementPattern.translateSlides.southwest}>
+                        Translate
+                    </label>
                 </div>
             </div>
         </div>

@@ -44,9 +44,6 @@
         max-width: 400px;
         height: 50vh;
         background-color: white;
-        -webkit-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        -moz-box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
-        box-shadow: 0px 15px 20px -8px rgba(0,0,0,0.4);
     }
     #movementPatternDisplayBarWrapper {
         grid-area: movement-pattern;
@@ -55,7 +52,7 @@
         width: 100%;
         max-width:400px;
         overflow: scroll;
-        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+        border:1px solid lightgray
     }
 
     #boardAndMP {
@@ -86,11 +83,11 @@
         }
     }
 </style>
-<button on:click={()=> chatVisible = !chatVisible }>Toggle Chat</button>
-<button on:click={()=> mpVisible = !mpVisible }>Toggle Movement Pattern</button>
+<button class="button" on:click={()=> chatVisible = !chatVisible }>Toggle Chat</button>
+<button class="button" on:click={()=> mpVisible = !mpVisible }>Toggle Movement Pattern</button>
 <div  id="boardAndMP">
     {#if chatVisible}
-        <div transition:fade="{{duration: 200}}" id="chatWrapper" style="border:1px solid lightgray;">
+        <div transition:fade="{{duration: 200}}" class="chat" id="chatWrapper" style="border:1px solid lightgray;">
             <WebChat/>
         </div>
     {/if}
@@ -125,10 +122,10 @@
     </div>
 
     {#if mpVisible}
-        <div transition:fade="{{duration: 200}}" id="movementPatternDisplayBarWrapper">
+        <div transition:fade="{{duration: 200}}" class="box"  id="movementPatternDisplayBarWrapper">
             <div style="border-bottom: 1px solid #eee">
                 <h1>Movement Patterns</h1>
-                <button on:click={()=> mpFlipped = !mpFlipped }>Toggle Perspective</button>
+                <button class="button" on:click={()=> mpFlipped = !mpFlipped }>Toggle Perspective</button>
             </div>
             <MovementPatternDisplayBar flipped={mpFlipped} movementPatterns={$GameInfo.state ? $GameInfo.state.movement_patterns : null} />
         </div>
