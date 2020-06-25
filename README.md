@@ -1,7 +1,9 @@
 
 ![Protochess](https://i.imgur.com/5MYfcpe.png)
 
-![Protochess](https://i.imgur.com/6jngcdV.png)
+![Protochess](https://i.imgur.com/6jngcdV.png) 
+
+![Protochess](https://i.imgur.com/Drv9MgG.png)
 
 # protochess 
 ## Online chess variant website written in Svelte/Rust.
