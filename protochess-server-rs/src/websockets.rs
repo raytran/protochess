@@ -132,6 +132,9 @@ pub async fn user_connected(ws: WebSocket, rooms: Rooms){
                             if let Err(_) = room_tx.send(RoomMessage::External(my_id.clone(), cm)){
                                 eprintln!("Client error sending to room");
                             }
+                        }else{
+                            // If we ever get here, the user sent some garbage. Disconnect them.
+                            break;
                         }
                     }
                 }

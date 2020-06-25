@@ -66,7 +66,7 @@
 </style>
 
 <Tabs position="is-centered" style="is-large">
-    <Tab label="Board">
+    <Tab label="Game">
         <div style="height: 100vh; text-align: center" class="container">
             <div style="margin-bottom: 1em">
                 {engineStatus}

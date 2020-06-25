@@ -112,7 +112,8 @@ impl Room {
                                 requester_client.try_send(self.serialize_game());
                             }
                             ClientRequest::EditGameState(request_game_state) => {
-                                if self.editable {
+                                //TODO 2+ players ?
+                                if self.editable && player_num < 2 {
                                     if let Some((movements, valid_squares, valid_pieces)) =
                                     validate_gamestate_request(request_game_state.tiles,
                                                                      request_game_state.pieces,

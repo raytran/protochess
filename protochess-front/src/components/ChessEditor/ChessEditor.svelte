@@ -1,10 +1,12 @@
 <script>
-    import Tile from '../Chess/Tile.svelte'
     import Modal from '../Modal.svelte'
     import {createEventDispatcher, onMount} from 'svelte';
+    import { Tabs, Tab } from 'svelma'
+    import MediaQuery from "svelte-media-query";
     import Board from "../Chess/Board.svelte";
     import PieceEditor from "./PieceEditor.svelte";
-    import MovementPatternDisplayBar from "../MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
+    import ChessLeftControl from "./ChessLeftControl.svelte";
+    import ChessRightControl from "./ChessRightControl.svelte";
 
     let rawData = JSON.parse("{\"type\":\"GameState\",\"content\":{\"width\":8,\"height\":8,\"winner\":null,\"to_move\":0,\"to_move_in_check\":false,\"in_check_kings\":null,\"last_turn\":null,\"tiles\":[{\"x\":0,\"y\":0,\"tile_type\":\"b\"},{\"x\":0,\"y\":1,\"tile_type\":\"w\"},{\"x\":0,\"y\":2,\"tile_type\":\"b\"},{\"x\":0,\"y\":3,\"tile_type\":\"w\"},{\"x\":0,\"y\":4,\"tile_type\":\"b\"},{\"x\":0,\"y\":5,\"tile_type\":\"w\"},{\"x\":0,\"y\":6,\"tile_type\":\"b\"},{\"x\":0,\"y\":7,\"tile_type\":\"w\"},{\"x\":1,\"y\":0,\"tile_type\":\"w\"},{\"x\":1,\"y\":1,\"tile_type\":\"b\"},{\"x\":1,\"y\":2,\"tile_type\":\"w\"},{\"x\":1,\"y\":3,\"tile_type\":\"b\"},{\"x\":1,\"y\":4,\"tile_type\":\"w\"},{\"x\":1,\"y\":5,\"tile_type\":\"b\"},{\"x\":1,\"y\":6,\"tile_type\":\"w\"},{\"x\":1,\"y\":7,\"tile_type\":\"b\"},{\"x\":2,\"y\":0,\"tile_type\":\"b\"},{\"x\":2,\"y\":1,\"tile_type\":\"w\"},{\"x\":2,\"y\":2,\"tile_type\":\"b\"},{\"x\":2,\"y\":3,\"tile_type\":\"w\"},{\"x\":2,\"y\":4,\"tile_type\":\"b\"},{\"x\":2,\"y\":5,\"tile_type\":\"w\"},{\"x\":2,\"y\":6,\"tile_type\":\"b\"},{\"x\":2,\"y\":7,\"tile_type\":\"w\"},{\"x\":3,\"y\":0,\"tile_type\":\"w\"},{\"x\":3,\"y\":1,\"tile_type\":\"b\"},{\"x\":3,\"y\":2,\"tile_type\":\"w\"},{\"x\":3,\"y\":3,\"tile_type\":\"b\"},{\"x\":3,\"y\":4,\"tile_type\":\"w\"},{\"x\":3,\"y\":5,\"tile_type\":\"b\"},{\"x\":3,\"y\":6,\"tile_type\":\"w\"},{\"x\":3,\"y\":7,\"tile_type\":\"b\"},{\"x\":4,\"y\":0,\"tile_type\":\"b\"},{\"x\":4,\"y\":1,\"tile_type\":\"w\"},{\"x\":4,\"y\":2,\"tile_type\":\"b\"},{\"x\":4,\"y\":3,\"tile_type\":\"w\"},{\"x\":4,\"y\":4,\"tile_type\":\"b\"},{\"x\":4,\"y\":5,\"tile_type\":\"w\"},{\"x\":4,\"y\":6,\"tile_type\":\"b\"},{\"x\":4,\"y\":7,\"tile_type\":\"w\"},{\"x\":5,\"y\":0,\"tile_type\":\"w\"},{\"x\":5,\"y\":1,\"tile_type\":\"b\"},{\"x\":5,\"y\":2,\"tile_type\":\"w\"},{\"x\":5,\"y\":3,\"tile_type\":\"b\"},{\"x\":5,\"y\":4,\"tile_type\":\"w\"},{\"x\":5,\"y\":5,\"tile_type\":\"b\"},{\"x\":5,\"y\":6,\"tile_type\":\"w\"},{\"x\":5,\"y\":7,\"tile_type\":\"b\"},{\"x\":6,\"y\":0,\"tile_type\":\"b\"},{\"x\":6,\"y\":1,\"tile_type\":\"w\"},{\"x\":6,\"y\":2,\"tile_type\":\"b\"},{\"x\":6,\"y\":3,\"tile_type\":\"w\"},{\"x\":6,\"y\":4,\"tile_type\":\"b\"},{\"x\":6,\"y\":5,\"tile_type\":\"w\"},{\"x\":6,\"y\":6,\"tile_type\":\"b\"},{\"x\":6,\"y\":7,\"tile_type\":\"w\"},{\"x\":7,\"y\":0,\"tile_type\":\"w\"},{\"x\":7,\"y\":1,\"tile_type\":\"b\"},{\"x\":7,\"y\":2,\"tile_type\":\"w\"},{\"x\":7,\"y\":3,\"tile_type\":\"b\"},{\"x\":7,\"y\":4,\"tile_type\":\"w\"},{\"x\":7,\"y\":5,\"tile_type\":\"b\"},{\"x\":7,\"y\":6,\"tile_type\":\"w\"},{\"x\":7,\"y\":7,\"tile_type\":\"b\"}],\"pieces\":[{\"owner\":0,\"x\":4,\"y\":0,\"piece_type\":\"k\"},{\"owner\":0,\"x\":3,\"y\":0,\"piece_type\":\"q\"},{\"owner\":0,\"x\":2,\"y\":0,\"piece_type\":\"b\"},{\"owner\":0,\"x\":5,\"y\":0,\"piece_type\":\"b\"},{\"owner\":0,\"x\":1,\"y\":0,\"piece_type\":\"n\"},{\"owner\":0,\"x\":6,\"y\":0,\"piece_type\":\"n\"},{\"owner\":0,\"x\":0,\"y\":0,\"piece_type\":\"r\"},{\"owner\":0,\"x\":7,\"y\":0,\"piece_type\":\"r\"},{\"owner\":0,\"x\":0,\"y\":1,\"piece_type\":\"p\"},{\"owner\":0,\"x\":1,\"y\":1,\"piece_type\":\"p\"},{\"owner\":0,\"x\":2,\"y\":1,\"piece_type\":\"p\"},{\"owner\":0,\"x\":3,\"y\":1,\"piece_type\":\"p\"},{\"owner\":0,\"x\":4,\"y\":1,\"piece_type\":\"p\"},{\"owner\":0,\"x\":5,\"y\":1,\"piece_type\":\"p\"},{\"owner\":0,\"x\":6,\"y\":1,\"piece_type\":\"p\"},{\"owner\":0,\"x\":7,\"y\":1,\"piece_type\":\"p\"},{\"owner\":1,\"x\":4,\"y\":7,\"piece_type\":\"k\"},{\"owner\":1,\"x\":3,\"y\":7,\"piece_type\":\"q\"},{\"owner\":1,\"x\":2,\"y\":7,\"piece_type\":\"b\"},{\"owner\":1,\"x\":5,\"y\":7,\"piece_type\":\"b\"},{\"owner\":1,\"x\":1,\"y\":7,\"piece_type\":\"n\"},{\"owner\":1,\"x\":6,\"y\":7,\"piece_type\":\"n\"},{\"owner\":1,\"x\":0,\"y\":7,\"piece_type\":\"r\"},{\"owner\":1,\"x\":7,\"y\":7,\"piece_type\":\"r\"},{\"owner\":1,\"x\":0,\"y\":6,\"piece_type\":\"p\"},{\"owner\":1,\"x\":1,\"y\":6,\"piece_type\":\"p\"},{\"owner\":1,\"x\":2,\"y\":6,\"piece_type\":\"p\"},{\"owner\":1,\"x\":3,\"y\":6,\"piece_type\":\"p\"},{\"owner\":1,\"x\":4,\"y\":6,\"piece_type\":\"p\"},{\"owner\":1,\"x\":5,\"y\":6,\"piece_type\":\"p\"},{\"owner\":1,\"x\":6,\"y\":6,\"piece_type\":\"p\"},{\"owner\":1,\"x\":7,\"y\":6,\"piece_type\":\"p\"}],\"movement_patterns\":{}}}");
     export let gameState = rawData['content'];
@@ -34,7 +36,7 @@
     let toolSelected = ToolType.TILE;
     let dimensions = {width: gameState.width, height: gameState.height};
 
-    $: gameStateJSON = (()=>{
+    $: gameStateJSON = (() => {
         return JSON.stringify(gameState);
     })();
     let restricted = [];
@@ -166,234 +168,118 @@
         showPieceEditor = false;
 
     }
+
     const dispatch = createEventDispatcher();
-    function onSaveChanges(){
+
+    function onSaveChanges() {
         dispatch("saveChanges", gameState);
     }
 </script>
 
 <style>
-    #container{
-        display: grid;
-        justify-items: center;
-        column-gap: 1em;
-        row-gap: 1em;
-        grid-template-areas: 'left-control board board right-control';
-        grid-template-columns: repeat(4,  1fr);
-        font-size: 1em;
-    }
-    @media (max-width: 1200px) {
-        #container {
-            grid-template-columns: repeat(2,  1fr);
-            grid-template-areas:
-                    'board        board'
-                    'left-control right-control'
-        }
-    }
-
-    @media (max-width: 650px) {
-        #container {
-            grid-template-columns: 1fr;
-            grid-template-areas:
-                    'board'
-                    'left-control'
-                    'right-control'
-        }
-    }
-
-    #leftControl{
-        grid-area: left-control;
+    .leftControl{
+        max-width:400px;
         width: 100%;
-        max-width: 350px;
         padding: 1em;
         text-align: center;
     }
-    #boardWrapper {
+
+    .boardWrapper {
         max-width: 700px;
-        grid-area: board;
         width: 100%;
     }
 
-    #rightControl {
-        grid-area: right-control;
+    .rightControl {
+        max-width:400px;
         width: 100%;
-        max-width: 350px;
         padding: 1em;
-    }
-    .customCharEntry {
-        display: flex;
-    }
-    .customCharPic{
-        width: 3em;
-        height: 3em;
-    }
-    #customCharList {
-        width: 10em;
-        overflow: auto;
-        height: 10vh;
-    }
-    #movementPatternDisplayBarWrapper {
-        height: 20em;
-        overflow-y: scroll;
     }
 </style>
 
-<div id="container">
-    <div class="box" id="leftControl">
-        <div class="field">
-            <button class="button is-danger" on:click={reset}>Reset</button>
-            <button class="button is-primary" on:click={onSaveChanges}>Save Changes</button>
-            <hr>
-            <div class="control">
-                <label>
-                    <input type=checkbox bind:checked = {flipped}>
-                    <b>View as black</b>
-                </label>
-            </div>
-            <hr>
-            <label class="label">Board Width</label>
-            <div class="control">
-                <label class="label">
-                    <input type=number bind:value={dimensions.width} min=1 max=16>
-                    <input type=range bind:value={dimensions.width} min=1 max=16>
-                </label>
-            </div>
-            <label class="label">Board Height</label>
-            <div class="control">
-                <label>
-                    <input type=number bind:value={dimensions.height} min=1 max=16>
-                    <input type=range bind:value={dimensions.height} min=1 max=16>
-                </label>
-            </div>
 
-            <b>JSON</b>
-            <label>
-                <textarea id="gameStateJSONDisplay" readonly value={gameStateJSON}></textarea>
-            </label>
-
+<MediaQuery query="(min-width: 1200px)" let:matches>
+    {#if matches}
+        <div class="container">
+            <div class="columns">
+                <div class="column box leftControl">
+                    <ChessLeftControl
+                            bind:gameState={gameState}
+                            bind:flipped={flipped}
+                            bind:dimensions={dimensions}
+                            {gameStateJSON}
+                            on:reset={reset}
+                            on:saveChanges={onSaveChanges}/>
+                </div>
+                <div class="column boardWrapper">
+                    <Board
+                            {flipped}
+                            player_num={0}
+                            gameState={gameState}
+                            on:tileMouseUp={()=> clicked = false}
+                            on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
+                                    on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
+                </div>
+                <div class="column box rightControl">
+                    <ChessRightControl
+                            bind:toolSelected={toolSelected}
+                            bind:pieceOwnerSelected={pieceOwnerSelected}
+                            bind:customPieceCharSelected={customPieceCharSelected}
+                            bind:pieceSelected={pieceSelected}
+                            bind:registeredChars={registeredChars}
+                            bind:unregisteredChars={unregisteredChars}
+                            on:showPieceEditor={()=> showPieceEditor = true}
+                    />
+                </div>
+            </div>
         </div>
-        <b>Registered Movement Patterns:</b>
-        <div id="movementPatternDisplayBarWrapper">
-            <MovementPatternDisplayBar movementPatterns={gameState.movement_patterns} />
-        </div>
-    </div>
-    <div id="boardWrapper">
-        <Board
-                {flipped}
-                player_num={0}
-                gameState={gameState}
-                on:tileMouseUp={()=> clicked = false}
-                on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
-                        on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
-    </div>
-    <div class="box" id="rightControl">
-        <div class="field" >
-            <label class="label">Select Tool</label>
-            <div class="control">
-                <label class="radio">
-                    <input type=radio bind:group={toolSelected} value={ToolType.TILE}/>
-                    Toggle tiles
-                </label>
-                <label class="radio">
-                    <input type=radio bind:group={toolSelected} value={ToolType.PIECE}/>
-                    Place piece
-                </label>
+    {:else}
+        <div class="container" style="margin-bottom:1em; display: flex; justify-content: center">
+            <div>
+                <button class="button is-danger" on:click={reset}>Reset</button>
+                <button class="button is-primary" on:click={onSaveChanges}>Save Changes</button>
             </div>
-            {#if toolSelected === ToolType.PIECE}
-                <hr>
-                <label class="label">Tool Options</label>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceOwnerSelected} value={0}/>
-                        White
-                    </label>
+        </div>
+        <Tabs position="is-centered" style="is-toggle is-medium">
+            <Tab label="Board">
+                <div class="container boardWrapper" style="height:100vh">
+                    <Board
+                            {flipped}
+                            player_num={0}
+                            gameState={gameState}
+                            on:tileMouseUp={()=> clicked = false}
+                            on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
+                                    on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
                 </div>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceOwnerSelected} value={1}/>
-                        Black
-                    </label>
-                </div>
-                <hr>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceSelected} value={PieceType.PAWN}/>
-                        Pawn
-                    </label>
-                </div>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceSelected} value={PieceType.KNIGHT}/>
-                        Knight
-                    </label>
-                </div>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceSelected} value={PieceType.BISHOP}/>
-                        Bishop
-                    </label>
-                </div>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceSelected} value={PieceType.ROOK}/>
-                        Rook
-                    </label>
-                </div>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceSelected} value={PieceType.QUEEN}/>
-                        Queen
-                    </label>
-                </div>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceSelected} value={PieceType.KING}/>
-                        King
-                    </label>
-                </div>
-                <div class="control">
-                    <label>
-                        <input type=radio bind:group={pieceSelected} value={PieceType.CUSTOM}/>
-                        Custom
-                    </label>
-                </div>
-
-                {#if pieceSelected === PieceType.CUSTOM}
-                    <div>
-                        Custom Piece:
-                        <div id="customCharList">
-                            {#each registeredChars as char}
-                                <div class=customCharEntry style="background-color:
-                            {customPieceCharSelected === char ? 'rgba(0,0,255,0.6)' : 'rgba(0,0,255,0.3)'};"
-                                     on:click={()=> customPieceCharSelected = char}>
-                                    <div> Ready </div>
-                                    <div class="customCharPic">
-                                        <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
-                                    </div>
-                                </div>
-                            {/each}
-
-                            {#each unregisteredChars as char}
-                                <div class=customCharEntry style="background-color:
-                                {customPieceCharSelected === char ? 'rgba(255,00,0,0.6)' :  'rgba(255,0,0,0.3)'};"
-                                     on:click={()=> customPieceCharSelected = char}>
-                                    <div> ??? </div>
-                                    <div class="customCharPic">
-                                        <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
-                                    </div>
-                                </div>
-                            {/each}
-                        </div>
+            </Tab>
+            <Tab label="Controls">
+                <div class="columns" style="height: 100vh; overflow:auto ">
+                    <div class="box column rightControl">
+                        <ChessRightControl
+                                bind:toolSelected={toolSelected}
+                                bind:pieceOwnerSelected={pieceOwnerSelected}
+                                bind:customPieceCharSelected={customPieceCharSelected}
+                                bind:pieceSelected={pieceSelected}
+                                bind:registeredChars={registeredChars}
+                                bind:unregisteredChars={unregisteredChars}
+                                on:showPieceEditor={()=> showPieceEditor = true}
+                        />
                     </div>
-                    <button class="button" on:click={()=> showPieceEditor = true}>
-                        {registeredChars.includes(customPieceCharSelected) ? 'Edit movement' : 'Set movement'}
-                    </button>
-                {/if}
-            {/if}
-        </div>
-    </div>
+                    <div class="box column leftControl">
+                        <ChessLeftControl
+                                bind:gameState={gameState}
+                                bind:flipped={flipped}
+                                bind:dimensions={dimensions}
+                                {gameStateJSON}
+                                on:reset={reset}
+                                showSaveChanges={false}
+                                on:saveChanges={onSaveChanges}/>
+                    </div>
+                </div>
+            </Tab>
+        </Tabs>
+    {/if}
+</MediaQuery>
 
-</div>
 
 
 {#if showPieceEditor}

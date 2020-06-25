@@ -31,6 +31,7 @@ async fn main() {
         .and(warp::ws())
         .and(rooms.clone())
         .and_then(|ws: warp::ws::Ws, rooms| async move {
+            //Hack to get past compiler....
             if false { return Err(warp::reject::not_found()); }
             Ok(ws.on_upgrade(move |socket|
                 user_connected(socket, rooms)))

@@ -1,7 +1,6 @@
-
 <script>
-    import Chat from "../components/Chat/Chat.svelte";
-    import {PlayersList, ChatMessage, sendChatMessage} from "../WebsocketStore";
+    import Chat from "../../components/Chat/Chat.svelte";
+    import {PlayersList, ChatMessage, sendChatMessage} from "../../WebsocketStore";
     let comments = [];
 
     ChatMessage.subscribe(value => {

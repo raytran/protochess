@@ -27,12 +27,14 @@
             <thead>
             <tr>
                 <th>Room Id</th>
+                <th>Edits on?</th>
                 <th># Clients</th>
             </tr>
             </thead>
             {#each roomList.sort((a, b) => a.num_clients > b.num_clients) as roomInfo}
                 <tr on:click={dispatch("roomRequest", roomInfo)} >
                     <td>{roomInfo.room_id}</td>
+                    <td>{roomInfo.editable ? 'Yes' : 'No'} </td>
                     <td>{roomInfo.num_clients}</td>
                 </tr>
             {/each}

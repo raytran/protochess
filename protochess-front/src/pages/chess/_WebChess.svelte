@@ -6,7 +6,7 @@
     import {fly, fade} from 'svelte/transition';
     import MovementPatternDisplayBar from "../../components/MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";
     import Chat from "../../components/Chat/Chat.svelte";
-    import WebChat from "../_WebChat.svelte";
+    import WebChat from "./_WebChat.svelte";
 
     let chatVisible = true;
     let mpVisible = true;

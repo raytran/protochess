@@ -21,16 +21,7 @@
 
     function requestEdits(e) {
         console.log(e);
-        sendRequest(
-                {
-                    type: "EditGameState", content: {
-                        width: e.detail.width,
-                        height: e.detail.height,
-                        tiles: e.detail.tiles,
-                        pieces: e.detail.pieces,
-                        movement_patterns: e.detail.movement_patterns
-                    }
-                });
+        sendRequest({type: "EditGameState", content: e.detail});
     }
 
     $beforeUrlChange((event, store) => {
@@ -62,7 +53,7 @@
 
     <Tabs position="is-centered" >
 
-        <Tab label="Board">
+        <Tab label="Game">
             <div style="height: 100vh">
             <WebChess/>
             </div>

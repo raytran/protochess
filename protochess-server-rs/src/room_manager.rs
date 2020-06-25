@@ -16,6 +16,7 @@ pub struct RoomInfo {
     room_id: String,
     num_clients: usize,
     is_public: bool,
+    editable: bool,
 }
 
 struct RoomHandle {
@@ -55,7 +56,8 @@ impl RoomManager {
                         room_ids.push(RoomInfo{
                             room_id: room_id.clone(),
                             num_clients: room_handler.room_info.num_clients,
-                            is_public: true
+                            is_public: true,
+                            editable: room_handler.room_info.editable
                         });
                     }
                 }
@@ -130,6 +132,7 @@ impl RoomManager {
                     room_id: room_id,
                     num_clients: 0,
                     is_public: public,
+                    editable
                 },
                 room_tx: room_tx.clone()
             });
@@ -190,7 +193,8 @@ impl RoomManager {
                 room_infos.push(RoomInfo{
                     room_id: room_id.clone(),
                     num_clients: room_handler.room_info.num_clients,
-                    is_public: true
+                    is_public: true,
+                    editable:room_handler.room_info.editable
                 })
             }
         }
