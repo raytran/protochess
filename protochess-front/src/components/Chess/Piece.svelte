@@ -4,8 +4,7 @@
     export let gameHeight;
     export let flipped = false;
 
-    $: piece_char_rep = piece.owner === 0 ? piece.piece_type.toUpperCase() : piece.piece_type.toLowerCase();
-    $: src = "/images/chess_pieces/" + piece_char_rep + ".svg";
+    $: src = piece.owner === 0 ? "/images/chess_pieces/white/" + piece.piece_type + ".svg" : "/images/chess_pieces/black/" + piece.piece_type + ".svg";
 
 </script>
 <style>

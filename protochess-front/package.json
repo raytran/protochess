@@ -31,13 +31,13 @@
     "sass": "^1.26.9",
     "spassr": "^1.0.3",
     "svelte-preprocess": "^3.9.10",
-    "svelte-tabs": "^1.1.0"
+    "bulma": "^0.9.0",
+    "svelma": "^0.3.2",
+    "svelte-tabs": "^1.1.0",
+    "clipboard": "^2.0.6"
   },
   "dependencies": {
     "@sveltech/routify": "^1.7.12",
-    "bulma": "^0.9.0",
-    "clipboard": "^2.0.6",
-    "svelma": "^0.3.2",
     "svelte": "^3.20.1"
   }
 }

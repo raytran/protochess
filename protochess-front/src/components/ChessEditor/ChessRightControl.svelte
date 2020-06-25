@@ -130,7 +130,7 @@
                              on:click={()=> customPieceCharSelected = char}>
                             <div> ??? </div>
                             <div class="customCharPic">
-                                <img src={'/images/chess_pieces/' + (pieceOwnerSelected === 0 ? char.toUpperCase() : char) + '.svg'}/>
+                                <img src={pieceOwnerSelected === 0 ? "/images/chess_pieces/white/" + char + ".svg" : "/images/chess_pieces/black/" + char + ".svg"}/>
                             </div>
                         </div>
                     {/each}
