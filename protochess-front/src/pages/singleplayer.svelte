@@ -29,21 +29,35 @@
         if (req.detail.type === "TakeTurn") {
             let from = req.detail.content.from;
             let to = req.detail.content.to;
-            myEngine.make_move(from[0], from[1], to[0], to[1]);
-            gameState = myEngine.get_state();
-            engineStatus = "Engine thinking...";
-            setTimeout(function () {
-                let move_res = myEngine.get_best_move_timeout(maxTimeout);
-                let move = move_res[0];
-                let depth = move_res[1];
-                myEngine.make_move(move[0], move[1], move[2], move[3]);
+            if (myEngine.make_move(from[0], from[1], to[0], to[1])){
                 gameState = myEngine.get_state();
-                highlighted.lastTurn = {from: [move[0], move[1]], to: [move[2], move[3]]};
-                engineStatus = "Looked " + depth + " ply. Your turn!";
-            }, 500);
-
+                update_in_check_highlight();
+                engineStatus = "Engine thinking...";
+                setTimeout(function () {
+                    let move_res = myEngine.get_best_move_timeout(maxTimeout);
+                    let move = move_res[0];
+                    let depth = move_res[1];
+                    myEngine.make_move(move[0], move[1], move[2], move[3]);
+                    gameState = myEngine.get_state();
+                    update_in_check_highlight();
+                    highlighted.lastTurn = {from: [move[0], move[1]], to: [move[2], move[3]]};
+                    engineStatus = "Looked " + depth + " ply. Your turn!";
+                }, 500);
+            }
         }
         console.log(req);
+    }
+
+    function update_in_check_highlight(){
+        if (myEngine.to_move_in_check()){
+            for (let pce of gameState.pieces){
+                if (pce.owner === gameState.to_move
+                        && pce.piece_type === 'k') {
+                    highlighted.in_check_kings = [pce];
+                    break;
+                }
+            }
+        }
     }
 
     function requestEdits(e){
@@ -59,9 +73,6 @@
         max-width: 700px;
         margin-left:auto;
         margin-right:auto;
-    }
-    #engineStats {
-
     }
 </style>
 

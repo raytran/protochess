@@ -66,6 +66,10 @@ impl Protochess {
         JsValue::from_serde(&game_state).unwrap()
     }
 
+    pub fn to_move_in_check(&mut self) -> bool {
+        self.engine.to_move_in_check()
+    }
+
     ///True on succcess
     pub fn set_state(&mut self, val: &JsValue) -> bool {
         let request_game_state: GameState = val.into_serde().unwrap();

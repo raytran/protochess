@@ -197,7 +197,7 @@
 </style>
 
 
-<MediaQuery query="(min-width: 1200px)" let:matches>
+<MediaQuery query="(min-width: 1400px)" let:matches>
     {#if matches}
         <div class="container">
             <div class="columns">

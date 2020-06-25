@@ -333,6 +333,10 @@ impl Engine {
         possible_moves
     }
 
+    pub fn to_move_in_check(&mut self) -> bool {
+        self.move_generator.in_check(&mut self.current_position)
+    }
+
     pub fn set_state(&mut self, movement_patterns: HashMap<char, MovementPatternExternal>,
                      valid_squares:Vec<(u8, u8)>, pieces: Vec<(u8, u8, u8, char)>){
         assert!(Game::each_owner_contains_k(&pieces));
