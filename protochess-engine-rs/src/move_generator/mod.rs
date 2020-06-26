@@ -457,6 +457,7 @@ impl MoveGenerator {
     fn is_in_check_from_king(&self, position: &Position, my_player_num: u8) -> bool {
         let my_pieces: &PieceSet = &position.pieces[my_player_num as usize];
         let enemies = &position.occupied & !&my_pieces.occupied;
+        let occ_or_not_in_bounds = &position.occupied | !&position.bounds;
 
         //Calculate enemies piece sets
         let enemy_pieces: &PieceSet = &position.pieces[position.whos_turn as usize];
@@ -473,9 +474,9 @@ impl MoveGenerator {
         //Pawn
         let patt = {
             if my_player_num == 0 {
-                self.attack_tables.get_north_pawn_attack_masked(loc_index, &position.occupied, &enemies)
+                self.attack_tables.get_north_pawn_attack_masked(loc_index, &occ_or_not_in_bounds, &enemies)
             }else{
-                self.attack_tables.get_south_pawn_attack_masked(loc_index, &position.occupied, &enemies)
+                self.attack_tables.get_south_pawn_attack_masked(loc_index, &occ_or_not_in_bounds, &enemies)
             }
         };
 
@@ -484,23 +485,23 @@ impl MoveGenerator {
         };
 
         //Knight
-        let natt = self.attack_tables.get_knight_attack(loc_index, &position.occupied, &enemies);
+        let natt = self.attack_tables.get_knight_attack(loc_index, &occ_or_not_in_bounds, &enemies);
         if !(natt & enemy_knights).is_zero() {
             return true;
         };
         //King
-        let katt = self.attack_tables.get_king_attack(loc_index, &position.occupied, &enemies);
+        let katt = self.attack_tables.get_king_attack(loc_index, &occ_or_not_in_bounds, &enemies);
         if !(katt & enemy_kings).is_zero() {
             return true;
         };
 
         //Rook & Queen
-        let ratt = self.attack_tables.get_rook_attack(loc_index, &position.occupied, &enemies);
+        let ratt = self.attack_tables.get_rook_attack(loc_index, &occ_or_not_in_bounds, &enemies);
         if !(&ratt & enemy_queens).is_zero() || !(&ratt & enemy_rooks).is_zero() {
             return true;
         };
         //Bishop & Queen
-        let batt = self.attack_tables.get_bishop_attack(loc_index, &position.occupied, &enemies);
+        let batt = self.attack_tables.get_bishop_attack(loc_index, &occ_or_not_in_bounds, &enemies);
         if !(&batt & enemy_queens).is_zero() || !(&batt & enemy_bishops).is_zero() {
             return true;
         };
