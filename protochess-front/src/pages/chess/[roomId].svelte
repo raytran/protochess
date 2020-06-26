@@ -1,6 +1,7 @@
 <script>
     export let roomId;
-    import { Tabs, Tab } from 'svelma'
+    import Tabs from 'svelma/src/components/Tabs/Tabs.svelte';
+    import Tab from 'svelma/src/components/Tabs/Tab.svelte';
     import WebChess from './_WebChess.svelte';
     import PList from "../../components/PlayersList/PlayersList.svelte";
     import ClipboardJS from "clipboard";

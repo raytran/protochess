@@ -1,8 +1,9 @@
 <script>
     import Modal from '../Modal.svelte'
     import {createEventDispatcher, onMount} from 'svelte';
-    import { Tabs, Tab } from 'svelma'
-    import MediaQuery from "svelte-media-query";
+    import Tabs from 'svelma/src/components/Tabs/Tabs.svelte';
+    import Tab from 'svelma/src/components/Tabs/Tab.svelte';
+    import MediaQuery from "../MediaQuery.svelte";
     import Board from "../Chess/Board.svelte";
     import PieceEditor from "./PieceEditor.svelte";
     import ChessLeftControl from "./ChessLeftControl.svelte";
@@ -197,42 +198,41 @@
 </style>
 
 
-<MediaQuery query="(min-width: 1400px)" let:matches>
-    {#if matches}
-        <div class="container">
-            <div class="columns">
-                <div class="column box leftControl">
-                    <ChessLeftControl
-                            bind:gameState={gameState}
-                            bind:flipped={flipped}
-                            bind:dimensions={dimensions}
-                            {gameStateJSON}
-                            on:reset={reset}
-                            on:saveChanges={onSaveChanges}/>
-                </div>
-                <div class="column boardWrapper">
-                    <Board
-                            {flipped}
-                            player_num={0}
-                            gameState={gameState}
-                            on:tileMouseUp={()=> clicked = false}
-                            on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
-                                    on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
-                </div>
-                <div class="column box rightControl">
-                    <ChessRightControl
-                            bind:toolSelected={toolSelected}
-                            bind:pieceOwnerSelected={pieceOwnerSelected}
-                            bind:customPieceCharSelected={customPieceCharSelected}
-                            bind:pieceSelected={pieceSelected}
-                            bind:registeredChars={registeredChars}
-                            bind:unregisteredChars={unregisteredChars}
-                            on:showPieceEditor={()=> showPieceEditor = true}
-                    />
-                </div>
+<MediaQuery>
+    <div slot="match" class="container">
+        <div class="columns">
+            <div class="column box leftControl">
+                <ChessLeftControl
+                        bind:gameState={gameState}
+                        bind:flipped={flipped}
+                        bind:dimensions={dimensions}
+                        {gameStateJSON}
+                        on:reset={reset}
+                        on:saveChanges={onSaveChanges}/>
+            </div>
+            <div class="column boardWrapper">
+                <Board
+                        {flipped}
+                        player_num={0}
+                        gameState={gameState}
+                        on:tileMouseUp={()=> clicked = false}
+                        on:tileMouseOver={e => (clicked) ?  activateTool(e.detail) : ""}
+                                on:tileMouseDown={e => {clicked = true; activateTool(e.detail);}} />
+            </div>
+            <div class="column box rightControl">
+                <ChessRightControl
+                        bind:toolSelected={toolSelected}
+                        bind:pieceOwnerSelected={pieceOwnerSelected}
+                        bind:customPieceCharSelected={customPieceCharSelected}
+                        bind:pieceSelected={pieceSelected}
+                        bind:registeredChars={registeredChars}
+                        bind:unregisteredChars={unregisteredChars}
+                        on:showPieceEditor={()=> showPieceEditor = true}
+                />
             </div>
         </div>
-    {:else}
+    </div>
+    <div slot="fallback">
         <div class="container" style="margin-bottom:1em; display: flex; justify-content: center">
             <div>
                 <button class="button is-danger" on:click={reset}>Reset</button>
@@ -277,10 +277,8 @@
                 </div>
             </Tab>
         </Tabs>
-    {/if}
+    </div>
 </MediaQuery>
-
-
 
 {#if showPieceEditor}
     <Modal on:close={()=>showPieceEditor = false} >

@@ -1,5 +1,5 @@
 <script>
-    import { Icon } from 'svelma'
+    import Icon from 'svelma/src/components/Icon.svelte';
     import {isActive, url} from '@sveltech/routify'
     const links =
             [

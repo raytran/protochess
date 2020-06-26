@@ -1,5 +1,6 @@
 <script>
-    import { Tabs, Tab } from 'svelma';
+    import Tabs from 'svelma/src/components/Tabs/Tabs.svelte';
+    import Tab from 'svelma/src/components/Tabs/Tab.svelte';
     import {onMount} from "svelte";
     import wasm from "../../../protochess-engine-wasm/Cargo.toml"
     import Board from "../components/Chess/Board.svelte";

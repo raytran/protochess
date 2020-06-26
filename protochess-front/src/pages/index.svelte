@@ -1,11 +1,13 @@
 <script>
     import {RoomList, createRoom} from '../WebsocketStore';
-    import { Tabs, Tab } from 'svelma'
-    import MediaQuery from "svelte-media-query";
+    import Tabs from 'svelma/src/components/Tabs/Tabs.svelte';
+    import Tab from 'svelma/src/components/Tabs/Tab.svelte';
+    import Button from 'svelma/src/components/Button.svelte';
+    import Modal from 'svelma/src/components/Modal/Modal.svelte';
+    import MediaQuery from "../components/MediaQuery.svelte";
     import { url, redirect } from '@sveltech/routify'
     import ProtochessInfo from './_ProtochessInfo.svelte';
     import PlayButtons from './_PlayButtons.svelte';
-    import { Button, Modal } from 'svelma'
     import FullWidthModal from '../components/Modal.svelte';
     import Rl from "../components/RoomList/RoomList.svelte";
     import CreateRoomDialog from "../components/CreateRoomDialog/CreateRoomDialog.svelte";
@@ -69,22 +71,21 @@
 </style>
 
 <div id="content">
-    <MediaQuery query="(min-width: 1200px)" let:matches>
-        {#if matches}
-            <div id="createRoomRoomListWrapper">
-                <div class="container box" id="roomListWrapper">
-                    <Rl on:roomRequest={handleRoomRequest} roomList={$RoomList}/>
-                </div>
+    <MediaQuery>
+        <div slot="match" id="createRoomRoomListWrapper">
+            <div class="container box" id="roomListWrapper">
+                <Rl on:roomRequest={handleRoomRequest} roomList={$RoomList}/>
+            </div>
+            <div class="box container">
+                <ProtochessInfo/>
+            </div>
+            <div>
                 <div class="box container">
-                    <ProtochessInfo/>
-                </div>
-                <div>
-                    <div class="box container">
-                        <PlayButtons on:requestPlayOnline={()=> active = true}/>
-                    </div>
+                    <PlayButtons on:requestPlayOnline={()=> active = true}/>
                 </div>
             </div>
-        {:else}
+        </div>
+        <div slot="fallback">
             <div class="box container">
                 <PlayButtons on:requestPlayOnline={()=> active = true}/>
             </div>
@@ -100,7 +101,7 @@
                     </div>
                 </Tab>
             </Tabs>
-        {/if}
+        </div>
     </MediaQuery>
     <Modal bind:active={active}  onBody={false}> >
         <div style="display: flex; justify-content: center">
