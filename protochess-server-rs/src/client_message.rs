@@ -62,7 +62,7 @@ pub enum ClientRequest {
 
 #[cfg(test)]
 mod tests {
-    use crate::client_message::{ClientRequest, RequestGameState};
+    use crate::client_message::{ClientRequest };
     use crate::client_message::ClientResponse;
     use crate::client_message::Turn;
     use std::collections::HashMap;
@@ -70,6 +70,7 @@ mod tests {
     use uuid::Uuid;
     #[test]
     fn serde() {
+        /*
         let lol = json!(ClientRequest::MovesFrom(0, 1));
         println!("{}", lol);
         let lol = json!(ClientRequest::ChatMessage("lol".to_string()));
@@ -103,5 +104,7 @@ mod tests {
         let lol = json!(eds);
 
         println!("{}", lol);
+
+         */
     }
 }
