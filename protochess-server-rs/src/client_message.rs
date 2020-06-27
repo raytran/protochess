@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use crate::room_manager::RoomInfo;
-use protochess_common::{GameState, Tile, Piece, MovementPattern, Turn};
+use protochess_common::{GameState, Piece, Turn};
 
 /// Public facing API
 /// Message from the server to client

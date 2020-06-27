@@ -1,6 +1,6 @@
 use crate::room::Room;
 use serde::{Deserialize, Serialize};
-use tokio::sync::{mpsc, RwLock, Mutex};
+use tokio::sync::{mpsc, RwLock};
 use crate::room_message::RoomMessage;
 use std::sync::{ Arc };
 use std::collections::HashMap;
@@ -40,7 +40,7 @@ impl RoomManager {
         let rooms:Rooms = Arc::new(RwLock::new(HashMap::new()));
         let broadcast_clients:BroadcastClients = Arc::new(RwLock::new(HashMap::new()));
 
-        let (mut tx, mut rx) : (UnboundedSender<RoomDeletionMsg>, UnboundedReceiver<RoomDeletionMsg>) = mpsc::unbounded_channel();
+        let (tx, mut rx) : (UnboundedSender<RoomDeletionMsg>, UnboundedReceiver<RoomDeletionMsg>) = mpsc::unbounded_channel();
         //Spawn a process responsible for listening to room deletions
         let room_copy = rooms.clone();
         let bc = broadcast_clients.clone();
@@ -63,7 +63,7 @@ impl RoomManager {
                 }
                 //Broadcast removal
                 let bcs = bc.read().await;
-                for (id, client) in bcs.iter() {
+                for (_id, client) in bcs.iter() {
                     client.try_send(ClientResponse::RoomList(room_ids.clone()))
                 }
             }
@@ -214,7 +214,7 @@ impl RoomManager {
     /// Broadcasts public rooms to listeners
     async fn broadcast_rooms(&self){
         let rooms = self.get_public_rooms().await;
-        for (id, c) in self.broadcast_clients.read().await.iter() {
+        for (_id, c) in self.broadcast_clients.read().await.iter() {
             c.try_send(ClientResponse::RoomList(rooms.clone()));
         }
     }

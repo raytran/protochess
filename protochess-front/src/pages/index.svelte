@@ -63,6 +63,8 @@
     }
     #roomListWrapper {
         min-height: 50vh;
+        max-height: 80vh;
+        overflow: auto;
     }
     #createRoomWrapper {
         width:100%;

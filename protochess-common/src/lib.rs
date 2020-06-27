@@ -80,7 +80,6 @@ pub fn serialize_game_state(position: &Position) -> GameState {
         })
         .collect();
     let to_move = position.whos_turn;
-    let map = position.get_char_movementpattern_map();
     let movement_patterns = {
         let mut temp = HashMap::new();
         for (k, v) in position.get_char_movementpattern_map() {

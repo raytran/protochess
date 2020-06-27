@@ -2,12 +2,10 @@ use tokio::sync::mpsc;
 use crate::room_message::RoomMessage;
 use crate::client::Client;
 use crate::client_message::{ClientRequest, ClientResponse};
-use protochess_common::{Piece, Tile, Turn, MovementPattern, Slides, GameState, serialize_game_state, validate_gamestate_request};
+use protochess_common::{Piece, Turn, serialize_game_state, validate_gamestate_request};
 use std::sync::{ Arc };
-use std::collections::HashMap;
 use uuid::Uuid;
 use lazy_static::lazy_static;
-use protochess_engine_rs::MovementPatternExternal;
 
 
 lazy_static! {
@@ -178,7 +176,7 @@ impl Room {
             Some(
                 self.game.current_position.pieces_as_tuples()
                     .into_iter()
-                    .filter(|(owner, x, y, piece_type)|{
+                    .filter(|(owner, _x, _y, piece_type)|{
                         *owner == to_move && *piece_type == 'k'
                     })
                     .map(|(owner, x, y, piece_type)|{
