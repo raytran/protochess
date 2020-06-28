@@ -1,6 +1,7 @@
 import {derived, writable} from "svelte/store";
 
-const URI = "ws://" + location.host + "/wschess/";
+//const URI = "ws://" + location.host + "/wschess/";
+const URI = "wss://" + location.host + "/wschess/";
 const socket = new WebSocket(URI);
 
 
