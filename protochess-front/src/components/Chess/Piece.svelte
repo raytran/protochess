@@ -8,7 +8,7 @@
         if (piece.piece_type.length === 1){
             return piece.owner === 0 ? "/images/chess_pieces/white/" + piece.piece_type + ".svg" : "/images/chess_pieces/black/" + piece.piece_type + ".svg";
         }else{
-            return 'images/chess_pieces/' +piece.piece_type + '.svg';
+            return '/images/chess_pieces/' +piece.piece_type + '.svg';
         }
     })()
 
