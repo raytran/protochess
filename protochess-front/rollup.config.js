@@ -1,125 +1,92 @@
+import copy from 'rollup-plugin-copy';
 import autoPreprocess from 'svelte-preprocess';
-import postcss from 'rollup-plugin-postcss'
+import postcss from 'rollup-plugin-postcss';
 import rust from '@wasm-tool/rollup-plugin-rust';
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
-import copy from 'rollup-plugin-copy'
 import del from 'del'
 
+const production = !process.env.ROLLUP_WATCH;
 const staticDir = 'static'
 const distDir = 'dist'
 const buildDir = `${distDir}/build`
-const production = !process.env.ROLLUP_WATCH;
-//const bundling = process.env.BUNDLING || production ? 'dynamic' : 'bundle'
-const bundling = 'bundle';
-const shouldPrerender = (typeof process.env.PRERENDER !== 'undefined') ? process.env.PRERENDER : !!production
 
 del.sync(distDir + '/**')
-
-function createConfig({ output, inlineDynamicImports, plugins = [] }) {
-  const transform = inlineDynamicImports ? bundledTransform : dynamicTransform
-
-  return {
-    inlineDynamicImports,
-    input: `src/main.js`,
-    output: {
-      name: 'app',
-      sourcemap: true,
-      ...output
-    },
-    plugins: [
-      copy({
-        targets: [
-          { src: [staticDir + "/*", "!*/(__index.html)"], dest: distDir },
-          { src: `${staticDir}/__index.html`, dest: distDir, rename: '__app.html', transform },
-        ],
-	copyOnce: true,
-	flatten: false
-      }),
-      svelte({
-        // enable run-time checks when not in production
-        dev: !production,
-        hydratable: true,
-        // we'll extract any component CSS out into
-        // a separate file — better for performance
-        css: css => {
-          css.write(`${buildDir}/bundle.css`);
-        },
-        preprocess: autoPreprocess(),
-        emitCss: true
-      }),
-
-      // If you have external dependencies installed from
-      // npm, you'll most likely need these plugins. In
-      // some cases you'll need additional configuration —
-      // consult the documentation for details:
-      // https://github.com/rollup/rollup-plugin-commonjs
-      resolve({
-        browser: true,
-        dedupe: importee => importee === 'svelte' || importee.startsWith('svelte/')
-      }),
-      commonjs(),
-      rust({debug: false, serverPath: "/build/"}),
-      postcss({
-            extract: true,
-            minimize: true,
-            use: [
-              [
-                "sass",
-                {
-                  includePaths: ["./node_modules", "./node_modules/bulma", "./src"],
-                },
-              ],
-            ],
-          }
-      ),
-
-      // If we're building for production (npm run build
-      // instead of npm run dev), minify
-      production && terser(),
-
-      ...plugins
-    ],
-    watch: {
-      clearScreen: false
-    }
-  }
-}
-
-
-const bundledConfig = {
-  inlineDynamicImports: true,
+const transform = bundledTransform;
+export default {
+  input: 'src/main.js',
   output: {
+    inlineDynamicImports: true,
+    sourcemap: true,
     format: 'iife',
+    name: 'app',
     file: `${buildDir}/bundle.js`
   },
   plugins: [
+    copy({
+      targets: [
+        { src: [staticDir + "/*", "!*/(__index.html)"], dest: distDir },
+        { src: `${staticDir}/__index.html`, dest: distDir, rename: '__app.html', transform },
+      ],
+      copyOnce: true,
+      flatten: false
+    }),
+    svelte({
+      // enable run-time checks when not in production
+      dev: !production,
+      // we'll extract any component CSS out into
+      // a separate file - better for performance
+      css: css => {
+        css.write(`${buildDir}/bundle.css`);
+      },
+      preprocess: autoPreprocess(),
+      emitCss: true
+    }),
+
+    // If you have external dependencies installed from
+    // npm, you'll most likely need these plugins. In
+    // some cases you'll need additional configuration -
+    // consult the documentation for details:
+    // https://github.com/rollup/plugins/tree/master/packages/commonjs
+    resolve({
+      browser: true,
+      dedupe: ['svelte']
+    }),
+    commonjs(),
+    rust({debug: false, serverPath: "/build/"}),
+    postcss({
+          extract: true,
+          minimize: true,
+          use: [
+            [
+              "sass",
+              {
+                includePaths: ["./node_modules", "./node_modules/bulma", "./src"],
+              },
+            ],
+          ],
+        }
+    ),
+
+    // In dev mode, call `npm run start` once
+    // the bundle has been generated
     !production && serve(),
-    !production && livereload(distDir)
-  ]
-}
 
-const dynamicConfig = {
-  inlineDynamicImports: false,
-  output: {
-    format: 'esm',
-    dir: buildDir
-  },
-  plugins: [
+    // Watch the `public` directory and refresh the
+    // browser on changes when not in production
     !production && livereload(distDir),
-  ]
-}
 
-
-const configs = [createConfig(bundledConfig)]
-if (bundling === 'dynamic')
-  configs.push(createConfig(dynamicConfig))
-if (shouldPrerender) [...configs].pop().plugins.push(prerender())
-export default configs
-
+    // If we're building for production (npm run build
+    // instead of npm run dev), minify
+    production && terser()
+  ],
+  watch: {
+    clearScreen: false
+  }
+};
 
 function serve() {
   let started = false;
@@ -134,19 +101,6 @@ function serve() {
       }
     }
   };
-}
-
-function prerender() {
-  return {
-    writeBundle() {
-      if (shouldPrerender) {
-        require('child_process').spawn('npm', ['run', 'export'], {
-          stdio: ['ignore', 'inherit', 'inherit'],
-          shell: true
-        });
-      }
-    }
-  }
 }
 
 function bundledTransform(contents) {
