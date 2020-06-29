@@ -1,7 +1,7 @@
 <!-- A Board with websocketstore bindings -->
 <script>
     import Board from "../../components/Chess/Board.svelte";
-    import {sendRequest, GameInfo, PlayersList, MovesFrom} from '../../WebsocketStore';
+    import {sendRequest, GameInfo, PlayersList, MovesFrom} from '../../_WebsocketStore';
     import ChessEditor from "../../components/ChessEditor/ChessEditor.svelte";
     import {fly, fade} from 'svelte/transition';
     import MovementPatternDisplayBar from "../../components/MovementPatternDisplayBar/MovementPatternDisplayBar.svelte";

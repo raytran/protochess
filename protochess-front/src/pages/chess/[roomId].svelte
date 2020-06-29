@@ -14,8 +14,8 @@
         leaveRoom,
         CurrentRoom,
         joinRoom
-    } from '../../WebsocketStore';
-    import {Connected} from "../../WebsocketStore";
+    } from '../../_WebsocketStore';
+    import {Connected} from "../../_WebsocketStore";
     import ChessEditor from "../../components/ChessEditor/ChessEditor.svelte";
 
     joinRoom(roomId);

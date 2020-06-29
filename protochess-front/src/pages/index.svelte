@@ -1,5 +1,5 @@
 <script>
-    import {RoomList, createRoom} from '../WebsocketStore';
+    import {RoomList, createRoom} from '../_WebsocketStore';
     import Tabs from 'svelma/src/components/Tabs/Tabs.svelte';
     import Tab from 'svelma/src/components/Tabs/Tab.svelte';
     import Button from 'svelma/src/components/Button.svelte';
