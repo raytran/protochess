@@ -67,7 +67,7 @@
     }
 </style>
 <audio style="display:none" bind:this={clickSound}>
-    <source src="click_sound.wav" type="audio/wav">
+    <source src="/click_sound.wav" type="audio/wav">
     Your browser does not support the audio element.
 </audio>
 <div id="boardWrapper">
