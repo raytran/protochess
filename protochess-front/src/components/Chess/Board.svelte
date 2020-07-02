@@ -38,10 +38,13 @@
 
 
     let audio = new Audio('click_sound.wav');
+    let lastTurn = 0;
     $: {
         //React to turn changes with 'click' sound
-        gameState = gameState;
-        audio.play();
+        if (lastTurn !== gameState.to_move) {
+            audio.play();
+        }
+        lastTurn = gameState.to_move;
     }
 </script>
 
