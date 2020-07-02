@@ -37,12 +37,12 @@
     }
 
 
-    let audio = new Audio('click_sound.wav');
+    let clickSound;
     let lastTurn = 0;
     $: {
         //React to turn changes with 'click' sound
         if (lastTurn !== gameState.to_move) {
-            audio.play();
+            clickSound.play();
         }
         lastTurn = gameState.to_move;
     }
@@ -66,7 +66,10 @@
         justify-items: center;
     }
 </style>
-
+<audio style="display:none" bind:this={clickSound}>
+    <source src="click_sound.wav" type="audio/wav">
+    Your browser does not support the audio element.
+</audio>
 <div id="boardWrapper">
     <div id="board" style="--size: {Math.max(gameState.width, gameState.height)}">
         {#if gameState.tiles}
