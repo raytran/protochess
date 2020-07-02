@@ -93,8 +93,17 @@
     {/if}
         <!-- center board -->
     <div id="boardWrapper">
+        <div ondragstart="return false;" ondrop="return false;">
+            <Board
+                    {highlighted}
+                    on:gameRequest={handleGameRequest}
+                    gameState={$GameInfo.state}
+                    player_num={$PlayersList.player_num}
+                    flipped={$PlayersList.player_num !== 0} />
+
+        </div>
         {#if $GameInfo.winner}
-            <svg style="width: 100%" viewBox="0 0 230 150">
+            <svg style="position: absolute; left:0; top:0; width: 100%" viewBox="0 0 230 150">
                 <rect x="0" y="40%" width="100%" height="45%" fill="rgba(30,220,30)" fill-opacity="0.3"/>
                 <text x="50%" y="55%"
                       font-family="Arial, Helvetica, sans-serif"
@@ -109,16 +118,6 @@
                 </text>
             </svg>
         {/if}
-        <div ondragstart="return false;" ondrop="return false;">
-            <Board
-                    {highlighted}
-                    on:gameRequest={handleGameRequest}
-                    gameState={$GameInfo.state}
-                    player_num={$PlayersList.player_num}
-                    flipped={$PlayersList.player_num !== 0} />
-
-        </div>
-
     </div>
 
     {#if mpVisible}
