@@ -35,6 +35,14 @@
                 "promote_to":null,"to":to}, type:"TakeTurn"});
 
     }
+
+
+    let audio = new Audio('click_sound.wav');
+    $: {
+        //React to turn changes with 'click' sound
+        gameState = gameState;
+        audio.play();
+    }
 </script>
 
 <style>
