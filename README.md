@@ -21,7 +21,7 @@ The backend multiplayer websocket server is in protochess-server-rs.
 
 Common shared data structures between the front/backend are in protochess-common
 
-The actual chess logic/chess engine is in protochess-engine-rs.
+The actual chess logic/chess engine is in protochess-engine-rs, with bindings to WebAssembly contained in protochess-engine-wasm.
 
 ## Running locally with docker
 
