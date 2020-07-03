@@ -42,7 +42,10 @@
     $: {
         //React to turn changes with 'click' sound
         if (lastTurn !== gameState.to_move) {
-            clickSound.play();
+            try{
+                clickSound.play();
+            }catch(err){
+            }
         }
         lastTurn = gameState.to_move;
     }
