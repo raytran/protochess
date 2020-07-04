@@ -1,11 +1,13 @@
+![Protochess](protochess.gif)
 
 ![Protochess](https://i.imgur.com/5MYfcpe.png)
 
 ![Protochess](https://i.imgur.com/6jngcdV.png) 
 
-![Protochess](https://i.imgur.com/Drv9MgG.png)
 
 # Protochess 
+https://protochess.com/
+
 Protochess is an online chess website designed to let you customize your own chess boards/pieces. Want a piece that can move like a knight + queen? Sure. Want to play on a 16x16 sized board? Impractical but you can do it!
 
 ## Built with
