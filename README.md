@@ -1,16 +1,41 @@
+![Protochess](protochess.gif)
 
 ![Protochess](https://i.imgur.com/5MYfcpe.png)
 
 ![Protochess](https://i.imgur.com/6jngcdV.png) 
 
-![Protochess](https://i.imgur.com/Drv9MgG.png)
 
-# protochess 
-## Online chess variant website written in Svelte/Rust.
+# Protochess 
+https://protochess.com/
+
+Protochess is an online chess website designed to let you customize your own chess boards/pieces. Want a piece that can move like a knight + queen? Sure. Want to play on a 16x16 sized board? Impractical but you can do it!
+
+## Built with
+Rust for the backend/chess logic/multiplayer server
+
+Svelte for the single page app frontend
+
+## Project structure
 
 The frontend/static website is contained in protochess-front.  
 
 The backend multiplayer websocket server is in protochess-server-rs.
 
-The actual chess logic is in protochess-engine-rs.
-All the chess logic, including the chess engine, is written in Rust. The engine is compiled to WebAssembly, with bindings in protochess-engine-wasm, to be served as a static asset. 
+Common shared data structures between the front/backend are in protochess-common
+
+The actual chess logic/chess engine is in protochess-engine-rs, with bindings to WebAssembly contained in protochess-engine-wasm.
+
+## Running locally with docker
+
+Included in the base directory is a Dockerfile that compiles the frontend and launches the webserver.
+ 
+```
+git clone https://github.com/raytran/protochess
+cd protochess
+docker build -t protochess .
+docker run -p 3030:3030 protochess
+```
+This will launch the chess page at localhost:3030
+
+## Contact
+You can email me (Raymond Tran) here: raytran@mit.edu
