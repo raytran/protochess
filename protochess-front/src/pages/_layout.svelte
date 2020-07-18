@@ -36,9 +36,10 @@
     });
 </script>
 
-<nav class="navbar is-info" role="navigation" aria-label="main navigation">
+<nav class="navbar is-dark" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href={$url('/')}>
+            <img style="margin: 10px; margin-right: 15px; transform: scale(1.8)" src="protochess.png">
             <h2 class="title" style="font-weight: bold; color:white">Protochess</h2>
         </a>
         <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">

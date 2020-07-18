@@ -8,6 +8,6 @@
     Play against the Computer
 </a>
 <br>
-<button class="button is-primary is-large is-fullwidth" on:click={() => dispatch('requestPlayOnline')}>
+<button class="button is-success is-large is-fullwidth" on:click={() => dispatch('requestPlayOnline')}>
     Play Online
 </button>
