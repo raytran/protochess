@@ -5,7 +5,8 @@ authors = ["raymond <raytran@mit.edu>"]
 edition = "2018"
 
 
-
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O4", "--enable-mutable-globals"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
